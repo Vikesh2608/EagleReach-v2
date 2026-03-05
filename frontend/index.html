@@ -1,8 +1,23 @@
-City: ${data.city} <br>
-State: ${data.state} <br>
-Latitude: ${data.latitude} <br>
-Longitude: ${data.longitude} <br><br>
+document.getElementById("result").innerHTML = `
+
+<h3>${data.city}, ${data.state}</h3>
+
+Time: ${data.time}<br><br>
 
 Weather<br>
-Temperature: ${data.temperature} °C <br>
-Wind Speed: ${data.windspeed} km/h
+Temperature: ${data.temperature} °C<br>
+Wind Speed: ${data.windspeed} km/h<br><br>
+
+Location<br>
+Latitude: ${data.latitude}<br>
+Longitude: ${data.longitude}<br><br>
+
+Senators<br>
+${data.senators[0]}<br>
+${data.senators[1]}<br><br>
+
+Local News<br>
+• ${data.news[0]}<br>
+• ${data.news[1]}<br>
+• ${data.news[2]}
+`
