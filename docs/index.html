@@ -88,13 +88,11 @@ US EagleReach — Civic Info Platform
 
 <h2>Enter ZIP Code</h2>
 
-<input id="zipInput" placeholder="Enter ZIP (ex: 45220)">
+<input id="zip" placeholder="Enter ZIP code">
 
 <button onclick="searchZip()">Search</button>
 
-<div id="result"></div>
-
-</div>
+<button onclick="useLocation()">Use My Location</button>
 
 <footer>
 Open-source civic information platform
@@ -105,6 +103,19 @@ Open-source civic information platform
 const API = "https://eaglereach-v2.onrender.com";
 
 async function searchZip(){
+
+  function useLocation(){
+
+navigator.geolocation.getCurrentPosition(function(pos){
+
+let lat = pos.coords.latitude
+let lon = pos.coords.longitude
+
+alert("Your location: " + lat + ", " + lon)
+
+})
+
+}
 
 let zip = document.getElementById("zipInput").value;
 
