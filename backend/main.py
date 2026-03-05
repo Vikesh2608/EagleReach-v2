@@ -1,23 +1,36 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import httpx
 
 app = FastAPI()
 
-ZIP_API = "https://api.zippopotam.us/us/{zip}"
+# Allow frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+ZIP_API = "https://api.zippopotam.us/us/{zip_code}"
+
 
 @app.get("/")
 def home():
     return {"message": "EagleReach API running"}
 
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
 
 @app.get("/zip/{zip_code}")
 async def get_zip(zip_code: str):
 
     async with httpx.AsyncClient() as client:
-        response = await client.get(ZIP_API.format(zip=zip_code))
+        response = await client.get(ZIP_API.format(zip_code=zip_code))
 
     if response.status_code != 200:
         return {"error": "ZIP not found"}
