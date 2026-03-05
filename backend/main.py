@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import httpx
+from datetime import datetime
 
 app = FastAPI()
 
@@ -15,7 +16,7 @@ async def get_zip_info(zip_code: str):
 
     async with httpx.AsyncClient() as client:
 
-        # Get ZIP location
+        # ZIP lookup
         r = await client.get(ZIP_API.format(zip_code))
 
         if r.status_code != 200:
@@ -28,14 +29,29 @@ async def get_zip_info(zip_code: str):
         latitude = data["places"][0]["latitude"]
         longitude = data["places"][0]["longitude"]
 
-        # Get weather
+        # Weather
         weather_url = WEATHER_API.format(latitude, longitude)
         weather_res = await client.get(weather_url)
-
         weather = weather_res.json()
 
         temperature = weather["current_weather"]["temperature"]
         windspeed = weather["current_weather"]["windspeed"]
+
+        # Time
+        current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+
+        # Example senators (static for demo)
+        senators = [
+            "Sherrod Brown",
+            "JD Vance"
+        ]
+
+        # Example local news
+        news = [
+            "Ohio economy shows growth in Cincinnati region",
+            "Local infrastructure projects announced",
+            "Upcoming Ohio community events this weekend"
+        ]
 
         return {
             "zip": zip_code,
@@ -44,5 +60,8 @@ async def get_zip_info(zip_code: str):
             "latitude": latitude,
             "longitude": longitude,
             "temperature": temperature,
-            "windspeed": windspeed
+            "windspeed": windspeed,
+            "time": current_time,
+            "senators": senators,
+            "news": news
         }
