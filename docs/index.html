@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<title>EagleReach v2</title>
+
+<style>
+
+body{
+font-family: Arial, Helvetica, sans-serif;
+background:#f4f6fb;
+margin:0;
+padding:0;
+text-align:center;
+}
+
+header{
+background:#1e3a8a;
+color:white;
+padding:20px;
+font-size:22px;
+}
+
+.container{
+margin-top:60px;
+}
+
+input{
+padding:12px;
+font-size:16px;
+width:220px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+button{
+padding:12px 18px;
+font-size:16px;
+background:#2563eb;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+margin-left:8px;
+}
+
+button:hover{
+background:#1d4ed8;
+}
+
+.card{
+margin-top:30px;
+display:inline-block;
+background:white;
+padding:25px;
+border-radius:8px;
+box-shadow:0px 3px 10px rgba(0,0,0,0.1);
+min-width:300px;
+}
+
+.label{
+color:#666;
+font-size:14px;
+}
+
+.value{
+font-size:20px;
+margin-bottom:10px;
+}
+
+footer{
+margin-top:60px;
+font-size:13px;
+color:#777;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+US EagleReach — Civic Info Platform
+</header>
+
+<div class="container">
+
+<h2>Enter ZIP Code</h2>
+
+<input id="zipInput" placeholder="Enter ZIP (ex: 45220)">
+
+<button onclick="searchZip()">Search</button>
+
+<div id="result"></div>
+
+</div>
+
+<footer>
+Open-source civic information platform
+</footer>
+
+<script>
+
+const API = "https://eaglereach-v2.onrender.com";
+
+async function searchZip(){
+
+let zip = document.getElementById("zipInput").value;
+
+if(zip.length !== 5){
+alert("Enter a valid 5 digit ZIP code");
+return;
+}
+
+let response = await fetch(API + "/zip/" + zip);
+
+let data = await response.json();
+
+if(data.error){
+document.getElementById("result").innerHTML = "ZIP not found";
+return;
+}
+
+document.getElementById("result").innerHTML = `
+<div class="card">
+
+<div class="label">City</div>
+<div class="value">${data.city}</div>
+
+<div class="label">State</div>
+<div class="value">${data.state}</div>
+
+<div class="label">Latitude</div>
+<div class="value">${data.latitude}</div>
+
+<div class="label">Longitude</div>
+<div class="value">${data.longitude}</div>
+
+</div>
+`;
+
+}
+
+</script>
+
+</body>
+</html>
