@@ -1,25 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-<meta charset="UTF-8">
-<title>EagleReach v2</title>
+
+<title>US EagleReach</title>
 
 <style>
 
 body{
-font-family: Arial, Helvetica, sans-serif;
-background:#f4f6fb;
+font-family:Arial;
+background:#eef1f7;
 margin:0;
-padding:0;
 text-align:center;
 }
 
-header{
-background:#1e3a8a;
+.header{
+background:#2f4a92;
 color:white;
-padding:20px;
-font-size:22px;
+padding:15px;
+font-weight:bold;
 }
 
 .container{
@@ -27,66 +26,53 @@ margin-top:60px;
 }
 
 input{
-padding:12px;
-font-size:16px;
-width:220px;
-border-radius:6px;
+padding:10px;
+width:180px;
+border-radius:5px;
 border:1px solid #ccc;
 }
 
 button{
-padding:12px 18px;
-font-size:16px;
-background:#2563eb;
+padding:10px 15px;
+background:#3b6ce1;
 color:white;
 border:none;
-border-radius:6px;
+border-radius:5px;
 cursor:pointer;
-margin-left:8px;
-}
-
-button:hover{
-background:#1d4ed8;
+margin-left:5px;
 }
 
 .card{
-margin-top:30px;
+margin-top:25px;
 display:inline-block;
 background:white;
-padding:25px;
+padding:20px;
 border-radius:8px;
-box-shadow:0px 3px 10px rgba(0,0,0,0.1);
-min-width:300px;
+box-shadow:0px 3px 10px rgba(0,0,0,0.15);
+width:260px;
 }
 
-.label{
-color:#666;
-font-size:14px;
-}
-
-.value{
-font-size:20px;
-margin-bottom:10px;
-}
-
-footer{
-margin-top:60px;
-font-size:13px;
-color:#777;
+.small{
+font-size:12px;
+color:#888;
+margin-top:30px;
 }
 
 </style>
+
 </head>
+
 
 <body>
 
-<header>
+<div class="header">
 US EagleReach — Civic Info Platform
-</header>
+</div>
+
 
 <div class="container">
 
-<h2>Enter ZIP Code</h2>
+<h3>Enter ZIP Code</h3>
 
 <input id="zip" placeholder="Enter ZIP code">
 
@@ -94,66 +80,121 @@ US EagleReach — Civic Info Platform
 
 <button onclick="useLocation()">Use My Location</button>
 
-<footer>
+
+<div id="result"></div>
+
+<div class="small">
 Open-source civic information platform
-</footer>
+</div>
+
+</div>
+
+
 
 <script>
 
-const API = "https://eaglereach-v2.onrender.com";
+const API="https://eaglereach-v2.onrender.com"
+
 
 async function searchZip(){
 
-  function useLocation(){
+let zip=document.getElementById("zip").value
 
-navigator.geolocation.getCurrentPosition(function(pos){
+if(zip.length!=5){
+alert("Enter valid ZIP")
+return
+}
 
-let lat = pos.coords.latitude
-let lon = pos.coords.longitude
+let r=await fetch(API+"/zip/"+zip)
 
-alert("Your location: " + lat + ", " + lon)
+let data=await r.json()
+
+showResult(data)
+
+}
+
+
+
+function useLocation(){
+
+if(!navigator.geolocation){
+alert("Location not supported")
+return
+}
+
+navigator.geolocation.getCurrentPosition(async function(pos){
+
+let lat=pos.coords.latitude
+let lon=pos.coords.longitude
+
+
+let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
+
+let geoData=await geo.json()
+
+let city=geoData.city
+
+document.getElementById("result").innerHTML=
+
+`
+<div class="card">
+
+<b>Your Location</b><br><br>
+
+City<br>
+${city}<br><br>
+
+Latitude<br>
+${lat}<br><br>
+
+Longitude<br>
+${lon}
+
+</div>
+`
 
 })
 
 }
 
-let zip = document.getElementById("zipInput").value;
 
-if(zip.length !== 5){
-alert("Enter a valid 5 digit ZIP code");
-return;
-}
 
-let response = await fetch(API + "/zip/" + zip);
+function showResult(data){
 
-let data = await response.json();
+document.getElementById("result").innerHTML=
 
-if(data.error){
-document.getElementById("result").innerHTML = "ZIP not found";
-return;
-}
-
-document.getElementById("result").innerHTML = `
+`
 <div class="card">
 
-<div class="label">City</div>
-<div class="value">${data.city}</div>
+<b>${data.city}, ${data.state}</b><br><br>
 
-<div class="label">State</div>
-<div class="value">${data.state}</div>
+Time<br>
+${data.time}<br><br>
 
-<div class="label">Latitude</div>
-<div class="value">${data.latitude}</div>
+Weather<br>
+Temperature: ${data.temperature} °C<br>
+Wind: ${data.windspeed} km/h<br><br>
 
-<div class="label">Longitude</div>
-<div class="value">${data.longitude}</div>
+Location<br>
+Lat: ${data.latitude}<br>
+Lon: ${data.longitude}<br><br>
+
+Senators<br>
+${data.senators[0]}<br>
+${data.senators[1]}<br><br>
+
+News<br>
+• ${data.news[0]}<br>
+• ${data.news[1]}<br>
+• ${data.news[2]}
 
 </div>
-`;
+`
 
 }
 
 </script>
+
 
 </body>
 </html>
