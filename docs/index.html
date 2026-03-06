@@ -1,27 +1,32 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
-<title>US EagleReach</title>
+<title>EagleReach</title>
 
 <style>
 
 body{
 font-family:Arial;
-background:#eef1f7;
 margin:0;
+background:#eef1f7;
+}
+
+.navbar{
+background:#2f4a92;
+padding:15px;
 text-align:center;
 }
 
-.header{
-background:#2f4a92;
+.navbar a{
 color:white;
-padding:15px;
+margin:0 15px;
+text-decoration:none;
 font-weight:bold;
 }
 
 .container{
+text-align:center;
 margin-top:60px;
 }
 
@@ -49,13 +54,7 @@ background:white;
 padding:20px;
 border-radius:8px;
 box-shadow:0px 3px 10px rgba(0,0,0,0.15);
-width:280px;
-}
-
-.small{
-font-size:12px;
-color:#888;
-margin-top:30px;
+width:300px;
 }
 
 </style>
@@ -65,14 +64,20 @@ margin-top:30px;
 
 <body>
 
-<div class="header">
-US EagleReach — Civic Info Platform
+<div class="navbar">
+<a href="index.html">Home</a>
+<a href="about.html">About</a>
+<a href="founder.html">Founder</a>
+<a href="vote.html">How To Vote</a>
+<a href="contact.html">Contact</a>
 </div>
 
 
 <div class="container">
 
-<h3>Enter ZIP Code</h3>
+<h2>EagleReach Civic Information Platform</h2>
+
+<p>Find your representatives and civic resources.</p>
 
 <input id="zip" placeholder="Enter ZIP code">
 
@@ -82,11 +87,8 @@ US EagleReach — Civic Info Platform
 
 <div id="result"></div>
 
-<div class="small">
-Open-source civic information platform
 </div>
 
-</div>
 
 
 <script>
@@ -99,11 +101,9 @@ async function searchZip(){
 let zip=document.getElementById("zip").value
 
 if(zip.length!=5){
-alert("Enter valid ZIP code")
+alert("Enter valid ZIP")
 return
 }
-
-try{
 
 let r=await fetch(API+"/zip/"+zip)
 
@@ -111,41 +111,24 @@ let data=await r.json()
 
 showResult(data)
 
-}catch(err){
-
-alert("Backend request failed")
-
 }
-
-}
-
 
 
 async function useLocation(){
-
-if(!navigator.geolocation){
-alert("Geolocation not supported")
-return
-}
 
 navigator.geolocation.getCurrentPosition(async function(position){
 
 let lat=position.coords.latitude
 let lon=position.coords.longitude
 
-console.log("GPS:",lat,lon)
-
-try{
-
-// OpenStreetMap reverse geocode
-let geo=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
 
 let geoData=await geo.json()
 
-let zip=geoData.address.postcode
+let zip=geoData.postcode
 
 if(!zip){
-alert("ZIP code could not be detected from location")
+alert("ZIP not detected")
 return
 }
 
@@ -155,18 +138,9 @@ let data=await r.json()
 
 showResult(data)
 
-}catch(err){
-
-console.error(err)
-
-alert("Location lookup failed")
-
-}
-
 })
 
 }
-
 
 
 function showResult(data){
@@ -178,25 +152,15 @@ document.getElementById("result").innerHTML=
 
 <b>${data.city}, ${data.state}</b><br><br>
 
-Time<br>
-${data.time}<br><br>
-
-Weather<br>
-Temperature: ${data.temperature} °C<br>
-Wind: ${data.windspeed} km/h<br><br>
-
-Location<br>
-Lat: ${data.latitude}<br>
-Lon: ${data.longitude}<br><br>
+Latitude: ${data.latitude}<br>
+Longitude: ${data.longitude}<br><br>
 
 Senators<br>
 ${data.senators[0]}<br>
 ${data.senators[1]}<br><br>
 
-News<br>
-• ${data.news[0]}<br>
-• ${data.news[1]}<br>
-• ${data.news[2]}
+Voting Information<br>
+<a href="https://vote.gov" target="_blank">Vote.gov</a>
 
 </div>
 `
