@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>EagleReach — Civic Info Platform</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+background:#eef1f7;
+}
+
+.navbar{
+background:#2f4a92;
+padding:15px;
+text-align:center;
+}
+
+.navbar a{
+color:white;
+margin:0 20px;
+text-decoration:none;
+font-weight:bold;
+}
+
+.container{
+text-align:center;
+margin-top:60px;
+}
+
+input{
+padding:10px;
+width:220px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+button{
+padding:10px 15px;
+background:#3b6ce1;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+margin-left:5px;
+}
+
+.card{
+margin-top:25px;
+display:inline-block;
+background:white;
+padding:25px;
+border-radius:10px;
+box-shadow:0px 3px 12px rgba(0,0,0,0.15);
+width:320px;
+}
+
+.news{
+margin-top:30px;
+background:white;
+padding:20px;
+width:320px;
+display:inline-block;
+border-radius:10px;
+box-shadow:0px 3px 10px rgba(0,0,0,0.15);
+}
+
+.footer{
+margin-top:60px;
+color:#777;
+font-size:13px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="navbar">
+
+<a href="index.html">Home</a> <a href="about.html">About</a> <a href="founder.html">Founder</a> <a href="vote.html">How To Vote</a> <a href="contact.html">Contact</a>
+
+</div>
+
+<div class="container">
+
+<h2>US EagleReach — Civic Information Platform</h2>
+
+<p>Find your representatives, location info and voting resources.</p>
+
+<input id="zip" placeholder="Enter ZIP code">
+
+<button onclick="searchZip()">Search</button>
+
+<button onclick="useLocation()">Use My Location</button>
+
+<div id="result"></div>
+
+<div id="news"></div>
+
+</div>
+
+<script>
+
+const API="https://eaglereach-v2.onrender.com"
+
+const senators={
+"Ohio":["JD Vance","Sherrod Brown"],
+"Kentucky":["Mitch McConnell","Rand Paul"],
+"California":["Alex Padilla","Laphonza Butler"],
+"Texas":["Ted Cruz","John Cornyn"],
+"Florida":["Marco Rubio","Rick Scott"],
+"New York":["Chuck Schumer","Kirsten Gillibrand"]
+}
+
+async function searchZip(){
+
+let zip=document.getElementById("zip").value
+
+if(zip.length!=5){
+alert("Enter valid ZIP code")
+return
+}
+
+let r=await fetch(API+"/zip/"+zip)
+
+let data=await r.json()
+
+display(data)
+
+}
+
+
+async function useLocation(){
+
+navigator.geolocation.getCurrentPosition(async function(position){
+
+let lat=position.coords.latitude
+let lon=position.coords.longitude
+
+let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
+
+let geoData=await geo.json()
+
+let zip=geoData.postcode
+
+if(!zip){
+alert("Unable to detect ZIP code")
+return
+}
+
+document.getElementById("zip").value=zip
+
+let r=await fetch(API+"/zip/"+zip)
+
+let data=await r.json()
+
+display(data)
+
+})
+
+}
+
+
+
+function display(data){
+
+let state=data.state
+
+let senatorList=senators[state] || ["Information unavailable","Information unavailable"]
+
+let time=new Date().toLocaleString()
+
+document.getElementById("result").innerHTML=
+
+`
+<div class="card">
+
+<h3>${data.city}, ${data.state}</h3>
+
+<b>ZIP:</b> ${data.zip}<br><br>
+
+Latitude: ${data.latitude}<br>
+Longitude: ${data.longitude}<br><br>
+
+<b>US Senators</b><br>
+${senatorList[0]}<br>
+${senatorList[1]}<br><br>
+
+<b>Current Time</b><br>
+${time}<br><br>
+
+<b>Voting Information</b><br>
+
+<a href="https://vote.gov" target="_blank">Visit Vote.gov</a>
+
+</div>
+
+`
+
+document.getElementById("news").innerHTML=
+
+`
+<div class="news">
+
+<h3>Local Civic News</h3>
+
+<p>Stay informed about local government decisions, elections and policy updates.</p>
+
+<ul>
+<li>Local council meetings</li>
+<li>Election updates</li>
+<li>Community announcements</li>
+</ul>
+
+</div>
+`
+
+}
+
+</script>
+
+<div class="footer">
+
+Open-source civic information platform — EagleReach
+
+</div>
+
+</body>
+
+</html>
