@@ -1,8 +1,12 @@
 <!DOCTYPE html>
+
 <html>
 
 <head>
-<title>EagleReach</title>
+
+<title>EagleReach — Civic Information Platform</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 
@@ -20,7 +24,7 @@ text-align:center;
 
 .navbar a{
 color:white;
-margin:0 15px;
+margin:0 20px;
 text-decoration:none;
 font-weight:bold;
 }
@@ -32,8 +36,8 @@ margin-top:60px;
 
 input{
 padding:10px;
-width:200px;
-border-radius:5px;
+width:220px;
+border-radius:6px;
 border:1px solid #ccc;
 }
 
@@ -42,7 +46,7 @@ padding:10px 15px;
 background:#3b6ce1;
 color:white;
 border:none;
-border-radius:5px;
+border-radius:6px;
 cursor:pointer;
 margin-left:5px;
 }
@@ -51,10 +55,17 @@ margin-left:5px;
 margin-top:25px;
 display:inline-block;
 background:white;
-padding:20px;
-border-radius:8px;
-box-shadow:0px 3px 10px rgba(0,0,0,0.15);
-width:320px;
+padding:25px;
+border-radius:10px;
+box-shadow:0px 3px 12px rgba(0,0,0,0.15);
+width:350px;
+}
+
+.footer{
+margin-top:80px;
+color:#777;
+font-size:13px;
+text-align:center;
 }
 
 </style>
@@ -64,18 +75,16 @@ width:320px;
 <body>
 
 <div class="navbar">
-<a href="index.html">Home</a>
-<a href="about.html">About</a>
-<a href="founder.html">Founder</a>
-<a href="vote.html">How To Vote</a>
-<a href="contact.html">Contact</a>
+
+<a href="index.html">Home</a> <a href="about.html">About</a> <a href="founder.html">Founder</a> <a href="vote.html">How To Vote</a> <a href="contact.html">Contact</a>
+
 </div>
 
 <div class="container">
 
 <h2>EagleReach Civic Information Platform</h2>
 
-<p>Search by ZIP code or use your location.</p>
+<p>Find your representatives and voting resources.</p>
 
 <input id="zip" placeholder="Enter ZIP code">
 
@@ -87,31 +96,26 @@ width:320px;
 
 </div>
 
-
 <script>
+
+const API = "https://eaglereach-v2.onrender.com"
+
+
 
 async function searchZip(){
 
 let zip=document.getElementById("zip").value
 
 if(zip.length!=5){
-alert("Enter valid ZIP")
+alert("Enter a valid ZIP code")
 return
 }
 
-let r=await fetch(`https://api.zippopotam.us/us/${zip}`)
-
-if(!r.ok){
-alert("ZIP not found")
-return
-}
+let r=await fetch(API+"/zip/"+zip)
 
 let data=await r.json()
 
-let city=data.places[0]["place name"]
-let state=data.places[0]["state"]
-
-showResult(city,state,zip)
+displayResult(data)
 
 }
 
@@ -124,57 +128,4 @@ navigator.geolocation.getCurrentPosition(async function(position){
 let lat=position.coords.latitude
 let lon=position.coords.longitude
 
-let geo=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
-
-let geoData=await geo.json()
-
-let city=geoData.address.city || geoData.address.town
-let state=geoData.address.state
-let zip=geoData.address.postcode
-
-showResult(city,state,zip)
-
-})
-
-}
-
-
-
-function showResult(city,state,zip){
-
-let time=new Date().toLocaleString()
-
-document.getElementById("result").innerHTML=
-
-`
-<div class="card">
-
-<h3>${city}, ${state}</h3>
-
-ZIP Code: ${zip}
-
-<br><br>
-
-Current Time<br>
-${time}
-
-<br><br>
-
-Voting Information<br>
-<a href="https://vote.gov" target="_blank">Go to Vote.gov</a>
-
-<br><br>
-
-Civic Awareness Message<br>
-Voting in elections is an important civic duty.
-Stay informed and participate in your local and national elections.
-
-</div>
-`
-
-}
-
-</script>
-
-</body>
-</html>
+let geo=await fetch(`https://api.bigda
