@@ -1,57 +1,62 @@
 from fastapi import FastAPI
 import httpx
-from datetime import datetime
+import yaml
 
 app = FastAPI()
 
-ZIP_API = "https://api.zippopotam.us/us/{}"
-WEATHER_API = "https://api.open-meteo.com/v1/forecast?latitude={}&longitude={}&current_weather=true"
+LEGISLATORS_URL = "https://raw.githubusercontent.com/unitedstates/congress-legislators/gh-pages/legislators-current.yaml"
+
+
+async def get_legislators(state_code):
+
+    async with httpx.AsyncClient() as client:
+        r = await client.get(LEGISLATORS_URL)
+        legislators = yaml.safe_load(r.text)
+
+    senators = []
+    representatives = []
+
+    for person in legislators:
+
+        term = person["terms"][-1]
+
+        if term["state"] == state_code:
+
+            name = person["name"]["official_full"]
+
+            if term["type"] == "sen":
+                senators.append(name)
+
+            if term["type"] == "rep":
+                representatives.append(name)
+
+    return senators, representatives
+
 
 @app.get("/")
 def home():
     return {"message": "EagleReach API running"}
 
+
 @app.get("/zip/{zip_code}")
-async def get_zip_info(zip_code: str):
+async def get_zip(zip_code: str):
 
     async with httpx.AsyncClient() as client:
 
-        # ZIP lookup
-        r = await client.get(ZIP_API.format(zip_code))
+        r = await client.get(f"https://api.zippopotam.us/us/{zip_code}")
 
         if r.status_code != 200:
-            return {"error": "ZIP not found"}
+            return {"error": "ZIP code not found"}
 
         data = r.json()
 
         city = data["places"][0]["place name"]
         state = data["places"][0]["state"]
+        state_code = data["places"][0]["state abbreviation"]
         latitude = data["places"][0]["latitude"]
         longitude = data["places"][0]["longitude"]
 
-        # Weather
-        weather_url = WEATHER_API.format(latitude, longitude)
-        weather_res = await client.get(weather_url)
-        weather = weather_res.json()
-
-        temperature = weather["current_weather"]["temperature"]
-        windspeed = weather["current_weather"]["windspeed"]
-
-        # Time
-        current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-
-        # Example senators (static for demo)
-        senators = [
-            "Sherrod Brown",
-            "JD Vance"
-        ]
-
-        # Example local news
-        news = [
-            "Ohio economy shows growth in Cincinnati region",
-            "Local infrastructure projects announced",
-            "Upcoming Ohio community events this weekend"
-        ]
+        senators, reps = await get_legislators(state_code)
 
         return {
             "zip": zip_code,
@@ -59,9 +64,6 @@ async def get_zip_info(zip_code: str):
             "state": state,
             "latitude": latitude,
             "longitude": longitude,
-            "temperature": temperature,
-            "windspeed": windspeed,
-            "time": current_time,
-            "senators": senators,
-            "news": news
+            "senators": senators[:2],
+            "representatives": reps[:1]
         }
