@@ -4,7 +4,7 @@
 
 <head>
 
-<title>EagleReach — Civic Information Platform</title>
+<title>EagleReach Civic Information Platform</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -58,14 +58,7 @@ background:white;
 padding:25px;
 border-radius:10px;
 box-shadow:0px 3px 12px rgba(0,0,0,0.15);
-width:350px;
-}
-
-.footer{
-margin-top:80px;
-color:#777;
-font-size:13px;
-text-align:center;
+width:360px;
 }
 
 </style>
@@ -84,7 +77,7 @@ text-align:center;
 
 <h2>EagleReach Civic Information Platform</h2>
 
-<p>Find your representatives and voting resources.</p>
+<p>Search by ZIP code or use your location.</p>
 
 <input id="zip" placeholder="Enter ZIP code">
 
@@ -98,16 +91,17 @@ text-align:center;
 
 <script>
 
-const API = "https://eaglereach-v2.onrender.com"
-
+const API="https://eaglereach-v2.onrender.com"
 
 
 async function searchZip(){
 
+try{
+
 let zip=document.getElementById("zip").value
 
 if(zip.length!=5){
-alert("Enter a valid ZIP code")
+alert("Enter valid ZIP code")
 return
 }
 
@@ -115,7 +109,13 @@ let r=await fetch(API+"/zip/"+zip)
 
 let data=await r.json()
 
-displayResult(data)
+display(data)
+
+}catch(error){
+
+alert("API request failed")
+
+}
 
 }
 
@@ -123,9 +123,91 @@ displayResult(data)
 
 async function useLocation(){
 
+if(!navigator.geolocation){
+
+alert("Geolocation not supported")
+
+return
+
+}
+
 navigator.geolocation.getCurrentPosition(async function(position){
+
+try{
 
 let lat=position.coords.latitude
 let lon=position.coords.longitude
 
-let geo=await fetch(`https://api.bigda
+let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
+
+let geoData=await geo.json()
+
+let zip=geoData.postcode
+
+if(!zip){
+
+alert("ZIP not detected")
+
+return
+
+}
+
+document.getElementById("zip").value=zip
+
+let r=await fetch(API+"/zip/"+zip)
+
+let data=await r.json()
+
+display(data)
+
+}catch(err){
+
+alert("Location lookup failed")
+
+}
+
+})
+
+}
+
+
+
+function display(data){
+
+let time=new Date().toLocaleString()
+
+document.getElementById("result").innerHTML=
+
+`
+<div class="card">
+
+<h3>${data.city}, ${data.state}</h3>
+
+ZIP: ${data.zip}<br><br>
+
+Latitude: ${data.latitude}<br>
+Longitude: ${data.longitude}<br><br>
+
+<b>US Senators</b><br>
+${data.senators ? data.senators[0] : ""}<br>
+${data.senators ? data.senators[1] : ""}<br><br>
+
+<b>House Representative</b><br>
+${data.representatives ? data.representatives[0] : ""}<br><br>
+
+<b>Current Time</b><br>
+${time}<br><br>
+
+<b>Voting Information</b><br>
+<a href="https://vote.gov" target="_blank">Go to Vote.gov</a>
+
+</div>
+`
+
+}
+
+</script>
+
+</body>
+
+</html>
