@@ -49,7 +49,7 @@ background:white;
 padding:20px;
 border-radius:8px;
 box-shadow:0px 3px 10px rgba(0,0,0,0.15);
-width:260px;
+width:280px;
 }
 
 .small{
@@ -80,7 +80,6 @@ US EagleReach — Civic Info Platform
 
 <button onclick="useLocation()">Use My Location</button>
 
-
 <div id="result"></div>
 
 <div class="small">
@@ -101,15 +100,23 @@ async function searchZip(){
 let zip=document.getElementById("zip").value
 
 if(zip.length!=5){
-alert("Enter valid ZIP")
+alert("Enter valid ZIP code")
 return
 }
+
+try{
 
 let r=await fetch(API+"/zip/"+zip)
 
 let data=await r.json()
 
 showResult(data)
+
+}catch(err){
+
+alert("API request failed")
+
+}
 
 }
 
@@ -122,33 +129,47 @@ alert("Geolocation not supported")
 return
 }
 
-navigator.geolocation.getCurrentPosition(async function(pos){
+navigator.geolocation.getCurrentPosition(async function(position){
 
-let lat = pos.coords.latitude
-let lon = pos.coords.longitude
+let lat=position.coords.latitude
+let lon=position.coords.longitude
 
-// Convert GPS → ZIP
-let geo = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
+console.log("GPS:",lat,lon)
 
-let geoData = await geo.json()
+try{
 
-let zip = geoData.postcode
+let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
+
+let geoData=await geo.json()
+
+console.log("Geo:",geoData)
+
+let zip=geoData.postcode
 
 if(!zip){
-alert("Unable to detect ZIP from location")
+alert("Unable to detect ZIP code from your location")
 return
 }
 
-// call EagleReach backend using detected ZIP
-let r = await fetch(API + "/zip/" + zip)
+let r=await fetch(API+"/zip/"+zip)
 
-let data = await r.json()
+let data=await r.json()
 
 showResult(data)
+
+}catch(err){
+
+console.error(err)
+
+alert("Location lookup failed")
+
+}
 
 })
 
 }
+
+
 
 function showResult(data){
 
