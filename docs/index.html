@@ -115,49 +115,40 @@ showResult(data)
 
 
 
-function useLocation(){
+async function useLocation(){
 
 if(!navigator.geolocation){
-alert("Location not supported")
+alert("Geolocation not supported")
 return
 }
 
 navigator.geolocation.getCurrentPosition(async function(pos){
 
-let lat=pos.coords.latitude
-let lon=pos.coords.longitude
+let lat = pos.coords.latitude
+let lon = pos.coords.longitude
 
+// Convert GPS → ZIP
+let geo = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
 
-let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
+let geoData = await geo.json()
 
-let geoData=await geo.json()
+let zip = geoData.postcode
 
-let city=geoData.city
+if(!zip){
+alert("Unable to detect ZIP from location")
+return
+}
 
-document.getElementById("result").innerHTML=
+// call EagleReach backend using detected ZIP
+let r = await fetch(API + "/zip/" + zip)
 
-`
-<div class="card">
+let data = await r.json()
 
-<b>Your Location</b><br><br>
-
-City<br>
-${city}<br><br>
-
-Latitude<br>
-${lat}<br><br>
-
-Longitude<br>
-${lon}
-
-</div>
-`
+showResult(data)
 
 })
 
 }
-
-
 
 function showResult(data){
 
