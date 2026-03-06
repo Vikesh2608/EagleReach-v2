@@ -89,7 +89,6 @@ Open-source civic information platform
 </div>
 
 
-
 <script>
 
 const API="https://eaglereach-v2.onrender.com"
@@ -114,7 +113,7 @@ showResult(data)
 
 }catch(err){
 
-alert("API request failed")
+alert("Backend request failed")
 
 }
 
@@ -138,16 +137,15 @@ console.log("GPS:",lat,lon)
 
 try{
 
-let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
+// OpenStreetMap reverse geocode
+let geo=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
 
 let geoData=await geo.json()
 
-console.log("Geo:",geoData)
-
-let zip=geoData.postcode
+let zip=geoData.address.postcode
 
 if(!zip){
-alert("Unable to detect ZIP code from your location")
+alert("ZIP code could not be detected from location")
 return
 }
 
@@ -206,7 +204,6 @@ News<br>
 }
 
 </script>
-
 
 </body>
 </html>
