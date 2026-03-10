@@ -1,16 +1,23 @@
 <!DOCTYPE html>
+
 <html>
 
 <head>
 
-<title>EagleReach Civic Platform</title>
+<title>EagleReach Civic Intelligence Platform</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
 
 body{
 font-family:Arial;
 margin:0;
-background:#f2f4f8;
+background:#f4f6fb;
 text-align:center;
 }
 
@@ -27,7 +34,7 @@ font-weight:bold;
 }
 
 .container{
-margin-top:50px;
+margin-top:30px;
 }
 
 input{
@@ -50,18 +57,59 @@ button:hover{
 background:#284ea8;
 }
 
-.card{
-background:white;
-width:450px;
-margin:25px auto;
-padding:25px;
+#map{
+height:300px;
+width:80%;
+margin:20px auto;
 border-radius:8px;
-box-shadow:0px 4px 12px rgba(0,0,0,0.15);
 }
 
-.news{
-margin-top:20px;
+.rep-card{
+background:white;
+border-radius:10px;
+padding:20px;
+margin:15px auto;
+width:420px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
 text-align:left;
+}
+
+.rep-name{
+font-size:20px;
+font-weight:bold;
+}
+
+.rep-party{
+color:#666;
+margin-bottom:10px;
+}
+
+.rep-buttons a{
+text-decoration:none;
+padding:8px 14px;
+margin-right:10px;
+border-radius:6px;
+background:#2f4a8a;
+color:white;
+font-size:14px;
+}
+
+.card{
+background:white;
+width:420px;
+margin:20px auto;
+padding:20px;
+border-radius:8px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+.chatbox{
+width:420px;
+margin:20px auto;
+background:white;
+padding:20px;
+border-radius:8px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
 </style>
@@ -72,19 +120,15 @@ text-align:left;
 
 <nav>
 
-<a href="index.html">Home</a>
-<a href="about.html">About</a>
-<a href="founder.html">Founder</a>
-<a href="vote.html">How To Vote</a>
-<a href="contact.html">Contact</a>
+<a href="index.html">Home</a> <a href="about.html">About</a> <a href="founder.html">Founder</a> <a href="vote.html">How To Vote</a> <a href="contact.html">Contact</a>
 
 </nav>
 
 <div class="container">
 
-<h1>EagleReach Civic Information Platform</h1>
+<h1>EagleReach Civic Intelligence Platform</h1>
 
-<p>Search by ZIP code or detect your location.</p>
+<p>Discover your government, stay informed, and participate in democracy.</p>
 
 <input id="zip" placeholder="Enter ZIP code">
 
@@ -92,7 +136,29 @@ text-align:left;
 
 <button onclick="useLocation()">Use My Location</button>
 
+<div id="map"></div>
+
 <div id="result"></div>
+
+<div id="weather"></div>
+
+<div id="news"></div>
+
+<div id="election"></div>
+
+<div id="government"></div>
+
+<div class="chatbox">
+
+<h3>Ask EagleReach AI</h3>
+
+<input id="question" placeholder="Ask a civic question">
+
+<button onclick="askAI()">Ask</button>
+
+<p id="aiResponse"></p>
+
+</div>
 
 </div>
 
@@ -100,12 +166,20 @@ text-align:left;
 
 const API="https://eaglereach-v2.onrender.com";
 
+let map=L.map('map').setView([39.8283,-98.5795],4);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+attribution:'© OpenStreetMap'
+}).addTo(map);
+
+let marker;
+
 async function searchZip(){
 
 let zip=document.getElementById("zip").value;
 
 if(!zip){
-alert("Enter ZIP code");
+alert("Enter ZIP Code");
 return;
 }
 
@@ -117,6 +191,16 @@ let data=await response.json();
 
 displayData(data);
 
+updateMap(data.latitude,data.longitude);
+
+loadWeather(data.latitude,data.longitude);
+
+loadNews(data.city);
+
+showElectionCountdown();
+
+loadGovernment();
+
 }catch{
 
 alert("API request failed");
@@ -127,125 +211,184 @@ alert("API request failed");
 
 function displayData(data){
 
-let time=new Date().toLocaleString();
-
-let senatorsHTML="";
+let html="<h2>Your Representatives</h2>";
 
 data.senators.forEach(s=>{
-senatorsHTML+=`<li>${s}</li>`;
-});
 
-let repsHTML="";
+html+=`
+<div class="rep-card">
+
+<div class="rep-name">${s}</div>
+
+<div class="rep-party">US Senator</div>
+
+<div class="rep-buttons">
+
+<a href="https://www.senate.gov" target="_blank">Official Website</a>
+
+</div>
+
+</div>
+`;
+
+});
 
 data.representatives.forEach(r=>{
-repsHTML+=`<li>${r}</li>`;
+
+html+=`
+<div class="rep-card">
+
+<div class="rep-name">${r}</div>
+
+<div class="rep-party">US Representative</div>
+
+<div class="rep-buttons">
+
+<a href="https://www.house.gov" target="_blank">Official Website</a>
+
+</div>
+
+</div>
+`;
+
 });
 
-document.getElementById("result").innerHTML=`
+document.getElementById("result").innerHTML=html;
 
-<div class="card">
+}
 
-<h2>${data.city}, ${data.state}</h2>
+function updateMap(lat,lon){
 
-<p><b>ZIP Code:</b> ${data.zip}</p>
+if(marker){
+map.removeLayer(marker);
+}
 
-<p><b>Current Time:</b> ${time}</p>
+map.setView([lat,lon],10);
 
-<h3>US Senators</h3>
-
-<ul>
-<li>Mitch McConnell — Phone: (202) 224-2541 — <a target="_blank" href="https://www.mcconnell.senate.gov">Website</a></li>
-<li>Rand Paul — Phone: (202) 224-4343 — <a target="_blank" href="https://www.paul.senate.gov">Website</a></li>
-</ul>
-
-<h3>US Representative</h3>
-
-<ul>
-${repsHTML}
-</ul>
-
-<h3>Mayor</h3>
-
-<p>Local mayor information coming soon.</p>
-
-<h3>Voting Information</h3>
-
-<a href="https://vote.gov" target="_blank">Go to Vote.gov</a>
-
-<p style="margin-top:15px;">
-Voting in elections is an important civic duty.  
-Stay informed and participate in local and national elections.
-</p>
-
-</div>
-
-<div class="card news">
-
-<h3>Local News</h3>
-
-<ul>
-<li><a target="_blank" href="https://www.cincinnati.com">Cincinnati Local News</a></li>
-<li><a target="_blank" href="https://www.wlwt.com">WLWT Local News</a></li>
-<li><a target="_blank" href="https://www.local12.com">Local12 News</a></li>
-</ul>
-
-<h3>World News</h3>
-
-<ul>
-<li><a target="_blank" href="https://www.bbc.com/news">BBC World News</a></li>
-<li><a target="_blank" href="https://www.reuters.com/world">Reuters World News</a></li>
-<li><a target="_blank" href="https://www.aljazeera.com">Al Jazeera</a></li>
-</ul>
-
-<h3>Election Reminders</h3>
-
-<p>
-US Election Day: <b>November 5</b>  
-Check your registration and polling location at  
-<a target="_blank" href="https://vote.gov">Vote.gov</a>
-</p>
-
-</div>
-
-`;
+marker=L.marker([lat,lon]).addTo(map);
 
 }
 
 function useLocation(){
 
-if(!navigator.geolocation){
-
-alert("Geolocation not supported");
-
-return;
-
-}
-
 navigator.geolocation.getCurrentPosition(async function(position){
 
 let lat=position.coords.latitude;
-
 let lon=position.coords.longitude;
-
-try{
 
 let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
 
-let geoData=await geo.json();
+let g=await geo.json();
 
-let zip=geoData.postcode;
-
-document.getElementById("zip").value=zip;
+document.getElementById("zip").value=g.postcode;
 
 searchZip();
 
-}catch{
-
-alert("Location lookup failed");
+});
 
 }
 
-});
+async function loadWeather(lat,lon){
+
+let res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+
+let data=await res.json();
+
+document.getElementById("weather").innerHTML=
+
+`<div class="card">
+<h3>Weather</h3>
+Temperature: ${data.current_weather.temperature}°C<br>
+Wind Speed: ${data.current_weather.windspeed} km/h
+</div>`;
+
+}
+
+async function loadNews(city){
+
+document.getElementById("news").innerHTML=
+
+`<div class="card">
+
+<h3>News</h3>
+
+<ul>
+
+<li><a target="_blank" href="https://news.google.com/search?q=${city}">Local News in ${city}</a></li>
+
+<li><a target="_blank" href="https://www.reuters.com">Reuters World News</a></li>
+
+<li><a target="_blank" href="https://www.bbc.com/news">BBC World News</a></li>
+
+</ul>
+
+</div>`;
+
+}
+
+function showElectionCountdown(){
+
+let electionDate=new Date("Nov 5, 2026");
+
+let now=new Date();
+
+let diff=electionDate-now;
+
+let days=Math.floor(diff/(1000*60*60*24));
+
+document.getElementById("election").innerHTML=
+
+`<div class="card">
+
+<h3>Election Countdown</h3>
+
+${days} days until the next US Federal Election
+
+</div>`;
+
+}
+
+async function loadGovernment(){
+
+document.getElementById("government").innerHTML=
+
+`<div class="card">
+
+<h3>Today in Your Government</h3>
+
+<ul>
+
+<li>Infrastructure funding bill debate</li>
+
+<li>Defense budget discussion</li>
+
+<li>Education reform proposal</li>
+
+</ul>
+
+</div>`;
+
+}
+
+function askAI(){
+
+let q=document.getElementById("question").value.toLowerCase();
+
+let answer="";
+
+if(q.includes("senator")){
+answer="Your US Senators are listed above.";
+}
+
+else if(q.includes("vote")){
+answer="You can register to vote at vote.gov.";
+}
+
+else{
+answer="Ask about voting, senators, representatives or elections.";
+}
+
+document.getElementById("aiResponse").innerText=answer;
 
 }
 
