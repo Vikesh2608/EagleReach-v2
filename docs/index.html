@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
 <html>
+
 <head>
 
 <title>EagleReach Civic Intelligence Platform</title>
@@ -76,10 +77,6 @@ text-align:left;
 margin-bottom:15px;
 }
 
-.weather-icon{
-font-size:30px;
-}
-
 .news img{
 width:100%;
 border-radius:8px;
@@ -110,9 +107,9 @@ color:white;
 
 <input id="zip" placeholder="Enter ZIP code">
 
-<button onclick="searchZip()">Search</button>
+<button type="button" onclick="searchZip()">Search</button>
 
-<button onclick="useLocation()">Use My Location</button>
+<button type="button" onclick="useLocation()">Use My Location</button>
 
 <div id="map"></div>
 
@@ -162,7 +159,9 @@ loadNews(data.city)
 showEmergency()
 
 }catch{
+
 alert("API request failed")
+
 }
 
 }
@@ -252,19 +251,14 @@ let res=await fetch(
 
 let data=await res.json()
 
-let icon="☀️"
-
-let temp=data.current_weather.temperature
-
 document.getElementById("weather").innerHTML=
 
 `<div class="card">
 
 <h3>Weather</h3>
 
-<div class="weather-icon">${icon}</div>
-
-Temperature: ${temp}°C
+Temperature: ${data.current_weather.temperature}°C<br>
+Wind Speed: ${data.current_weather.windspeed} km/h
 
 </div>`
 
