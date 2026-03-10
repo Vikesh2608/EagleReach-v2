@@ -32,10 +32,6 @@ text-decoration:none;
 font-weight:bold;
 }
 
-h1{
-margin-top:30px;
-}
-
 input{
 padding:10px;
 font-size:16px;
@@ -73,8 +69,9 @@ box-shadow:0 4px 10px rgba(0,0,0,0.1);
 text-align:left;
 }
 
-.rep{
-margin-bottom:15px;
+.rep img{
+width:80px;
+border-radius:50%;
 }
 
 .news img{
@@ -107,9 +104,9 @@ color:white;
 
 <input id="zip" placeholder="Enter ZIP code">
 
-<button type="button" onclick="searchZip()">Search</button>
+<button onclick="searchZip()">Search</button>
 
-<button type="button" onclick="useLocation()">Use My Location</button>
+<button onclick="useLocation()">Use My Location</button>
 
 <div id="map"></div>
 
@@ -118,6 +115,8 @@ color:white;
 <div id="weather"></div>
 
 <div id="news"></div>
+
+<div id="countdown"></div>
 
 <div id="emergency"></div>
 
@@ -137,13 +136,6 @@ async function searchZip(){
 
 let zip=document.getElementById("zip").value
 
-if(zip===""){
-alert("Enter ZIP code")
-return
-}
-
-try{
-
 let response=await fetch(API+"/zip/"+zip)
 
 let data=await response.json()
@@ -156,13 +148,9 @@ loadWeather(data.latitude,data.longitude)
 
 loadNews(data.city)
 
+electionCountdown()
+
 showEmergency()
-
-}catch{
-
-alert("API request failed")
-
-}
 
 }
 
@@ -176,6 +164,8 @@ html+=`
 
 <div class="rep">
 
+<img src="https://source.unsplash.com/80x80/?politician">
+
 <b>${s.name}</b><br>
 
 Phone: ${s.phone}<br>
@@ -183,6 +173,8 @@ Phone: ${s.phone}<br>
 <a href="${s.website}" target="_blank">
 Official Website
 </a>
+
+<br><br>
 
 </div>
 
@@ -196,6 +188,8 @@ html+=`
 
 <div class="rep">
 
+<img src="https://source.unsplash.com/80x80/?politician">
+
 <b>${r.name}</b><br>
 
 Phone: ${r.phone}<br>
@@ -203,6 +197,8 @@ Phone: ${r.phone}<br>
 <a href="${r.website}" target="_blank">
 Official Website
 </a>
+
+<br><br>
 
 </div>
 
@@ -230,7 +226,7 @@ marker=L.marker([lat,lon]).addTo(map)
 
 function useLocation(){
 
-navigator.geolocation.getCurrentPosition(async pos=>{
+navigator.geolocation.getCurrentPosition(pos=>{
 
 let lat=pos.coords.latitude
 let lon=pos.coords.longitude
@@ -272,7 +268,7 @@ document.getElementById("news").innerHTML=
 
 <h3>Local News</h3>
 
-<img src="https://source.unsplash.com/400x200/?city">
+<img src="https://source.unsplash.com/400x200/?news">
 
 <br><br>
 
@@ -280,6 +276,28 @@ document.getElementById("news").innerHTML=
 href="https://news.google.com/search?q=${city}">
 View Latest News
 </a>
+
+</div>`
+
+}
+
+function electionCountdown(){
+
+let electionDate=new Date("Nov 3, 2026").getTime()
+
+let today=new Date().getTime()
+
+let days=Math.floor((electionDate-today)/(1000*60*60*24))
+
+document.getElementById("countdown").innerHTML=
+
+`<div class="card">
+
+<h3>Next US Federal Election</h3>
+
+November 3, 2026<br><br>
+
+${days} days remaining
 
 </div>`
 
