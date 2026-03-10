@@ -69,9 +69,8 @@ box-shadow:0 4px 10px rgba(0,0,0,0.1);
 text-align:left;
 }
 
-.rep img{
-width:80px;
-border-radius:50%;
+.rep{
+margin-bottom:10px;
 }
 
 .news img{
@@ -158,23 +157,15 @@ function showRepresentatives(data){
 
 let html="<div class='card'><h3>Your Representatives</h3>"
 
-data.senators.forEach(s=>{
+if(data.senators){
+
+data.senators.forEach(name=>{
 
 html+=`
 
 <div class="rep">
 
-<img src="https://source.unsplash.com/80x80/?politician">
-
-<b>${s.name}</b><br>
-
-Phone: ${s.phone}<br>
-
-<a href="${s.website}" target="_blank">
-Official Website
-</a>
-
-<br><br>
+<b>Senator:</b> ${name}
 
 </div>
 
@@ -182,29 +173,25 @@ Official Website
 
 })
 
-data.representatives.forEach(r=>{
+}
+
+if(data.representatives){
+
+data.representatives.forEach(name=>{
 
 html+=`
 
 <div class="rep">
 
-<img src="https://source.unsplash.com/80x80/?politician">
-
-<b>${r.name}</b><br>
-
-Phone: ${r.phone}<br>
-
-<a href="${r.website}" target="_blank">
-Official Website
-</a>
-
-<br><br>
+<b>Representative:</b> ${name}
 
 </div>
 
 `
 
 })
+
+}
 
 html+="</div>"
 
