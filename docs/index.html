@@ -6,38 +6,35 @@
 
 <title>EagleReach Civic Information Platform</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
 
 body{
 font-family:Arial;
-margin:0;
 background:#eef1f7;
+text-align:center;
+margin:0;
 }
 
 .navbar{
 background:#2f4a92;
 padding:15px;
-text-align:center;
 }
 
 .navbar a{
 color:white;
-margin:0 20px;
+margin:0 15px;
 text-decoration:none;
 font-weight:bold;
 }
 
 .container{
-text-align:center;
 margin-top:60px;
 }
 
 input{
 padding:10px;
 width:220px;
-border-radius:6px;
+border-radius:5px;
 border:1px solid #ccc;
 }
 
@@ -46,7 +43,7 @@ padding:10px 15px;
 background:#3b6ce1;
 color:white;
 border:none;
-border-radius:6px;
+border-radius:5px;
 cursor:pointer;
 margin-left:5px;
 }
@@ -57,15 +54,8 @@ display:inline-block;
 background:white;
 padding:25px;
 border-radius:10px;
-box-shadow:0px 3px 12px rgba(0,0,0,0.15);
-width:360px;
-}
-
-.footer{
-margin-top:80px;
-color:#777;
-font-size:13px;
-text-align:center;
+box-shadow:0px 3px 10px rgba(0,0,0,0.15);
+width:350px;
 }
 
 </style>
@@ -84,13 +74,13 @@ text-align:center;
 
 <h2>EagleReach Civic Information Platform</h2>
 
-<p>Search by ZIP code or use your location.</p>
+<p>Search by ZIP code</p>
 
 <input id="zip" placeholder="Enter ZIP code">
 
-<button type="button" id="searchBtn">Search</button>
+<button onclick="searchZip()">Search</button>
 
-<button type="button" id="locationBtn">Use My Location</button>
+<button onclick="useLocation()">Use My Location</button>
 
 <div id="result"></div>
 
@@ -98,104 +88,40 @@ text-align:center;
 
 <script>
 
-const API = "https://eaglereach-v2.onrender.com"
-
-
-document.getElementById("searchBtn").addEventListener("click", searchZip)
-document.getElementById("locationBtn").addEventListener("click", useLocation)
-
-
+const API="https://eaglereach-v2.onrender.com"
 
 async function searchZip(){
 
-let zip = document.getElementById("zip").value
+let zip=document.getElementById("zip").value
 
-if(zip.length != 5){
-alert("Enter a valid ZIP code")
+if(zip.length!=5){
+alert("Enter valid ZIP code")
 return
 }
 
 try{
 
-let response = await fetch(API + "/zip/" + zip)
+let response=await fetch(API+"/zip/"+zip)
 
-let data = await response.json()
+let data=await response.json()
 
-display(data)
-
-}catch(err){
-
-alert("API request failed")
-
-}
-
-}
-
-
-
-function useLocation(){
-
-if(!navigator.geolocation){
-
-alert("Geolocation not supported")
-
-return
-
-}
-
-navigator.geolocation.getCurrentPosition(async function(position){
-
-try{
-
-let lat = position.coords.latitude
-let lon = position.coords.longitude
-
-let geo = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
-
-let geoData = await geo.json()
-
-let zip = geoData.postcode
-
-if(!zip){
-
-alert("ZIP code not detected")
-
-return
-
-}
-
-document.getElementById("zip").value = zip
-
-searchZip()
+show(data)
 
 }catch(e){
 
-alert("Location lookup failed")
+alert("Backend connection failed")
 
 }
 
-})
-
 }
 
 
 
-function display(data){
+function show(data){
 
-if(data.error){
+let time=new Date().toLocaleString()
 
-document.getElementById("result").innerHTML =
-`
-<div class="card">
-Error: ${data.error}
-</div>
-`
-return
-}
-
-let time = new Date().toLocaleString()
-
-document.getElementById("result").innerHTML =
+document.getElementById("result").innerHTML=
 
 `
 <div class="card">
@@ -216,21 +142,40 @@ ${data.representatives.join("<br>")}<br><br>
 <b>Current Time</b><br>
 ${time}<br><br>
 
-<b>Voting Information</b><br>
-<a href="https://vote.gov" target="_blank">Go to Vote.gov</a>
+<a href="https://vote.gov" target="_blank">Voting Information</a>
 
 </div>
 `
 
 }
 
+
+
+function useLocation(){
+
+navigator.geolocation.getCurrentPosition(async function(pos){
+
+let lat=pos.coords.latitude
+let lon=pos.coords.longitude
+
+let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
+
+let g=await geo.json()
+
+if(!g.postcode){
+alert("ZIP not detected")
+return
+}
+
+document.getElementById("zip").value=g.postcode
+
+searchZip()
+
+})
+
+}
+
 </script>
-
-<div class="footer">
-
-Open-source civic information platform — EagleReach
-
-</div>
 
 </body>
 </html>
