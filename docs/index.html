@@ -61,6 +61,13 @@ box-shadow:0px 3px 12px rgba(0,0,0,0.15);
 width:360px;
 }
 
+.footer{
+margin-top:80px;
+color:#777;
+font-size:13px;
+text-align:center;
+}
+
 </style>
 
 </head>
@@ -81,9 +88,9 @@ width:360px;
 
 <input id="zip" placeholder="Enter ZIP code">
 
-<button onclick="searchZip()">Search</button>
+<button type="button" id="searchBtn">Search</button>
 
-<button onclick="useLocation()">Use My Location</button>
+<button type="button" id="locationBtn">Use My Location</button>
 
 <div id="result"></div>
 
@@ -91,27 +98,32 @@ width:360px;
 
 <script>
 
-const API="https://eaglereach-v2.onrender.com"
+const API = "https://eaglereach-v2.onrender.com"
+
+
+document.getElementById("searchBtn").addEventListener("click", searchZip)
+document.getElementById("locationBtn").addEventListener("click", useLocation)
+
 
 
 async function searchZip(){
 
-try{
+let zip = document.getElementById("zip").value
 
-let zip=document.getElementById("zip").value
-
-if(zip.length!=5){
-alert("Enter valid ZIP code")
+if(zip.length != 5){
+alert("Enter a valid ZIP code")
 return
 }
 
-let r=await fetch(API+"/zip/"+zip)
+try{
 
-let data=await r.json()
+let response = await fetch(API + "/zip/" + zip)
+
+let data = await response.json()
 
 display(data)
 
-}catch(error){
+}catch(err){
 
 alert("API request failed")
 
@@ -121,7 +133,7 @@ alert("API request failed")
 
 
 
-async function useLocation(){
+function useLocation(){
 
 if(!navigator.geolocation){
 
@@ -135,32 +147,28 @@ navigator.geolocation.getCurrentPosition(async function(position){
 
 try{
 
-let lat=position.coords.latitude
-let lon=position.coords.longitude
+let lat = position.coords.latitude
+let lon = position.coords.longitude
 
-let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
+let geo = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
 
-let geoData=await geo.json()
+let geoData = await geo.json()
 
-let zip=geoData.postcode
+let zip = geoData.postcode
 
 if(!zip){
 
-alert("ZIP not detected")
+alert("ZIP code not detected")
 
 return
 
 }
 
-document.getElementById("zip").value=zip
+document.getElementById("zip").value = zip
 
-let r=await fetch(API+"/zip/"+zip)
+searchZip()
 
-let data=await r.json()
-
-display(data)
-
-}catch(err){
+}catch(e){
 
 alert("Location lookup failed")
 
@@ -174,9 +182,20 @@ alert("Location lookup failed")
 
 function display(data){
 
-let time=new Date().toLocaleString()
+if(data.error){
 
-document.getElementById("result").innerHTML=
+document.getElementById("result").innerHTML =
+`
+<div class="card">
+Error: ${data.error}
+</div>
+`
+return
+}
+
+let time = new Date().toLocaleString()
+
+document.getElementById("result").innerHTML =
 
 `
 <div class="card">
@@ -189,11 +208,10 @@ Latitude: ${data.latitude}<br>
 Longitude: ${data.longitude}<br><br>
 
 <b>US Senators</b><br>
-${data.senators ? data.senators[0] : ""}<br>
-${data.senators ? data.senators[1] : ""}<br><br>
+${data.senators.join("<br>")}<br><br>
 
 <b>House Representative</b><br>
-${data.representatives ? data.representatives[0] : ""}<br><br>
+${data.representatives.join("<br>")}<br><br>
 
 <b>Current Time</b><br>
 ${time}<br><br>
@@ -208,6 +226,11 @@ ${time}<br><br>
 
 </script>
 
-</body>
+<div class="footer">
 
+Open-source civic information platform — EagleReach
+
+</div>
+
+</body>
 </html>
