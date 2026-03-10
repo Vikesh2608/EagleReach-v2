@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 
 <html>
-
 <head>
 
 <title>EagleReach Civic Intelligence Platform</title>
@@ -27,13 +26,13 @@ padding:15px;
 
 nav a{
 color:white;
-margin:0 15px;
+margin:0 10px;
 text-decoration:none;
 font-weight:bold;
 }
 
-.container{
-margin-top:20px;
+h1{
+margin-top:30px;
 }
 
 input{
@@ -43,13 +42,12 @@ width:220px;
 }
 
 button{
-padding:10px 16px;
+padding:10px 15px;
 background:#3b6bd6;
 border:none;
 color:white;
 border-radius:4px;
 cursor:pointer;
-margin-left:5px;
 }
 
 button:hover{
@@ -58,59 +56,33 @@ background:#284ea8;
 
 #map{
 height:300px;
-width:80%;
-margin:20px auto;
-border-radius:8px;
-}
-
-.rep-card{
-background:white;
-border-radius:10px;
-padding:20px;
-margin:15px auto;
-width:420px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
-text-align:left;
-}
-
-.rep-name{
-font-size:20px;
-font-weight:bold;
-}
-
-.rep-buttons a{
-text-decoration:none;
-padding:8px 14px;
-margin-right:10px;
-border-radius:6px;
-background:#2f4a8a;
-color:white;
-font-size:14px;
+width:90%;
+margin:auto;
+margin-top:20px;
 }
 
 .card{
 background:white;
-width:420px;
-margin:20px auto;
+max-width:420px;
+margin:auto;
+margin-top:20px;
 padding:20px;
-border-radius:8px;
+border-radius:10px;
 box-shadow:0 4px 10px rgba(0,0,0,0.1);
 text-align:left;
 }
 
-.news-card{
-background:white;
-width:420px;
-margin:15px auto;
-padding:15px;
-border-radius:8px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
-text-align:left;
+.rep{
+margin-bottom:15px;
 }
 
-.news-card img{
+.weather-icon{
+font-size:30px;
+}
+
+.news img{
 width:100%;
-border-radius:6px;
+border-radius:8px;
 }
 
 footer{
@@ -127,24 +99,14 @@ color:white;
 <body>
 
 <nav>
-<a href="index.html">Home</a>
-<a href="about.html">About</a>
-<a href="founder.html">Founder</a>
-<a href="vote.html">How To Vote</a>
-<a href="contact.html">Contact</a>
-</nav>
 
-<div class="container">
+<a href="index.html">Home</a> <a href="about.html">About</a> <a href="founder.html">Founder</a> <a href="vote.html">How To Vote</a> <a href="contact.html">Contact</a>
+
+</nav>
 
 <h1>EagleReach Civic Intelligence Platform</h1>
 
-<h3>Your Civic Dashboard</h3>
-
-<p style="width:700px;margin:auto">
-Know your government. Stay informed. Participate in democracy.
-</p>
-
-<br>
+<p>Know your government. Stay informed. Participate.</p>
 
 <input id="zip" placeholder="Enter ZIP code">
 
@@ -152,176 +114,147 @@ Know your government. Stay informed. Participate in democracy.
 
 <button onclick="useLocation()">Use My Location</button>
 
-<button onclick="whereAmI()">Where Am I</button>
-
-<div id="locationInfo"></div>
-
 <div id="map"></div>
 
 <div id="result"></div>
 
 <div id="weather"></div>
 
-<div id="civicNumbers"></div>
-
 <div id="news"></div>
 
-<div id="election"></div>
-
-<div id="government"></div>
-
-</div>
+<div id="emergency"></div>
 
 <script>
 
-const API="https://eaglereach-v2.onrender.com";
+const API="https://eaglereach-v2.onrender.com"
 
-let map=L.map('map').setView([39.8283,-98.5795],4);
+let map=L.map('map').setView([39.8283,-98.5795],4)
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-attribution:'© OpenStreetMap'
-}).addTo(map);
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+).addTo(map)
 
-let marker;
+let marker
 
 async function searchZip(){
 
-let zip=document.getElementById("zip").value;
+let zip=document.getElementById("zip").value
 
-if(!zip){
-alert("Enter ZIP Code");
-return;
+if(zip===""){
+alert("Enter ZIP code")
+return
 }
 
-let response=await fetch(API+"/zip/"+zip);
-let data=await response.json();
+try{
 
-displayData(data);
-updateMap(data.latitude,data.longitude);
-loadWeather(data.latitude,data.longitude);
-loadNews(data.city);
-showElectionCountdown();
-showCivicNumbers();
-loadGovernment();
+let response=await fetch(API+"/zip/"+zip)
+
+let data=await response.json()
+
+showRepresentatives(data)
+
+updateMap(data.latitude,data.longitude)
+
+loadWeather(data.latitude,data.longitude)
+
+loadNews(data.city)
+
+showEmergency()
+
+}catch{
+alert("API request failed")
+}
 
 }
 
-function displayData(data){
+function showRepresentatives(data){
 
-let html="<h2>Your Representatives</h2>";
+let html="<div class='card'><h3>Your Representatives</h3>"
 
 data.senators.forEach(s=>{
+
 html+=`
 
-<div class="rep-card">
+<div class="rep">
 
-<div class="rep-name">${s}</div>
+<b>${s.name}</b><br>
 
-<p>US Senator</p>
+Phone: ${s.phone}<br>
 
-<div class="rep-buttons">
-<a href="https://www.senate.gov" target="_blank">Official Website</a>
+<a href="${s.website}" target="_blank">
+Official Website
+</a>
+
 </div>
 
-</div>
+`
 
-`;
-});
+})
 
 data.representatives.forEach(r=>{
+
 html+=`
 
-<div class="rep-card">
+<div class="rep">
 
-<div class="rep-name">${r}</div>
+<b>${r.name}</b><br>
 
-<p>US Representative</p>
+Phone: ${r.phone}<br>
 
-<div class="rep-buttons">
-<a href="https://www.house.gov" target="_blank">Official Website</a>
+<a href="${r.website}" target="_blank">
+Official Website
+</a>
+
 </div>
 
-</div>
+`
 
-`;
-});
+})
 
-document.getElementById("result").innerHTML=html;
+html+="</div>"
+
+document.getElementById("result").innerHTML=html
 
 }
 
 function updateMap(lat,lon){
 
 if(marker){
-map.removeLayer(marker);
+map.removeLayer(marker)
 }
 
-map.setView([lat,lon],10);
+map.setView([lat,lon],10)
 
-marker=L.marker([lat,lon]).addTo(map);
+marker=L.marker([lat,lon]).addTo(map)
 
 }
 
 function useLocation(){
 
-navigator.geolocation.getCurrentPosition(async function(position){
+navigator.geolocation.getCurrentPosition(async pos=>{
 
-let lat=position.coords.latitude;
-let lon=position.coords.longitude;
+let lat=pos.coords.latitude
+let lon=pos.coords.longitude
 
-let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+map.setView([lat,lon],10)
 
-let g=await geo.json();
+marker=L.marker([lat,lon]).addTo(map)
 
-document.getElementById("zip").value=g.postcode;
-
-searchZip();
-
-});
-
-}
-
-function whereAmI(){
-
-navigator.geolocation.getCurrentPosition(async function(pos){
-
-let lat=pos.coords.latitude;
-let lon=pos.coords.longitude;
-
-let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
-
-let data=await geo.json();
-
-document.getElementById("locationInfo").innerHTML=
-
-`<div class="card">
-
-<h3>Your Location</h3>
-
-City: ${data.city}<br>
-State: ${data.principalSubdivision}<br>
-Country: ${data.countryName}
-
-</div>`;
-
-});
+})
 
 }
 
 async function loadWeather(lat,lon){
 
-let res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+let res=await fetch(
+`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
+)
 
-let data=await res.json();
+let data=await res.json()
 
-let icon="☀️";
+let icon="☀️"
 
-if(data.current_weather.weathercode>50){
-icon="🌧";
-}
-else if(data.current_weather.weathercode>3){
-icon="☁️";
-}
+let temp=data.current_weather.temperature
 
 document.getElementById("weather").innerHTML=
 
@@ -329,29 +262,11 @@ document.getElementById("weather").innerHTML=
 
 <h3>Weather</h3>
 
-${icon}
+<div class="weather-icon">${icon}</div>
 
-Temperature: ${data.current_weather.temperature}°C<br>
-Wind Speed: ${data.current_weather.windspeed} km/h
+Temperature: ${temp}°C
 
-</div>`;
-
-}
-
-function showCivicNumbers(){
-
-document.getElementById("civicNumbers").innerHTML=
-
-`<div class="card">
-
-<h3>Important Civic Numbers</h3>
-
-🚨 Emergency: 911<br>
-🧠 Mental Health Crisis: 988<br>
-📞 Community Services: 211<br>
-🏙 City Services: 311
-
-</div>`;
+</div>`
 
 }
 
@@ -359,70 +274,37 @@ function loadNews(city){
 
 document.getElementById("news").innerHTML=
 
-`
+`<div class="card news">
 
-<div class="news-card">
+<h3>Local News</h3>
 
-<img src="https://source.unsplash.com/400x200/?city,news">
+<img src="https://source.unsplash.com/400x200/?city">
 
-<h4>Latest News in ${city}</h4>
+<br><br>
 
-<a target="_blank" href="https://news.google.com/search?q=${city}">Read Local News</a>
+<a target="_blank"
+href="https://news.google.com/search?q=${city}">
+View Latest News
+</a>
 
-</div>
-
-<div class="news-card">
-
-<img src="https://source.unsplash.com/400x200/?world,news">
-
-<h4>World News</h4>
-
-<a target="_blank" href="https://www.bbc.com/news">BBC World News</a>
-
-</div>
-
-`;
+</div>`
 
 }
 
-function showElectionCountdown(){
+function showEmergency(){
 
-let electionDate=new Date("Nov 5, 2026");
-let now=new Date();
-
-let diff=electionDate-now;
-
-let days=Math.floor(diff/(1000*60*60*24));
-
-document.getElementById("election").innerHTML=
+document.getElementById("emergency").innerHTML=
 
 `<div class="card">
 
-<h3>Election Countdown</h3>
+<h3>Emergency Numbers</h3>
 
-${days} days until the next US Federal Election
+911 — Emergency<br>
+988 — Mental Health Crisis<br>
+211 — Community Services<br>
+311 — City Services
 
-</div>`;
-
-}
-
-function loadGovernment(){
-
-document.getElementById("government").innerHTML=
-
-`<div class="card">
-
-<h3>Today in Your Government</h3>
-
-<ul>
-
-<li>Infrastructure funding debate</li>
-<li>Defense budget discussion</li>
-<li>Education reform proposal</li>
-
-</ul>
-
-</div>`;
+</div>`
 
 }
 
@@ -430,11 +312,7 @@ document.getElementById("government").innerHTML=
 
 <footer>
 
-<p>EagleReach Civic Intelligence Platform</p>
-
-<p>Promoting civic awareness and democratic participation.</p>
-
-<p>© 2026 EagleReach</p>
+EagleReach — Civic Intelligence Platform 🇺🇸
 
 </footer>
 
