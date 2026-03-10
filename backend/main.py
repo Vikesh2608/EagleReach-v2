@@ -1,79 +1,57 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import httpx
-import yaml
+import requests
 
 app = FastAPI()
 
-# Enable CORS so frontend can call the API
+OPENSTATES_API_KEY = "6d06c12b-ce82-4b3a-9163-2dbf400a3105"
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-LEGISLATORS_URL = "https://raw.githubusercontent.com/unitedstates/congress-legislators/gh-pages/legislators-current.yaml"
-
-
-async def get_legislators(state_code):
-
-    async with httpx.AsyncClient() as client:
-        r = await client.get(LEGISLATORS_URL)
-        legislators = yaml.safe_load(r.text)
-
-    senators = []
-    representatives = []
-
-    for person in legislators:
-
-        term = person["terms"][-1]
-
-        if term["state"] == state_code:
-
-            name = person["name"]["official_full"]
-
-            if term["type"] == "sen":
-                senators.append(name)
-
-            if term["type"] == "rep":
-                representatives.append(name)
-
-    return senators, representatives
-
-
 @app.get("/")
 def home():
-    return {"message": "EagleReach API running"}
+    return {"message":"EagleReach API Running"}
 
+@app.get("/zip/{zipcode}")
+def get_zip(zipcode:str):
 
-@app.get("/zip/{zip_code}")
-async def get_zip(zip_code: str):
+    geo = requests.get(f"https://api.zippopotam.us/us/{zipcode}")
 
-    async with httpx.AsyncClient() as client:
+    if geo.status_code != 200:
+        return {"error":"ZIP not found"}
 
-        r = await client.get(f"https://api.zippopotam.us/us/{zip_code}")
+    data = geo.json()
 
-        if r.status_code != 200:
-            return {"error": "ZIP code not found"}
+    city = data["places"][0]["place name"]
+    state = data["places"][0]["state abbreviation"]
 
-        data = r.json()
+    legislators = requests.get(
+        f"https://v3.openstates.org/people?jurisdiction=ocd-jurisdiction/country:us/state:{state.lower()}/government&apikey={OPENSTATES_API_KEY}"
+    )
 
-        city = data["places"][0]["place name"]
-        state = data["places"][0]["state"]
-        state_code = data["places"][0]["state abbreviation"]
-        latitude = data["places"][0]["latitude"]
-        longitude = data["places"][0]["longitude"]
+    results = legislators.json()
 
-        senators, reps = await get_legislators(state_code)
+    reps = []
 
-        return {
-            "zip": zip_code,
-            "city": city,
-            "state": state,
-            "latitude": latitude,
-            "longitude": longitude,
-            "senators": senators[:2],
-            "representatives": reps[:1]
-        }
+    for person in results["results"][:5]:
+
+        reps.append({
+            "name": person["name"],
+            "party": person.get("party", [{}])[0].get("name",""),
+            "image": person.get("image",""),
+            "links": person.get("links",[{}])[0].get("url","")
+        })
+
+    return {
+
+        "zip": zipcode,
+        "city": city,
+        "state": state,
+        "representatives": reps
+
+    }
