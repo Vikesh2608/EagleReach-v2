@@ -9,7 +9,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
@@ -34,7 +33,7 @@ font-weight:bold;
 }
 
 .container{
-margin-top:30px;
+margin-top:20px;
 }
 
 input{
@@ -79,11 +78,6 @@ font-size:20px;
 font-weight:bold;
 }
 
-.rep-party{
-color:#666;
-margin-bottom:10px;
-}
-
 .rep-buttons a{
 text-decoration:none;
 padding:8px 14px;
@@ -112,6 +106,13 @@ border-radius:8px;
 box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
+footer{
+margin-top:40px;
+padding:20px;
+background:#2f4a8a;
+color:white;
+}
+
 </style>
 
 </head>
@@ -119,16 +120,39 @@ box-shadow:0 4px 10px rgba(0,0,0,0.1);
 <body>
 
 <nav>
-
-<a href="index.html">Home</a> <a href="about.html">About</a> <a href="founder.html">Founder</a> <a href="vote.html">How To Vote</a> <a href="contact.html">Contact</a>
-
+<a href="index.html">Home</a>
+<a href="about.html">About</a>
+<a href="founder.html">Founder</a>
+<a href="vote.html">How To Vote</a>
+<a href="contact.html">Contact</a>
 </nav>
 
 <div class="container">
 
 <h1>EagleReach Civic Intelligence Platform</h1>
 
-<p>Discover your government, stay informed, and participate in democracy.</p>
+<h3>Empowering Citizens Through Civic Awareness</h3>
+
+<p style="width:700px;margin:auto">
+EagleReach helps citizens discover their elected representatives,
+understand government activity, and stay informed about elections,
+policies, and community updates.
+</p>
+
+<div class="card">
+
+<h3>Our Mission</h3>
+
+<p>
+“An informed citizen is the strongest pillar of a healthy democracy.
+EagleReach exists to empower people with the knowledge needed to
+understand their government, engage with their communities,
+and shape the future together.”
+</p>
+
+</div>
+
+<br>
 
 <input id="zip" placeholder="Enter ZIP code">
 
@@ -151,6 +175,16 @@ box-shadow:0 4px 10px rgba(0,0,0,0.1);
 <div class="chatbox">
 
 <h3>Ask EagleReach AI</h3>
+
+<p>You can ask questions like:</p>
+
+<ul style="text-align:left">
+<li>Who is my senator?</li>
+<li>Who is my representative?</li>
+<li>How do I register to vote?</li>
+<li>When is the next election?</li>
+<li>Why is voting important?</li>
+</ul>
 
 <input id="question" placeholder="Ask a civic question">
 
@@ -183,29 +217,15 @@ alert("Enter ZIP Code");
 return;
 }
 
-try{
-
 let response=await fetch(API+"/zip/"+zip);
-
 let data=await response.json();
 
 displayData(data);
-
 updateMap(data.latitude,data.longitude);
-
 loadWeather(data.latitude,data.longitude);
-
 loadNews(data.city);
-
 showElectionCountdown();
-
 loadGovernment();
-
-}catch{
-
-alert("API request failed");
-
-}
 
 }
 
@@ -214,43 +234,35 @@ function displayData(data){
 let html="<h2>Your Representatives</h2>";
 
 data.senators.forEach(s=>{
-
 html+=`
+
 <div class="rep-card">
 
 <div class="rep-name">${s}</div>
 
-<div class="rep-party">US Senator</div>
-
 <div class="rep-buttons">
-
 <a href="https://www.senate.gov" target="_blank">Official Website</a>
-
 </div>
 
 </div>
+
 `;
-
 });
 
 data.representatives.forEach(r=>{
-
 html+=`
+
 <div class="rep-card">
 
 <div class="rep-name">${r}</div>
 
-<div class="rep-party">US Representative</div>
-
 <div class="rep-buttons">
-
 <a href="https://www.house.gov" target="_blank">Official Website</a>
-
 </div>
 
 </div>
+
 `;
-
 });
 
 document.getElementById("result").innerHTML=html;
@@ -304,7 +316,7 @@ Wind Speed: ${data.current_weather.windspeed} km/h
 
 }
 
-async function loadNews(city){
+function loadNews(city){
 
 document.getElementById("news").innerHTML=
 
@@ -316,9 +328,9 @@ document.getElementById("news").innerHTML=
 
 <li><a target="_blank" href="https://news.google.com/search?q=${city}">Local News in ${city}</a></li>
 
-<li><a target="_blank" href="https://www.reuters.com">Reuters World News</a></li>
+<li><a target="_blank" href="https://www.reuters.com">Reuters</a></li>
 
-<li><a target="_blank" href="https://www.bbc.com/news">BBC World News</a></li>
+<li><a target="_blank" href="https://www.bbc.com/news">BBC</a></li>
 
 </ul>
 
@@ -329,7 +341,6 @@ document.getElementById("news").innerHTML=
 function showElectionCountdown(){
 
 let electionDate=new Date("Nov 5, 2026");
-
 let now=new Date();
 
 let diff=electionDate-now;
@@ -348,7 +359,7 @@ ${days} days until the next US Federal Election
 
 }
 
-async function loadGovernment(){
+function loadGovernment(){
 
 document.getElementById("government").innerHTML=
 
@@ -358,10 +369,8 @@ document.getElementById("government").innerHTML=
 
 <ul>
 
-<li>Infrastructure funding bill debate</li>
-
+<li>Infrastructure funding debate</li>
 <li>Defense budget discussion</li>
-
 <li>Education reform proposal</li>
 
 </ul>
@@ -377,15 +386,19 @@ let q=document.getElementById("question").value.toLowerCase();
 let answer="";
 
 if(q.includes("senator")){
-answer="Your US Senators are listed above.";
+answer="Your US Senators are shown above in the representatives section.";
 }
 
 else if(q.includes("vote")){
 answer="You can register to vote at vote.gov.";
 }
 
+else if(q.includes("representative")){
+answer="Your House Representative is shown above.";
+}
+
 else{
-answer="Ask about voting, senators, representatives or elections.";
+answer="I am the EagleReach civic assistant. Ask about voting, senators, representatives, or elections.";
 }
 
 document.getElementById("aiResponse").innerText=answer;
@@ -393,6 +406,16 @@ document.getElementById("aiResponse").innerText=answer;
 }
 
 </script>
+
+<footer>
+
+<p>EagleReach Civic Intelligence Platform</p>
+
+<p>Built to promote civic awareness and democratic participation.</p>
+
+<p>© 2026 EagleReach</p>
+
+</footer>
 
 </body>
 
