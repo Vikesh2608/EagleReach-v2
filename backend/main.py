@@ -4,8 +4,6 @@ import requests
 
 app = FastAPI()
 
-OPENSTATES_API_KEY = "6d06c12b-ce82-4b3a-9163-2dbf400a3105"
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,45 +11,67 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+CIVIC_DATA = {
+
+"KY":{
+
+"senators":[
+{
+"name":"Mitch McConnell",
+"party":"Republican",
+"phone":"202-224-2541",
+"website":"https://www.mcconnell.senate.gov"
+},
+{
+"name":"Rand Paul",
+"party":"Republican",
+"phone":"202-224-4343",
+"website":"https://www.paul.senate.gov"
+}
+],
+
+"representatives":[
+{
+"name":"Brett Guthrie",
+"party":"Republican",
+"phone":"202-225-3501",
+"website":"https://guthrie.house.gov"
+}
+]
+
+}
+
+}
+
 @app.get("/")
-def home():
-    return {"message":"EagleReach API Running"}
+def root():
+    return {"message":"EagleReach API running"}
 
 @app.get("/zip/{zipcode}")
-def get_zip(zipcode:str):
+def lookup(zipcode:str):
 
-    geo = requests.get(f"https://api.zippopotam.us/us/{zipcode}")
+    geo=requests.get(f"https://api.zippopotam.us/us/{zipcode}")
 
-    if geo.status_code != 200:
+    if geo.status_code!=200:
         return {"error":"ZIP not found"}
 
-    data = geo.json()
+    data=geo.json()
 
-    city = data["places"][0]["place name"]
-    state = data["places"][0]["state abbreviation"]
+    city=data["places"][0]["place name"]
+    state=data["places"][0]["state abbreviation"]
+    latitude=data["places"][0]["latitude"]
+    longitude=data["places"][0]["longitude"]
 
-    legislators = requests.get(
-        f"https://v3.openstates.org/people?jurisdiction=ocd-jurisdiction/country:us/state:{state.lower()}/government&apikey={OPENSTATES_API_KEY}"
-    )
+    civic=CIVIC_DATA.get(state,{"senators":[],"representatives":[]})
 
-    results = legislators.json()
+    return{
 
-    reps = []
-
-    for person in results["results"][:5]:
-
-        reps.append({
-            "name": person["name"],
-            "party": person.get("party", [{}])[0].get("name",""),
-            "image": person.get("image",""),
-            "links": person.get("links",[{}])[0].get("url","")
-        })
-
-    return {
-
-        "zip": zipcode,
-        "city": city,
-        "state": state,
-        "representatives": reps
+    "zip":zipcode,
+    "city":city,
+    "state":state,
+    "latitude":latitude,
+    "longitude":longitude,
+    "senators":civic["senators"],
+    "representatives":civic["representatives"]
 
     }
