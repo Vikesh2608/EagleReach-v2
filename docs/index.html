@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-
 <html>
-
 <head>
 
 <title>EagleReach Civic Information Platform</title>
@@ -9,53 +7,56 @@
 <style>
 
 body{
-font-family:Arial;
-background:#eef1f7;
-text-align:center;
+font-family: Arial;
+background:#f4f6fb;
 margin:0;
+text-align:center;
 }
 
-.navbar{
-background:#2f4a92;
+nav{
+background:#2f4a8a;
 padding:15px;
 }
 
-.navbar a{
+nav a{
 color:white;
-margin:0 15px;
+margin:0 20px;
 text-decoration:none;
 font-weight:bold;
 }
 
 .container{
-margin-top:60px;
+margin-top:50px;
 }
 
 input{
 padding:10px;
 width:220px;
-border-radius:5px;
-border:1px solid #ccc;
+font-size:16px;
 }
 
 button{
 padding:10px 15px;
-background:#3b6ce1;
+font-size:16px;
+background:#3c66d6;
 color:white;
 border:none;
-border-radius:5px;
+border-radius:4px;
 cursor:pointer;
 margin-left:5px;
 }
 
+button:hover{
+background:#2a4cb3;
+}
+
 .card{
-margin-top:25px;
-display:inline-block;
 background:white;
+width:420px;
+margin:30px auto;
 padding:25px;
-border-radius:10px;
-box-shadow:0px 3px 10px rgba(0,0,0,0.15);
-width:350px;
+border-radius:8px;
+box-shadow:0px 4px 10px rgba(0,0,0,0.1);
 }
 
 </style>
@@ -64,17 +65,18 @@ width:350px;
 
 <body>
 
-<div class="navbar">
-
-<a href="index.html">Home</a> <a href="about.html">About</a> <a href="founder.html">Founder</a> <a href="vote.html">How To Vote</a> <a href="contact.html">Contact</a>
-
-</div>
+<nav>
+<a href="index.html">Home</a>
+<a href="about.html">About</a>
+<a href="founder.html">Founder</a>
+<a href="vote.html">How To Vote</a>
+<a href="contact.html">Contact</a>
+</nav>
 
 <div class="container">
 
-<h2>EagleReach Civic Information Platform</h2>
-
-<p>Search by ZIP code</p>
+<h1>EagleReach Civic Information Platform</h1>
+<p>Search by ZIP code or use your location.</p>
 
 <input id="zip" placeholder="Enter ZIP code">
 
@@ -88,90 +90,102 @@ width:350px;
 
 <script>
 
-const API="https://eaglereach-v2.onrender.com"
+const API="https://eaglereach-v2.onrender.com";
 
 async function searchZip(){
 
-let zip=document.getElementById("zip").value
+let zip=document.getElementById("zip").value;
 
-if(zip.length!=5){
-alert("Enter valid ZIP code")
-return
+if(!zip){
+alert("Enter ZIP Code");
+return;
 }
 
 try{
 
-let response=await fetch(API+"/zip/"+zip)
+let response=await fetch(API+"/zip/"+zip);
 
-let data=await response.json()
+let data=await response.json();
 
-show(data)
+showResult(data);
 
-}catch(e){
+}catch(error){
 
-alert("Backend connection failed")
-
-}
+alert("API request failed");
 
 }
 
+}
 
+function showResult(data){
 
-function show(data){
+let time=new Date().toLocaleString();
 
-let time=new Date().toLocaleString()
+let senators=data.senators.map(s=>"<li>"+s+"</li>").join("");
 
-document.getElementById("result").innerHTML=
+let reps=data.representatives.map(r=>"<li>"+r+"</li>").join("");
 
-`
+document.getElementById("result").innerHTML=`
+
 <div class="card">
 
-<h3>${data.city}, ${data.state}</h3>
+<h2>${data.city}, ${data.state}</h2>
 
-ZIP: ${data.zip}<br><br>
+<p><b>ZIP Code:</b> ${data.zip}</p>
 
-Latitude: ${data.latitude}<br>
-Longitude: ${data.longitude}<br><br>
+<p><b>Current Time:</b> ${time}</p>
 
-<b>US Senators</b><br>
-${data.senators.join("<br>")}<br><br>
+<h3>US Senators</h3>
+<ul>${senators}</ul>
 
-<b>House Representative</b><br>
-${data.representatives.join("<br>")}<br><br>
+<h3>US Representative</h3>
+<ul>${reps}</ul>
 
-<b>Current Time</b><br>
-${time}<br><br>
+<h3>Voting Information</h3>
+<a href="https://vote.gov" target="_blank">Go to Vote.gov</a>
 
-<a href="https://vote.gov" target="_blank">Voting Information</a>
+<p style="margin-top:20px;">
+Voting in elections is an important civic duty.
+Stay informed and participate in your local and national elections.
+</p>
 
 </div>
-`
+
+`;
 
 }
-
-
 
 function useLocation(){
 
-navigator.geolocation.getCurrentPosition(async function(pos){
-
-let lat=pos.coords.latitude
-let lon=pos.coords.longitude
-
-let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
-
-let g=await geo.json()
-
-if(!g.postcode){
-alert("ZIP not detected")
-return
+if(!navigator.geolocation){
+alert("Geolocation not supported");
+return;
 }
 
-document.getElementById("zip").value=g.postcode
+navigator.geolocation.getCurrentPosition(async function(position){
 
-searchZip()
+let lat=position.coords.latitude;
+let lon=position.coords.longitude;
 
-})
+try{
+
+let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+
+let geoData=await geo.json();
+
+let zip=geoData.postcode;
+
+document.getElementById("zip").value=zip;
+
+searchZip();
+
+}catch{
+
+alert("Location lookup failed");
+
+}
+
+});
 
 }
 
