@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
-<title>EagleReach Civic Information Platform</title>
+<title>EagleReach Civic Platform</title>
 
 <style>
 
 body{
-font-family: Arial;
-background:#f4f6fb;
+font-family:Arial;
 margin:0;
+background:#f2f4f8;
 text-align:center;
 }
 
@@ -20,7 +21,7 @@ padding:15px;
 
 nav a{
 color:white;
-margin:0 20px;
+margin:0 15px;
 text-decoration:none;
 font-weight:bold;
 }
@@ -31,32 +32,36 @@ margin-top:50px;
 
 input{
 padding:10px;
-width:220px;
 font-size:16px;
+width:220px;
 }
 
 button{
-padding:10px 15px;
-font-size:16px;
-background:#3c66d6;
-color:white;
+padding:10px 16px;
+background:#3b6bd6;
 border:none;
+color:white;
 border-radius:4px;
 cursor:pointer;
 margin-left:5px;
 }
 
 button:hover{
-background:#2a4cb3;
+background:#284ea8;
 }
 
 .card{
 background:white;
-width:420px;
-margin:30px auto;
+width:450px;
+margin:25px auto;
 padding:25px;
 border-radius:8px;
-box-shadow:0px 4px 10px rgba(0,0,0,0.1);
+box-shadow:0px 4px 12px rgba(0,0,0,0.15);
+}
+
+.news{
+margin-top:20px;
+text-align:left;
 }
 
 </style>
@@ -66,17 +71,20 @@ box-shadow:0px 4px 10px rgba(0,0,0,0.1);
 <body>
 
 <nav>
+
 <a href="index.html">Home</a>
 <a href="about.html">About</a>
 <a href="founder.html">Founder</a>
 <a href="vote.html">How To Vote</a>
 <a href="contact.html">Contact</a>
+
 </nav>
 
 <div class="container">
 
 <h1>EagleReach Civic Information Platform</h1>
-<p>Search by ZIP code or use your location.</p>
+
+<p>Search by ZIP code or detect your location.</p>
 
 <input id="zip" placeholder="Enter ZIP code">
 
@@ -97,7 +105,7 @@ async function searchZip(){
 let zip=document.getElementById("zip").value;
 
 if(!zip){
-alert("Enter ZIP Code");
+alert("Enter ZIP code");
 return;
 }
 
@@ -107,9 +115,9 @@ let response=await fetch(API+"/zip/"+zip);
 
 let data=await response.json();
 
-showResult(data);
+displayData(data);
 
-}catch(error){
+}catch{
 
 alert("API request failed");
 
@@ -117,13 +125,21 @@ alert("API request failed");
 
 }
 
-function showResult(data){
+function displayData(data){
 
 let time=new Date().toLocaleString();
 
-let senators=data.senators.map(s=>"<li>"+s+"</li>").join("");
+let senatorsHTML="";
 
-let reps=data.representatives.map(r=>"<li>"+r+"</li>").join("");
+data.senators.forEach(s=>{
+senatorsHTML+=`<li>${s}</li>`;
+});
+
+let repsHTML="";
+
+data.representatives.forEach(r=>{
+repsHTML+=`<li>${r}</li>`;
+});
 
 document.getElementById("result").innerHTML=`
 
@@ -136,17 +152,57 @@ document.getElementById("result").innerHTML=`
 <p><b>Current Time:</b> ${time}</p>
 
 <h3>US Senators</h3>
-<ul>${senators}</ul>
+
+<ul>
+<li>Mitch McConnell — Phone: (202) 224-2541 — <a target="_blank" href="https://www.mcconnell.senate.gov">Website</a></li>
+<li>Rand Paul — Phone: (202) 224-4343 — <a target="_blank" href="https://www.paul.senate.gov">Website</a></li>
+</ul>
 
 <h3>US Representative</h3>
-<ul>${reps}</ul>
+
+<ul>
+${repsHTML}
+</ul>
+
+<h3>Mayor</h3>
+
+<p>Local mayor information coming soon.</p>
 
 <h3>Voting Information</h3>
+
 <a href="https://vote.gov" target="_blank">Go to Vote.gov</a>
 
-<p style="margin-top:20px;">
-Voting in elections is an important civic duty.
-Stay informed and participate in your local and national elections.
+<p style="margin-top:15px;">
+Voting in elections is an important civic duty.  
+Stay informed and participate in local and national elections.
+</p>
+
+</div>
+
+<div class="card news">
+
+<h3>Local News</h3>
+
+<ul>
+<li><a target="_blank" href="https://www.cincinnati.com">Cincinnati Local News</a></li>
+<li><a target="_blank" href="https://www.wlwt.com">WLWT Local News</a></li>
+<li><a target="_blank" href="https://www.local12.com">Local12 News</a></li>
+</ul>
+
+<h3>World News</h3>
+
+<ul>
+<li><a target="_blank" href="https://www.bbc.com/news">BBC World News</a></li>
+<li><a target="_blank" href="https://www.reuters.com/world">Reuters World News</a></li>
+<li><a target="_blank" href="https://www.aljazeera.com">Al Jazeera</a></li>
+</ul>
+
+<h3>Election Reminders</h3>
+
+<p>
+US Election Day: <b>November 5</b>  
+Check your registration and polling location at  
+<a target="_blank" href="https://vote.gov">Vote.gov</a>
 </p>
 
 </div>
@@ -158,13 +214,17 @@ Stay informed and participate in your local and national elections.
 function useLocation(){
 
 if(!navigator.geolocation){
+
 alert("Geolocation not supported");
+
 return;
+
 }
 
 navigator.geolocation.getCurrentPosition(async function(position){
 
 let lat=position.coords.latitude;
+
 let lon=position.coords.longitude;
 
 try{
@@ -192,4 +252,5 @@ alert("Location lookup failed");
 </script>
 
 </body>
+
 </html>
