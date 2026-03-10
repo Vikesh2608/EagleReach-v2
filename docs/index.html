@@ -95,15 +95,22 @@ margin:20px auto;
 padding:20px;
 border-radius:8px;
 box-shadow:0 4px 10px rgba(0,0,0,0.1);
+text-align:left;
 }
 
-.chatbox{
-width:420px;
-margin:20px auto;
+.news-card{
 background:white;
-padding:20px;
+width:420px;
+margin:15px auto;
+padding:15px;
 border-radius:8px;
 box-shadow:0 4px 10px rgba(0,0,0,0.1);
+text-align:left;
+}
+
+.news-card img{
+width:100%;
+border-radius:6px;
 }
 
 footer{
@@ -131,26 +138,13 @@ color:white;
 
 <h1>EagleReach Civic Intelligence Platform</h1>
 
-<h3>Empowering Citizens Through Civic Awareness</h3>
+<h3>Your Civic Dashboard</h3>
 
 <p style="width:700px;margin:auto">
-EagleReach helps citizens discover their elected representatives,
-understand government activity, and stay informed about elections,
-policies, and community updates.
+
+Know your government. Stay informed. Participate in democracy.
+
 </p>
-
-<div class="card">
-
-<h3>Our Mission</h3>
-
-<p>
-“An informed citizen is the strongest pillar of a healthy democracy.
-EagleReach exists to empower people with the knowledge needed to
-understand their government, engage with their communities,
-and shape the future together.”
-</p>
-
-</div>
 
 <br>
 
@@ -160,39 +154,23 @@ and shape the future together.”
 
 <button onclick="useLocation()">Use My Location</button>
 
+<button onclick="whereAmI()">Where Am I</button>
+
+<div id="locationInfo"></div>
+
 <div id="map"></div>
 
 <div id="result"></div>
 
 <div id="weather"></div>
 
+<div id="civicNumbers"></div>
+
 <div id="news"></div>
 
 <div id="election"></div>
 
 <div id="government"></div>
-
-<div class="chatbox">
-
-<h3>Ask EagleReach AI</h3>
-
-<p>You can ask questions like:</p>
-
-<ul style="text-align:left">
-<li>Who is my senator?</li>
-<li>Who is my representative?</li>
-<li>How do I register to vote?</li>
-<li>When is the next election?</li>
-<li>Why is voting important?</li>
-</ul>
-
-<input id="question" placeholder="Ask a civic question">
-
-<button onclick="askAI()">Ask</button>
-
-<p id="aiResponse"></p>
-
-</div>
 
 </div>
 
@@ -226,6 +204,7 @@ loadWeather(data.latitude,data.longitude);
 loadNews(data.city);
 showElectionCountdown();
 loadGovernment();
+showCivicNumbers();
 
 }
 
@@ -240,8 +219,12 @@ html+=`
 
 <div class="rep-name">${s}</div>
 
+<p>US Senator</p>
+
 <div class="rep-buttons">
+
 <a href="https://www.senate.gov" target="_blank">Official Website</a>
+
 </div>
 
 </div>
@@ -256,8 +239,12 @@ html+=`
 
 <div class="rep-name">${r}</div>
 
+<p>US Representative</p>
+
 <div class="rep-buttons">
+
 <a href="https://www.house.gov" target="_blank">Official Website</a>
+
 </div>
 
 </div>
@@ -300,18 +287,76 @@ searchZip();
 
 }
 
+function whereAmI(){
+
+navigator.geolocation.getCurrentPosition(async function(pos){
+
+let lat=pos.coords.latitude;
+let lon=pos.coords.longitude;
+
+let geo=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+
+let data=await geo.json();
+
+document.getElementById("locationInfo").innerHTML=
+
+`<div class="card">
+
+<h3>Your Location</h3>
+
+City: ${data.city}<br>
+State: ${data.principalSubdivision}<br>
+Country: ${data.countryName}
+
+</div>`;
+
+});
+
+}
+
 async function loadWeather(lat,lon){
 
 let res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
 
 let data=await res.json();
 
+let icon="☀️";
+
+if(data.current_weather.weathercode>50){
+icon="🌧";
+}
+else if(data.current_weather.weathercode>3){
+icon="☁️";
+}
+
 document.getElementById("weather").innerHTML=
 
 `<div class="card">
+
 <h3>Weather</h3>
+
+${icon}
+
 Temperature: ${data.current_weather.temperature}°C<br>
 Wind Speed: ${data.current_weather.windspeed} km/h
+
+</div>`;
+
+}
+
+function showCivicNumbers(){
+
+document.getElementById("civicNumbers").innerHTML=
+
+`<div class="card">
+
+<h3>Important Civic Numbers</h3>
+
+🚨 Emergency: 911<br>
+🧠 Mental Health Crisis: 988<br>
+📞 Community Services: 211<br>
+🏙 City Services: 311
+
 </div>`;
 
 }
@@ -320,21 +365,29 @@ function loadNews(city){
 
 document.getElementById("news").innerHTML=
 
-`<div class="card">
+`
 
-<h3>News</h3>
+<div class="news-card">
 
-<ul>
+<img src="https://source.unsplash.com/400x200/?city,news">
 
-<li><a target="_blank" href="https://news.google.com/search?q=${city}">Local News in ${city}</a></li>
+<h4>Latest News in ${city}</h4>
 
-<li><a target="_blank" href="https://www.reuters.com">Reuters</a></li>
+<a target="_blank" href="https://news.google.com/search?q=${city}">Read Local News</a>
 
-<li><a target="_blank" href="https://www.bbc.com/news">BBC</a></li>
+</div>
 
-</ul>
+<div class="news-card">
 
-</div>`;
+<img src="https://source.unsplash.com/400x200/?world,news">
+
+<h4>World News</h4>
+
+<a target="_blank" href="https://www.bbc.com/news">BBC World News</a>
+
+</div>
+
+`;
 
 }
 
@@ -379,39 +432,13 @@ document.getElementById("government").innerHTML=
 
 }
 
-function askAI(){
-
-let q=document.getElementById("question").value.toLowerCase();
-
-let answer="";
-
-if(q.includes("senator")){
-answer="Your US Senators are shown above in the representatives section.";
-}
-
-else if(q.includes("vote")){
-answer="You can register to vote at vote.gov.";
-}
-
-else if(q.includes("representative")){
-answer="Your House Representative is shown above.";
-}
-
-else{
-answer="I am the EagleReach civic assistant. Ask about voting, senators, representatives, or elections.";
-}
-
-document.getElementById("aiResponse").innerText=answer;
-
-}
-
 </script>
 
 <footer>
 
 <p>EagleReach Civic Intelligence Platform</p>
 
-<p>Built to promote civic awareness and democratic participation.</p>
+<p>Promoting civic awareness and democratic participation.</p>
 
 <p>© 2026 EagleReach</p>
 
