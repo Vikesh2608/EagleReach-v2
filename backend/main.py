@@ -24,71 +24,70 @@ def home():
 @app.get("/zip/{zip_code}")
 def get_zip_data(zip_code: str):
 
-    # STEP 1 — Convert ZIP to city/state
-    geo = requests.get(f"https://api.zippopotam.us/us/{zip_code}")
+    try:
 
-    if geo.status_code != 200:
-        return {"error": "Invalid ZIP"}
+        # STEP 1 — Convert ZIP → City/State
+        geo = requests.get(f"https://api.zippopotam.us/us/{zip_code}")
 
-    geo_data = geo.json()
+        if geo.status_code != 200:
+            return {"error": "Invalid ZIP"}
 
-    city = geo_data["places"][0]["place name"]
-    state = geo_data["places"][0]["state abbreviation"]
-    latitude = geo_data["places"][0]["latitude"]
-    longitude = geo_data["places"][0]["longitude"]
+        geo_data = geo.json()
 
-    # STEP 2 — Build full address
-    address = f"{city},{state}"
+        city = geo_data["places"][0]["place name"]
+        state = geo_data["places"][0]["state abbreviation"]
+        latitude = geo_data["places"][0]["latitude"]
+        longitude = geo_data["places"][0]["longitude"]
 
-    civic_url = (
-        f"https://www.googleapis.com/civicinfo/v2/representatives"
-        f"?address={address}&key={API_KEY}"
-    )
+        # STEP 2 — Build full address
+        address = f"{city}, {state} {zip_code}"
 
-    civic = requests.get(civic_url)
+        # STEP 3 — Query Google Civic API
+        civic_url = (
+            "https://www.googleapis.com/civicinfo/v2/representatives"
+            f"?address={address}&levels=country&roles=legislatorUpperBody&roles=legislatorLowerBody&key={API_KEY}"
+        )
 
-    civic_data = civic.json()
+        civic = requests.get(civic_url)
+        civic_data = civic.json()
 
-    senators = []
-    representatives = []
+        senators = []
+        representatives = []
 
-    offices = civic_data.get("offices", [])
-    officials = civic_data.get("officials", [])
+        officials = civic_data.get("officials", [])
 
-    for office in offices:
+        for person in officials:
 
-        if "United States Senate" in office["name"]:
+            office_name = person.get("office", "")
 
-            for index in office["officialIndices"]:
+            entry = {
+                "name": person.get("name", ""),
+                "party": person.get("party", ""),
+                "phone": person.get("phones", ["N/A"])[0],
+                "website": person.get("urls", [""])[0]
+            }
 
-                person = officials[index]
+            if "Senate" in office_name:
+                senators.append(entry)
 
-                senators.append({
-                    "name": person.get("name", ""),
-                    "party": person.get("party", ""),
-                    "phone": person.get("phones", ["N/A"])[0],
-                    "website": person.get("urls", [""])[0]
-                })
+            else:
+                representatives.append(entry)
 
-        if "United States House of Representatives" in office["name"]:
+        return {
+            "zip": zip_code,
+            "city": city,
+            "state": state,
+            "latitude": latitude,
+            "longitude": longitude,
+            "senators": senators,
+            "representatives": representatives
+        }
 
-            for index in office["officialIndices"]:
+    except Exception as e:
 
-                person = officials[index]
-
-                representatives.append({
-                    "name": person.get("name", ""),
-                    "party": person.get("party", ""),
-                    "phone": person.get("phones", ["N/A"])[0],
-                    "website": person.get("urls", [""])[0]
-                })
-
-    return {
-        "zip": zip_code,
-        "city": city,
-        "state": state,
-        "latitude": latitude,
-        "longitude": longitude,
-        "senators": senators,
-        "representatives": representatives
-    }
+        return {
+            "error": str(e),
+            "zip": zip_code,
+            "senators": [],
+            "representatives": []
+        }
