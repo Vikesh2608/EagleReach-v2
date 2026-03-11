@@ -1,77 +1,84 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 import requests
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Google Civic API Key
 
-CIVIC_DATA = {
-
-"KY":{
-
-"senators":[
-{
-"name":"Mitch McConnell",
-"party":"Republican",
-"phone":"202-224-2541",
-"website":"https://www.mcconnell.senate.gov"
-},
-{
-"name":"Rand Paul",
-"party":"Republican",
-"phone":"202-224-4343",
-"website":"https://www.paul.senate.gov"
-}
-],
-
-"representatives":[
-{
-"name":"Brett Guthrie",
-"party":"Republican",
-"phone":"202-225-3501",
-"website":"https://guthrie.house.gov"
-}
-]
-
-}
-
-}
+GOOGLE_API_KEY = "AIzaSyBl0fzmbj2TB-i7ZWMI2ePtt8rTHR-LChM"
 
 @app.get("/")
-def root():
-    return {"message":"EagleReach API running"}
+def home():
+return {"message": "EagleReach API is running"}
 
 @app.get("/zip/{zipcode}")
-def lookup(zipcode:str):
+def get_zip_info(zipcode: str):
 
-    geo=requests.get(f"https://api.zippopotam.us/us/{zipcode}")
+```
+# Step 1: Get ZIP location information  
+zip_url = f"https://api.zippopotam.us/us/{zipcode}"  
+zip_response = requests.get(zip_url)  
 
-    if geo.status_code!=200:
-        return {"error":"ZIP not found"}
+if zip_response.status_code != 200:  
+    return {"error": "ZIP code not found"}  
 
-    data=geo.json()
+zip_data = zip_response.json()  
 
-    city=data["places"][0]["place name"]
-    state=data["places"][0]["state abbreviation"]
-    latitude=data["places"][0]["latitude"]
-    longitude=data["places"][0]["longitude"]
+city = zip_data["places"][0]["place name"]  
+state = zip_data["places"][0]["state abbreviation"]  
+latitude = zip_data["places"][0]["latitude"]  
+longitude = zip_data["places"][0]["longitude"]  
 
-    civic=CIVIC_DATA.get(state,{"senators":[],"representatives":[]})
 
-    return{
+# Step 2: Get representatives from Google Civic API  
+civic_url = f"https://www.googleapis.com/civicinfo/v2/representatives?address={zipcode}&key={GOOGLE_API_KEY}"  
+civic_data = requests.get(civic_url).json()  
 
-    "zip":zipcode,
-    "city":city,
-    "state":state,
-    "latitude":latitude,
-    "longitude":longitude,
-    "senators":civic["senators"],
-    "representatives":civic["representatives"]
+senators = []  
+representatives = []  
 
-    }
+
+if "offices" in civic_data:  
+
+    for office in civic_data["offices"]:  
+
+        # US Senators  
+        if "United States Senate" in office["name"]:  
+
+            for index in office["officialIndices"]:  
+
+                official = civic_data["officials"][index]  
+
+                senators.append({  
+                    "name": official.get("name"),  
+                    "party": official.get("party"),  
+                    "phone": official.get("phones", ["N/A"])[0],  
+                    "website": official.get("urls", [""])[0]  
+                })  
+
+
+        # US Representatives  
+        if "United States House" in office["name"]:  
+
+            for index in office["officialIndices"]:  
+
+                official = civic_data["officials"][index]  
+
+                representatives.append({  
+                    "name": official.get("name"),  
+                    "party": official.get("party"),  
+                    "phone": official.get("phones", ["N/A"])[0],  
+                    "website": official.get("urls", [""])[0]  
+                })  
+
+
+return {  
+    "zip": zipcode,  
+    "city": city,  
+    "state": state,  
+    "latitude": latitude,  
+    "longitude": longitude,  
+    "senators": senators,  
+    "representatives": representatives  
+}  
+```
