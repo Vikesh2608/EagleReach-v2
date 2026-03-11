@@ -24,11 +24,11 @@ def home():
 @app.get("/zip/{zip_code}")
 def get_zip_data(zip_code: str):
 
-    # STEP 1 — Get city/state from ZIP
+    # STEP 1 — Convert ZIP to city/state
     geo = requests.get(f"https://api.zippopotam.us/us/{zip_code}")
 
     if geo.status_code != 200:
-        return {"error": "Invalid ZIP code"}
+        return {"error": "Invalid ZIP"}
 
     geo_data = geo.json()
 
@@ -37,8 +37,8 @@ def get_zip_data(zip_code: str):
     latitude = geo_data["places"][0]["latitude"]
     longitude = geo_data["places"][0]["longitude"]
 
-    # STEP 2 — Query Google Civic API
-    address = f"{zip_code}"
+    # STEP 2 — Build full address
+    address = f"{city},{state}"
 
     civic_url = (
         f"https://www.googleapis.com/civicinfo/v2/representatives"
@@ -57,8 +57,10 @@ def get_zip_data(zip_code: str):
 
     for office in offices:
 
-        if "Senate" in office["name"]:
+        if "United States Senate" in office["name"]:
+
             for index in office["officialIndices"]:
+
                 person = officials[index]
 
                 senators.append({
@@ -68,8 +70,10 @@ def get_zip_data(zip_code: str):
                     "website": person.get("urls", [""])[0]
                 })
 
-        if "House of Representatives" in office["name"]:
+        if "United States House of Representatives" in office["name"]:
+
             for index in office["officialIndices"]:
+
                 person = officials[index]
 
                 representatives.append({
