@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <meta charset="UTF-8">
 <title>EagleReach Civic Intelligence Platform</title>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -38,7 +38,7 @@ padding:20px;
 
 input{
 padding:10px;
-width:200px;
+width:220px;
 }
 
 button{
@@ -47,6 +47,7 @@ background:#3f66d3;
 color:white;
 border:none;
 cursor:pointer;
+margin-left:5px;
 }
 
 .card{
@@ -63,7 +64,14 @@ margin-top:20px;
 }
 
 .rep{
-margin-top:10px;
+margin-top:15px;
+padding:10px;
+border-bottom:1px solid #ddd;
+}
+
+.rep a{
+color:#35559c;
+text-decoration:none;
 }
 
 @media(max-width:768px){
@@ -147,26 +155,16 @@ loadZip(zip)
 
 async function useLocation(){
 
-navigator.geolocation.getCurrentPosition(async pos=>{
-
-let lat=pos.coords.latitude
-let lon=pos.coords.longitude
-
-let geo=await fetch(`https://api.zippopotam.us/us/${lat},${lon}`).catch(()=>null)
-
-if(!geo){
-alert("Location detected but ZIP lookup not available")
-return
-}
-
-})
-
 navigator.geolocation.getCurrentPosition(async position=>{
 
 let lat=position.coords.latitude
 let lon=position.coords.longitude
 
-loadLatLon(lat,lon)
+map.setView([lat,lon],11)
+
+L.marker([lat,lon]).addTo(map)
+
+loadWeather(lat,lon)
 
 })
 
@@ -189,16 +187,6 @@ alert("API request failed")
 
 }
 
-async function loadLatLon(lat,lon){
-
-map.setView([lat,lon],11)
-
-L.marker([lat,lon]).addTo(map)
-
-loadWeather(lat,lon)
-
-}
-
 function render(data){
 
 const lat=data.latitude
@@ -211,18 +199,36 @@ L.marker([lat,lon]).addTo(map)
 let reps=""
 
 data.senators.forEach(s=>{
-reps+=`<div class="rep"><b>Senator:</b> ${s}</div>`
+
+reps+=`
+<div class="rep">
+<b>Senator:</b> ${s.name}<br>
+Party: ${s.party}<br>
+Phone: ${s.phone}<br>
+<a href="${s.website}" target="_blank">Official Website</a>
+</div>
+`
+
 })
 
 data.representatives.forEach(r=>{
-reps+=`<div class="rep"><b>Representative:</b> ${r}</div>`
+
+reps+=`
+<div class="rep">
+<b>Representative:</b> ${r.name}<br>
+Party: ${r.party}<br>
+Phone: ${r.phone}<br>
+<a href="${r.website}" target="_blank">Official Website</a>
+</div>
+`
+
 })
 
 document.getElementById("result").innerHTML=`
 
 <h2>${data.city}, ${data.state}</h2>
 
-<p>ZIP Code: ${data.zip}</p>
+<p><b>ZIP Code:</b> ${data.zip}</p>
 
 <h3>Your Representatives</h3>
 
