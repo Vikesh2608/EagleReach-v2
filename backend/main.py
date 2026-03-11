@@ -1,84 +1,99 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import requests
 
 app = FastAPI()
 
-# Google Civic API Key
+# Allow frontend to access API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-GOOGLE_API_KEY = "AIzaSyBl0fzmbj2TB-i7ZWMI2ePtt8rTHR-LChM"
+# Google Civic API key
+API_KEY = "AIzaSyBl0fzmbj2TB-i7ZWMI2ePtt8rTHR-LChM"
+
 
 @app.get("/")
 def home():
-return {"message": "EagleReach API is running"}
-
-@app.get("/zip/{zipcode}")
-def get_zip_info(zipcode: str):
-
-```
-# Step 1: Get ZIP location information  
-zip_url = f"https://api.zippopotam.us/us/{zipcode}"  
-zip_response = requests.get(zip_url)  
-
-if zip_response.status_code != 200:  
-    return {"error": "ZIP code not found"}  
-
-zip_data = zip_response.json()  
-
-city = zip_data["places"][0]["place name"]  
-state = zip_data["places"][0]["state abbreviation"]  
-latitude = zip_data["places"][0]["latitude"]  
-longitude = zip_data["places"][0]["longitude"]  
+    return {"message": "EagleReach API is running"}
 
 
-# Step 2: Get representatives from Google Civic API  
-civic_url = f"https://www.googleapis.com/civicinfo/v2/representatives?address={zipcode}&key={GOOGLE_API_KEY}"  
-civic_data = requests.get(civic_url).json()  
+@app.get("/zip/{zip_code}")
+def get_zip_info(zip_code: str):
 
-senators = []  
-representatives = []  
+    try:
 
+        # Convert ZIP → City, State
+        geo = requests.get(f"https://api.zippopotam.us/us/{zip_code}")
+        geo_data = geo.json()
 
-if "offices" in civic_data:  
+        city = geo_data["places"][0]["place name"]
+        state = geo_data["places"][0]["state abbreviation"]
+        latitude = geo_data["places"][0]["latitude"]
+        longitude = geo_data["places"][0]["longitude"]
 
-    for office in civic_data["offices"]:  
+        # Use full address for better Civic API accuracy
+        address = f"{city},{state},{zip_code}"
 
-        # US Senators  
-        if "United States Senate" in office["name"]:  
+        civic_url = (
+            "https://www.googleapis.com/civicinfo/v2/representatives"
+            f"?address={address}&key={API_KEY}"
+        )
 
-            for index in office["officialIndices"]:  
+        civic = requests.get(civic_url)
+        civic_data = civic.json()
 
-                official = civic_data["officials"][index]  
+        senators = []
+        representatives = []
 
-                senators.append({  
-                    "name": official.get("name"),  
-                    "party": official.get("party"),  
-                    "phone": official.get("phones", ["N/A"])[0],  
-                    "website": official.get("urls", [""])[0]  
-                })  
+        offices = civic_data.get("offices", [])
+        officials = civic_data.get("officials", [])
 
+        for office in offices:
 
-        # US Representatives  
-        if "United States House" in office["name"]:  
+            # Senators
+            if "Senate" in office["name"]:
+                for index in office["officialIndices"]:
+                    person = officials[index]
 
-            for index in office["officialIndices"]:  
+                    senators.append({
+                        "name": person.get("name", ""),
+                        "party": person.get("party", "Unknown"),
+                        "phone": person.get("phones", ["N/A"])[0],
+                        "website": person.get("urls", [""])[0]
+                    })
 
-                official = civic_data["officials"][index]  
+            # Representatives
+            if "House of Representatives" in office["name"]:
+                for index in office["officialIndices"]:
+                    person = officials[index]
 
-                representatives.append({  
-                    "name": official.get("name"),  
-                    "party": official.get("party"),  
-                    "phone": official.get("phones", ["N/A"])[0],  
-                    "website": official.get("urls", [""])[0]  
-                })  
+                    representatives.append({
+                        "name": person.get("name", ""),
+                        "party": person.get("party", "Unknown"),
+                        "phone": person.get("phones", ["N/A"])[0],
+                        "website": person.get("urls", [""])[0]
+                    })
 
+        return {
+            "zip": zip_code,
+            "city": city,
+            "state": state,
+            "latitude": latitude,
+            "longitude": longitude,
+            "senators": senators,
+            "representatives": representatives
+        }
 
-return {  
-    "zip": zipcode,  
-    "city": city,  
-    "state": state,  
-    "latitude": latitude,  
-    "longitude": longitude,  
-    "senators": senators,  
-    "representatives": representatives  
-}  
-```
+    except Exception as e:
+
+        return {
+            "error": str(e),
+            "zip": zip_code,
+            "senators": [],
+            "representatives": []
+        }
