@@ -75,7 +75,8 @@ def lookup_zip(zip_code: str):
     lat = geo_data["places"][0]["latitude"]
     lon = geo_data["places"][0]["longitude"]
 
-    address = f"{zip_code}"
+    # IMPORTANT FIX
+    address = f"{zip_code}, {state}"
 
     senators, representatives = get_representatives(address)
 
