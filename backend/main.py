@@ -4,7 +4,7 @@ import requests
 
 app = FastAPI()
 
-# Allow frontend to access API
+# Allow frontend access
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,87 +13,78 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Google Civic API key
 API_KEY = "AIzaSyBl0fzmbj2TB-i7ZWMI2ePtt8rTHR-LChM"
 
 
 @app.get("/")
 def home():
-    return {"message": "EagleReach API is running"}
+    return {"message": "EagleReach API running"}
 
 
 @app.get("/zip/{zip_code}")
-def get_zip_info(zip_code: str):
+def get_zip_data(zip_code: str):
 
-    try:
+    # STEP 1 — Get city/state from ZIP
+    geo = requests.get(f"https://api.zippopotam.us/us/{zip_code}")
 
-        # Convert ZIP → City, State
-        geo = requests.get(f"https://api.zippopotam.us/us/{zip_code}")
-        geo_data = geo.json()
+    if geo.status_code != 200:
+        return {"error": "Invalid ZIP code"}
 
-        city = geo_data["places"][0]["place name"]
-        state = geo_data["places"][0]["state abbreviation"]
-        latitude = geo_data["places"][0]["latitude"]
-        longitude = geo_data["places"][0]["longitude"]
+    geo_data = geo.json()
 
-        # Use full address for better Civic API accuracy
-        address = f"{city},{state},{zip_code}"
+    city = geo_data["places"][0]["place name"]
+    state = geo_data["places"][0]["state abbreviation"]
+    latitude = geo_data["places"][0]["latitude"]
+    longitude = geo_data["places"][0]["longitude"]
 
-        civic_url = (
-            "https://www.googleapis.com/civicinfo/v2/representatives"
-            f"?address={address}&key={API_KEY}"
-        )
+    # STEP 2 — Query Google Civic API
+    address = f"{zip_code}"
 
-        civic = requests.get(civic_url)
-        civic_data = civic.json()
+    civic_url = (
+        f"https://www.googleapis.com/civicinfo/v2/representatives"
+        f"?address={address}&key={API_KEY}"
+    )
 
-        senators = []
-        representatives = []
+    civic = requests.get(civic_url)
 
-        offices = civic_data.get("offices", [])
-        officials = civic_data.get("officials", [])
+    civic_data = civic.json()
 
-        for office in offices:
+    senators = []
+    representatives = []
 
-            # Senators
-            if "Senate" in office["name"]:
-                for index in office["officialIndices"]:
-                    person = officials[index]
+    offices = civic_data.get("offices", [])
+    officials = civic_data.get("officials", [])
 
-                    senators.append({
-                        "name": person.get("name", ""),
-                        "party": person.get("party", "Unknown"),
-                        "phone": person.get("phones", ["N/A"])[0],
-                        "website": person.get("urls", [""])[0]
-                    })
+    for office in offices:
 
-            # Representatives
-            if "House of Representatives" in office["name"]:
-                for index in office["officialIndices"]:
-                    person = officials[index]
+        if "Senate" in office["name"]:
+            for index in office["officialIndices"]:
+                person = officials[index]
 
-                    representatives.append({
-                        "name": person.get("name", ""),
-                        "party": person.get("party", "Unknown"),
-                        "phone": person.get("phones", ["N/A"])[0],
-                        "website": person.get("urls", [""])[0]
-                    })
+                senators.append({
+                    "name": person.get("name", ""),
+                    "party": person.get("party", ""),
+                    "phone": person.get("phones", ["N/A"])[0],
+                    "website": person.get("urls", [""])[0]
+                })
 
-        return {
-            "zip": zip_code,
-            "city": city,
-            "state": state,
-            "latitude": latitude,
-            "longitude": longitude,
-            "senators": senators,
-            "representatives": representatives
-        }
+        if "House of Representatives" in office["name"]:
+            for index in office["officialIndices"]:
+                person = officials[index]
 
-    except Exception as e:
+                representatives.append({
+                    "name": person.get("name", ""),
+                    "party": person.get("party", ""),
+                    "phone": person.get("phones", ["N/A"])[0],
+                    "website": person.get("urls", [""])[0]
+                })
 
-        return {
-            "error": str(e),
-            "zip": zip_code,
-            "senators": [],
-            "representatives": []
-        }
+    return {
+        "zip": zip_code,
+        "city": city,
+        "state": state,
+        "latitude": latitude,
+        "longitude": longitude,
+        "senators": senators,
+        "representatives": representatives
+    }
