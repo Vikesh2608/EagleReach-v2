@@ -1,15 +1,12 @@
 <!DOCTYPE html>
-<html>
 
+<html>
 <head>
 
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>EagleReach Civic Intelligence Platform</title>
-
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
 
@@ -17,7 +14,6 @@ body{
 font-family:Arial;
 margin:0;
 background:#f4f6f9;
-text-align:center;
 }
 
 nav{
@@ -25,7 +21,7 @@ background:#35559c;
 padding:15px;
 display:flex;
 justify-content:center;
-gap:30px;
+gap:40px;
 }
 
 nav a{
@@ -38,17 +34,18 @@ cursor:pointer;
 .container{
 width:90%;
 margin:auto;
+text-align:center;
 padding:20px;
 }
 
 input{
 padding:10px;
-width:200px;
+width:220px;
 }
 
 button{
-padding:10px;
-background:#3f66d3;
+padding:10px 15px;
+background:#35559c;
 color:white;
 border:none;
 cursor:pointer;
@@ -63,28 +60,23 @@ border-radius:8px;
 box-shadow:0 0 10px rgba(0,0,0,0.1);
 }
 
-#map{
-height:350px;
-margin-top:20px;
-}
-
 .hidden{
 display:none;
 }
 
-.weather-icon{
-font-size:28px;
+.weather{
+font-size:24px;
 }
 
 @media(max-width:768px){
 
-input{
-width:100%;
-}
-
 nav{
 flex-direction:column;
 gap:10px;
+}
+
+input{
+width:100%;
 }
 
 }
@@ -97,10 +89,7 @@ gap:10px;
 
 <nav>
 
-<a onclick="showTab('home')">Home</a>
-<a onclick="showTab('about')">About</a>
-<a onclick="showTab('founder')">Founder</a>
-<a onclick="showTab('contact')">Contact</a>
+<a onclick="showTab('home')">Home</a> <a onclick="showTab('about')">About</a> <a onclick="showTab('founder')">Founder</a> <a onclick="showTab('contact')">Contact</a>
 
 </nav>
 
@@ -110,7 +99,7 @@ gap:10px;
 
 <h2>EagleReach Civic Intelligence Platform</h2>
 
-<p>Know your government. Stay informed. Participate.</p>
+<p>Know your government. Stay informed.</p>
 
 <input id="zip" placeholder="Enter ZIP Code">
 
@@ -118,19 +107,21 @@ gap:10px;
 
 <button onclick="useLocation()">Use My Location</button>
 
-<div id="map"></div>
-
 <div id="location" class="card"></div>
 
 <div id="representatives" class="card"></div>
 
 <div id="senators" class="card"></div>
 
+<div id="mayor" class="card"></div>
+
+<div id="voting" class="card"></div>
+
 <div class="card">
 
-<button onclick="loadLocalNews()">Local News</button>
+<h3>News</h3>
 
-<button onclick="loadWorldNews()">World News</button>
+<button onclick="localNews()">Local News</button> <button onclick="worldNews()">World News</button>
 
 </div>
 
@@ -150,16 +141,12 @@ gap:10px;
 
 <p>
 
-EagleReach is a civic intelligence platform built to help citizens easily
-access information about their local government, public representatives,
-news, weather, and emergency services.
+EagleReach is a civic intelligence platform designed to help citizens
+access information about their local government, representatives,
+community issues, news, and emergency resources.
 
-Our mission is to strengthen civic engagement and transparency by providing
-a platform where citizens can stay informed and connected to the leaders
-who represent them.
-
-EagleReach empowers communities by making public information accessible,
-reliable, and easy to understand.
+Our mission is to strengthen civic awareness and participation by making
+government information easier to access for every community.
 
 </p>
 
@@ -173,13 +160,9 @@ reliable, and easy to understand.
 
 <p>
 
-EagleReach was founded by Vikesh with the goal of building a civic
-technology platform that helps citizens understand their government and
-participate in the democratic process.
-
-The vision is to improve civic awareness, strengthen transparency, and
-create a platform where communities can access important public
-information quickly and easily.
+EagleReach was founded by Vikesh with the vision of improving civic
+transparency and engagement. The platform connects citizens with
+government information, public representatives, and community issues.
 
 </p>
 
@@ -191,33 +174,16 @@ information quickly and easily.
 
 <h2>Contact</h2>
 
-<p>
-
-For questions, collaboration opportunities, or civic engagement
-initiatives please contact:
-
-</p>
-
-<p><b>Email:</b> vikebairam@gmail.com</p>
-
-<p>
-
-We welcome feedback and ideas to improve EagleReach for communities
-across the United States.
-
-</p>
+<p>Email: vikebairam@gmail.com</p>
 
 </div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 
 const API="https://eaglereach-v2.onrender.com"
 
-let map=L.map('map').setView([39,-84],5)
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
+let currentZip=""
+let currentCity=""
 
 function showTab(tab){
 
@@ -232,36 +198,26 @@ document.getElementById(tab).classList.remove("hidden")
 
 async function searchZip(){
 
-const zip=document.getElementById("zip").value
+let zip=document.getElementById("zip").value
 
 if(!zip){
-
-alert("Enter ZIP Code")
-
+alert("Enter ZIP")
 return
-
 }
 
-const res=await fetch(`${API}/zip/${zip}`)
+const r=await fetch(API+"/zip/"+zip)
+const data=await r.json()
 
-const data=await res.json()
+currentZip=zip
+currentCity=data.city
 
 document.getElementById("location").innerHTML=
 
-`<h3>${data.city}, ${data.state}</h3>`
+"<h3>"+data.city+", "+data.state+"</h3><p>ZIP: "+zip+"</p>"
 
-map.setView([data.latitude,data.longitude],10)
-
-L.marker([data.latitude,data.longitude]).addTo(map)
-
+loadIssues()
 loadWeather(data.latitude,data.longitude)
-
-loadReps()
-
-loadSenators()
-
 loadTime()
-
 loadEmergency()
 
 }
@@ -273,123 +229,116 @@ navigator.geolocation.getCurrentPosition(async pos=>{
 let lat=pos.coords.latitude
 let lon=pos.coords.longitude
 
-map.setView([lat,lon],10)
+const r=await fetch(API+"/weather/"+lat+"/"+lon)
+const weather=await r.json()
 
-L.marker([lat,lon]).addTo(map)
-
-loadWeather(lat,lon)
+loadWeatherDisplay(weather)
 
 })
 
 }
 
-async function loadReps(){
+async function loadIssues(){
 
-const r=await fetch(`${API}/representatives`)
+const r=await fetch(API+"/issues")
+const issues=await r.json()
 
-const data=await r.json()
+let html="<h3>Community Pulse</h3>"
 
-let html="<h3>Representatives</h3>"
-
-data.forEach(p=>{
+issues.forEach(issue=>{
 
 html+=`
 
-<p>
+<p><b>${issue.replace("_"," ")}</b></p>
 
-${p.name}<br>
+<button onclick="vote('${issue}','support')">👍 Support</button>
 
-Party: ${p.party}<br>
-
-<a href="${p.website}" target="_blank">Official Website</a>
-
-</p>
+<button onclick="vote('${issue}','oppose')">👎 Oppose</button>
 
 `
 
 })
 
-document.getElementById("representatives").innerHTML=html
+document.getElementById("voting").innerHTML=html
+
+loadResults()
 
 }
 
-async function loadSenators(){
+async function vote(issue,v){
 
-const r=await fetch(`${API}/senators`)
+await fetch(API+"/vote/"+currentZip+"/"+issue+"/"+v)
 
+loadResults()
+
+}
+
+async function loadResults(){
+
+const r=await fetch(API+"/votes/"+currentZip)
 const data=await r.json()
 
-let html="<h3>Senators</h3>"
+let html="<h3>Community Results</h3>"
 
-data.forEach(p=>{
+for(let i in data){
 
 html+=`
 
 <p>
 
-${p.name}<br>
+${i.replace("_"," ")}
 
-Party: ${p.party}<br>
+Support: ${data[i].support}
 
-<a href="${p.website}" target="_blank">Official Website</a>
+Oppose: ${data[i].oppose}
 
 </p>
 
 `
 
-})
+}
 
-document.getElementById("senators").innerHTML=html
+document.getElementById("voting").innerHTML+=html
 
 }
 
-function loadLocalNews(){
+function localNews(){
 
-const locationText=document.getElementById("location").innerText
-
-if(!locationText){
-
+if(!currentCity){
 alert("Search ZIP first")
-
 return
+}
+
+window.open("https://news.google.com/search?q="+currentCity)
 
 }
 
-const city=locationText.split(",")[0]
+function worldNews(){
 
-window.open(`https://news.google.com/search?q=${city}&hl=en-US&gl=US&ceid=US:en`)
-
-}
-
-function loadWorldNews(){
-
-window.open("https://news.google.com/topstories?hl=en-US&gl=US&ceid=US:en")
+window.open("https://news.google.com/topstories")
 
 }
 
 async function loadWeather(lat,lon){
 
-const r=await fetch(`${API}/weather/${lat}/${lon}`)
-
+const r=await fetch(API+"/weather/"+lat+"/"+lon)
 const data=await r.json()
+
+loadWeatherDisplay(data)
+
+}
+
+function loadWeatherDisplay(data){
 
 let html="<h3>Weather Forecast</h3>"
 
-data.forEach(day=>{
+data.forEach(d=>{
 
 let icon="☀️"
 
-if(day.rain>0) icon="🌧️"
+if(d.rain>0) icon="🌧️"
 
-html+=`
-
-<p class="weather-icon">
-
-${icon} ${day.date} : ${day.max_temp}°C
-
-</p>
-
-`
+html+=`<p class="weather">${icon} ${d.date} - ${d.max_temp}°C</p>`
 
 })
 
@@ -399,27 +348,23 @@ document.getElementById("weather").innerHTML=html
 
 async function loadTime(){
 
-const r=await fetch(`${API}/time`)
-
+const r=await fetch(API+"/time")
 const data=await r.json()
 
-document.getElementById("time").innerHTML=
-
-`<h3>Current Time</h3>${data.time}`
+document.getElementById("time").innerHTML="<h3>Current Time</h3>"+data.time
 
 }
 
 async function loadEmergency(){
 
-const r=await fetch(`${API}/emergency`)
-
+const r=await fetch(API+"/emergency")
 const data=await r.json()
 
-let html="<h3>Emergency Numbers</h3>"
+let html="<h3>Emergency</h3>"
 
-for(let k in data){
+for(let i in data){
 
-html+=`<p>${k}: ${data[k]}</p>`
+html+="<p>"+i+": "+data[i]+"</p>"
 
 }
 
