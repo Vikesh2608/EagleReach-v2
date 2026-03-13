@@ -1,7 +1,7 @@
-from fastapi import FastAPI
-from civic import get_civic_data
-from weather import get_weather
-from news import get_world_news
+from .fastapi import FastAPI
+from .civic import get_civic_data
+from .weather import get_weather
+from .news import get_world_news
 
 app = FastAPI()
 
