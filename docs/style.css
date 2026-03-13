@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>EagleReach Civic Intelligence</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<header>
+
+<h1>EagleReach Civic Intelligence Platform</h1>
+
+<nav>
+
+<a href="#">Home</a>
+<a href="#about">About</a>
+<a href="#founder">Founder</a>
+<a href="#contact">Contact</a>
+
+</nav>
+
+</header>
+
+
+<section class="search">
+
+<input id="zip" placeholder="Enter ZIP code">
+
+<button onclick="searchZip()">Search</button>
+
+<button onclick="useLocation()">Use My Location</button>
+
+</section>
+
+
+<section id="location"></section>
+
+<section id="officials"></section>
+
+<section id="weather"></section>
+
+<section id="community"></section>
+
+<section id="news"></section>
+
+
+<section id="about">
+
+<h2>About</h2>
+
+<p>
+EagleReach is a civic intelligence platform helping citizens
+understand government representatives, community issues,
+local news, and public sentiment.
+</p>
+
+</section>
+
+
+<section id="founder">
+
+<h2>Founder</h2>
+
+<p>
+EagleReach was created by Vike Bairam to empower citizens
+with civic awareness and community engagement tools.
+</p>
+
+</section>
+
+
+<section id="contact">
+
+<h2>Contact</h2>
+
+<p>Email: vikebairam@gmail.com</p>
+
+</section>
+
+
+<script src="app.js"></script>
+
+</body>
+
+</html>
