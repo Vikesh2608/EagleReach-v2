@@ -1,378 +1,88 @@
 <!DOCTYPE html>
-
 <html>
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EagleReach Civic Intelligence</title>
 
-<title>EagleReach Civic Intelligence Platform</title>
-
-<style>
-
-body{
-font-family:Arial;
-margin:0;
-background:#f4f6f9;
-}
-
-nav{
-background:#35559c;
-padding:15px;
-display:flex;
-justify-content:center;
-gap:40px;
-}
-
-nav a{
-color:white;
-text-decoration:none;
-font-weight:bold;
-cursor:pointer;
-}
-
-.container{
-width:90%;
-margin:auto;
-text-align:center;
-padding:20px;
-}
-
-input{
-padding:10px;
-width:220px;
-}
-
-button{
-padding:10px 15px;
-background:#35559c;
-color:white;
-border:none;
-cursor:pointer;
-margin:5px;
-}
-
-.card{
-background:white;
-padding:20px;
-margin-top:20px;
-border-radius:8px;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
-}
-
-.hidden{
-display:none;
-}
-
-.weather{
-font-size:24px;
-}
-
-@media(max-width:768px){
-
-nav{
-flex-direction:column;
-gap:10px;
-}
-
-input{
-width:100%;
-}
-
-}
-
-</style>
+<link rel="stylesheet" href="style.css">
 
 </head>
 
 <body>
 
+<header>
+
+<h1>EagleReach Civic Intelligence Platform</h1>
+
 <nav>
 
-<a onclick="showTab('home')">Home</a> <a onclick="showTab('about')">About</a> <a onclick="showTab('founder')">Founder</a> <a onclick="showTab('contact')">Contact</a>
+<a href="#">Home</a>
+<a href="#about">About</a>
+<a href="#founder">Founder</a>
+<a href="#contact">Contact</a>
 
 </nav>
 
-<!-- HOME -->
+</header>
 
-<div id="home" class="container">
 
-<h2>EagleReach Civic Intelligence Platform</h2>
+<section class="search">
 
-<p>Know your government. Stay informed.</p>
-
-<input id="zip" placeholder="Enter ZIP Code">
+<input id="zip" placeholder="Enter ZIP code">
 
 <button onclick="searchZip()">Search</button>
 
 <button onclick="useLocation()">Use My Location</button>
 
-<div id="location" class="card"></div>
+</section>
 
-<div id="representatives" class="card"></div>
 
-<div id="senators" class="card"></div>
+<section id="location"></section>
 
-<div id="mayor" class="card"></div>
+<section id="officials"></section>
 
-<div id="voting" class="card"></div>
+<section id="weather"></section>
 
-<div class="card">
+<section id="community"></section>
 
-<h3>News</h3>
+<section id="news"></section>
 
-<button onclick="localNews()">Local News</button> <button onclick="worldNews()">World News</button>
 
-</div>
+<section id="about">
 
-<div id="weather" class="card"></div>
-
-<div id="time" class="card"></div>
-
-<div id="emergency" class="card"></div>
-
-</div>
-
-<!-- ABOUT -->
-
-<div id="about" class="container hidden">
-
-<h2>About EagleReach</h2>
+<h2>About</h2>
 
 <p>
-
-EagleReach is a civic intelligence platform designed to help citizens
-access information about their local government, representatives,
-community issues, news, and emergency resources.
-
-Our mission is to strengthen civic awareness and participation by making
-government information easier to access for every community.
-
+EagleReach is a civic intelligence platform helping citizens
+understand government representatives, community issues,
+local news, and public sentiment.
 </p>
 
-</div>
+</section>
 
-<!-- FOUNDER -->
 
-<div id="founder" class="container hidden">
+<section id="founder">
 
 <h2>Founder</h2>
 
 <p>
-
-EagleReach was founded by Vikesh with the vision of improving civic
-transparency and engagement. The platform connects citizens with
-government information, public representatives, and community issues.
-
+EagleReach was created by Vike Bairam to empower citizens
+with civic awareness and community engagement tools.
 </p>
 
-</div>
+</section>
 
-<!-- CONTACT -->
 
-<div id="contact" class="container hidden">
+<section id="contact">
 
 <h2>Contact</h2>
 
 <p>Email: vikebairam@gmail.com</p>
 
-</div>
+</section>
 
-<script>
 
-const API="https://eaglereach-v2.onrender.com"
-
-let currentZip=""
-let currentCity=""
-
-function showTab(tab){
-
-document.getElementById("home").classList.add("hidden")
-document.getElementById("about").classList.add("hidden")
-document.getElementById("founder").classList.add("hidden")
-document.getElementById("contact").classList.add("hidden")
-
-document.getElementById(tab).classList.remove("hidden")
-
-}
-
-async function searchZip(){
-
-let zip=document.getElementById("zip").value
-
-if(!zip){
-alert("Enter ZIP")
-return
-}
-
-const r=await fetch(API+"/zip/"+zip)
-const data=await r.json()
-
-currentZip=zip
-currentCity=data.city
-
-document.getElementById("location").innerHTML=
-
-"<h3>"+data.city+", "+data.state+"</h3><p>ZIP: "+zip+"</p>"
-
-loadIssues()
-loadWeather(data.latitude,data.longitude)
-loadTime()
-loadEmergency()
-
-}
-
-function useLocation(){
-
-navigator.geolocation.getCurrentPosition(async pos=>{
-
-let lat=pos.coords.latitude
-let lon=pos.coords.longitude
-
-const r=await fetch(API+"/weather/"+lat+"/"+lon)
-const weather=await r.json()
-
-loadWeatherDisplay(weather)
-
-})
-
-}
-
-async function loadIssues(){
-
-const r=await fetch(API+"/issues")
-const issues=await r.json()
-
-let html="<h3>Community Pulse</h3>"
-
-issues.forEach(issue=>{
-
-html+=`
-
-<p><b>${issue.replace("_"," ")}</b></p>
-
-<button onclick="vote('${issue}','support')">👍 Support</button>
-
-<button onclick="vote('${issue}','oppose')">👎 Oppose</button>
-
-`
-
-})
-
-document.getElementById("voting").innerHTML=html
-
-loadResults()
-
-}
-
-async function vote(issue,v){
-
-await fetch(API+"/vote/"+currentZip+"/"+issue+"/"+v)
-
-loadResults()
-
-}
-
-async function loadResults(){
-
-const r=await fetch(API+"/votes/"+currentZip)
-const data=await r.json()
-
-let html="<h3>Community Results</h3>"
-
-for(let i in data){
-
-html+=`
-
-<p>
-
-${i.replace("_"," ")}
-
-Support: ${data[i].support}
-
-Oppose: ${data[i].oppose}
-
-</p>
-
-`
-
-}
-
-document.getElementById("voting").innerHTML+=html
-
-}
-
-function localNews(){
-
-if(!currentCity){
-alert("Search ZIP first")
-return
-}
-
-window.open("https://news.google.com/search?q="+currentCity)
-
-}
-
-function worldNews(){
-
-window.open("https://news.google.com/topstories")
-
-}
-
-async function loadWeather(lat,lon){
-
-const r=await fetch(API+"/weather/"+lat+"/"+lon)
-const data=await r.json()
-
-loadWeatherDisplay(data)
-
-}
-
-function loadWeatherDisplay(data){
-
-let html="<h3>Weather Forecast</h3>"
-
-data.forEach(d=>{
-
-let icon="☀️"
-
-if(d.rain>0) icon="🌧️"
-
-html+=`<p class="weather">${icon} ${d.date} - ${d.max_temp}°C</p>`
-
-})
-
-document.getElementById("weather").innerHTML=html
-
-}
-
-async function loadTime(){
-
-const r=await fetch(API+"/time")
-const data=await r.json()
-
-document.getElementById("time").innerHTML="<h3>Current Time</h3>"+data.time
-
-}
-
-async function loadEmergency(){
-
-const r=await fetch(API+"/emergency")
-const data=await r.json()
-
-let html="<h3>Emergency</h3>"
-
-for(let i in data){
-
-html+="<p>"+i+": "+data[i]+"</p>"
-
-}
-
-document.getElementById("emergency").innerHTML=html
-
-}
-
-</script>
+<script src="app.js"></script>
 
 </body>
 
