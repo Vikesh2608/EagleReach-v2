@@ -19,7 +19,19 @@ def civic(zip: str):
     try:
         r = requests.get(url)
         data = r.json()
-        return data
+
+        leaders = {
+            "representatives": data.get("results", []),
+            "governor": None,
+            "mayor": None
+        }
+
+        # Example placeholders until we add full dataset
+        leaders["governor"] = "Governor information coming soon"
+        leaders["mayor"] = "Mayor lookup coming soon"
+
+        return leaders
+
     except:
         return {"error": "Unable to fetch civic data"}
 
