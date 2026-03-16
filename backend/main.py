@@ -4,9 +4,11 @@ import feedparser
 
 app = FastAPI()
 
+
 @app.get("/")
 def home():
     return {"message": "EagleReach API Running"}
+
 
 @app.get("/api/civic")
 def civic(zip: str):
@@ -19,6 +21,7 @@ def civic(zip: str):
     except:
         return {"error": "Unable to fetch civic data"}
 
+
 @app.get("/api/weather")
 def weather():
 
@@ -30,6 +33,7 @@ def weather():
     r = requests.get(url)
 
     return r.json()
+
 
 @app.get("/api/news/world")
 def news():
