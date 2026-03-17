@@ -1,11 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🇺🇸 EagleReach</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
 <body>
 
 <h1>🇺🇸 EagleReach</h1>
 
 <div class="container">
 
-    <input id="zip" placeholder="Enter ZIP code">
-    <button onclick="searchZip()">Search</button>
+    <div class="search-box">
+        <input id="zip" placeholder="Enter ZIP code">
+        <button onclick="searchZip()">Search</button>
+        <button onclick="useLocation()">Use My Location</button>
+    </div>
 
     <h2>Your Leaders</h2>
     <div id="leaders"></div>
@@ -18,3 +28,4 @@
 <script src="app.js"></script>
 
 </body>
+</html>
