@@ -1,8 +1,18 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import requests
 import feedparser
 
 app = FastAPI()
+
+# ✅ FIX CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
@@ -10,7 +20,6 @@ def home():
     return {"message": "EagleReach API Running"}
 
 
-# 🏛 Civic Data
 @app.get("/api/civic")
 def civic(zip: str):
 
@@ -22,35 +31,16 @@ def civic(zip: str):
 
         reps = data.get("results", [])
 
-        # 🔥 CLEAN RESPONSE
         return {
             "representatives": reps,
             "mayor": "Coming Soon",
             "governor": "Coming Soon"
         }
 
-    except:
-        return {"error": "Unable to fetch civic data"}
+    except Exception as e:
+        return {"error": str(e)}
 
 
-# 🌦 Weather (optional for now)
-@app.get("/api/weather")
-def weather():
-
-    url = (
-        "https://api.open-meteo.com/v1/forecast"
-        "?latitude=40.7128"
-        "&longitude=-74.0060"
-        "&daily=temperature_2m_max,temperature_2m_min"
-        "&timezone=auto"
-    )
-
-    r = requests.get(url)
-
-    return r.json()
-
-
-# 📰 World News (Google RSS)
 @app.get("/api/news/world")
 def news():
 
