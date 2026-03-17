@@ -22,6 +22,7 @@ def civic(zip: str):
 
         reps = data.get("results", [])
 
+        # 🔥 CLEAN RESPONSE
         return {
             "representatives": reps,
             "mayor": "Coming Soon",
