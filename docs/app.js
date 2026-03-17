@@ -28,8 +28,14 @@ async function searchZip() {
                     <p>${rep.party}</p>
                     <p>📞 ${rep.phone}</p>
                     <a href="${rep.link}" target="_blank">🔗 Website</a>
+
+                    <br><br>
+
+                    <button onclick="generateEmail('${rep.name}')">
+                        ✉ Generate Email
+                    </button>
                 </div>
-                `;
+`;
             });
         }
 
