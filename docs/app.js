@@ -15,11 +15,11 @@ async function searchZip() {
         let res = await fetch(`${API}/api/civic?zip=${zip}`);
         let data = await res.json();
 
-        console.log("API RESPONSE:", data);
+        console.log("CIVIC DATA:", data);
 
         let html = "";
 
-        // ✅ HANDLE EMPTY DATA
+        // ⚠️ HANDLE EMPTY OR FAILED DATA
         if (!data.representatives || data.representatives.length === 0) {
 
             html = `
@@ -31,7 +31,7 @@ async function searchZip() {
 
         } else {
 
-            // ✅ RENDER REPRESENTATIVES
+            // 🏛 RENDER REPRESENTATIVES
             data.representatives.forEach(rep => {
 
                 html += `
@@ -53,8 +53,13 @@ async function searchZip() {
 
         document.getElementById("leaders").innerHTML = html;
 
-        // 🌍 LOAD NEWS AFTER SEARCH
-        loadNews();
+        // 🌍 Load world news after search
+        loadWorldNews();
+
+        // 📍 Try local news if city exists
+        if (window.currentCity) {
+            loadLocalNews(window.currentCity);
+        }
 
     } catch (err) {
         console.error(err);
@@ -76,6 +81,8 @@ async function useLocation() {
         let lat = pos.coords.latitude;
         let lon = pos.coords.longitude;
 
+        console.log("LOCATION:", lat, lon);
+
         try {
             let geoRes = await fetch(
                 `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
@@ -83,12 +90,18 @@ async function useLocation() {
 
             let geoData = await geoRes.json();
 
+            console.log("GEO DATA:", geoData);
+
             let zip = geoData.postcode;
+            let city = geoData.city;
 
             if (!zip) {
                 alert("Could not detect ZIP");
                 return;
             }
+
+            // Save city globally for local news
+            window.currentCity = city;
 
             document.getElementById("zip").value = zip;
 
@@ -106,7 +119,7 @@ async function useLocation() {
 
 
 // 🌍 LOAD WORLD NEWS
-async function loadNews() {
+async function loadWorldNews() {
 
     try {
         let res = await fetch(`${API}/api/news/world`);
@@ -115,21 +128,56 @@ async function loadNews() {
         let html = "";
 
         news.slice(0, 5).forEach(n => {
-
             html += `
             <div class="card">
-                <a href="${n.link}" target="_blank">
-                    ${n.title}
-                </a>
+                <a href="${n.link}" target="_blank">${n.title}</a>
             </div>
             `;
         });
 
-        document.getElementById("news").innerHTML = html;
+        document.getElementById("world").innerHTML = html;
 
     } catch (err) {
         console.error(err);
     }
+}
+
+
+// 📰 LOAD LOCAL NEWS
+async function loadLocalNews(city) {
+
+    if (!city) return;
+
+    try {
+        let res = await fetch(`${API}/api/news/local?city=${city}`);
+        let news = await res.json();
+
+        let html = "";
+
+        news.slice(0, 5).forEach(n => {
+            html += `
+            <div class="card">
+                <a href="${n.link}" target="_blank">${n.title}</a>
+            </div>
+            `;
+        });
+
+        document.getElementById("local").innerHTML = html;
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+
+// 🔄 TAB SWITCHING
+function showTab(tab) {
+
+    document.getElementById("leaders").style.display = "none";
+    document.getElementById("local").style.display = "none";
+    document.getElementById("world").style.display = "none";
+
+    document.getElementById(tab).style.display = "block";
 }
 
 
