@@ -1,36 +1,100 @@
+const API = "https://eaglereach-v2.onrender.com";
+
+// 🔍 Search by ZIP
 async function searchZip() {
 
     let zip = document.getElementById("zip").value;
 
-    let response = await fetch(
-        "https://eaglereach-v2.onrender.com/api/civic?zip=" + zip
-    );
+    if (!zip) {
+        alert("Enter ZIP code");
+        return;
+    }
 
-    let data = await response.json();
+    try {
+        let res = await fetch(`${API}/api/civic?zip=${zip}`);
+        let data = await res.json();
+
+        console.log("CIVIC:", data);
+
+        let html = "";
+
+        if (!data.representatives) {
+            html = "<p>No data found</p>";
+        } else {
+            data.representatives.forEach(rep => {
+                html += `
+                <div class="card">
+                    <h3>${rep.name}</h3>
+                    <p>${rep.party}</p>
+                    <p>📞 ${rep.phone}</p>
+                    <a href="${rep.link}" target="_blank">🔗 Website</a>
+                </div>
+                `;
+            });
+        }
+
+        document.getElementById("leaders").innerHTML = html;
+
+        loadNews();
+
+    } catch (err) {
+        console.error(err);
+        alert("Error fetching data");
+    }
+}
+
+
+// 📍 Use My Location
+async function useLocation() {
+
+    if (!navigator.geolocation) {
+        alert("Geolocation not supported");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+
+        let lat = pos.coords.latitude;
+        let lon = pos.coords.longitude;
+
+        let geoRes = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
+        );
+
+        let geoData = await geoRes.json();
+
+        let zip = geoData.postcode;
+
+        if (!zip) {
+            alert("Could not detect ZIP");
+            return;
+        }
+
+        document.getElementById("zip").value = zip;
+
+        searchZip();
+
+    }, () => {
+        alert("Permission denied");
+    });
+}
+
+
+// 🌍 Load World News
+async function loadNews() {
+
+    let res = await fetch(`${API}/api/news/world`);
+    let news = await res.json();
 
     let html = "";
 
-    // Governor
-    html += `<h3>Governor</h3><p>${data.governor}</p>`;
-
-    // Mayor
-    html += `<h3>Mayor</h3><p>${data.mayor}</p>`;
-
-    // Representatives
-    html += `<h3>Federal Leaders</h3>`;
-
-    data.representatives.forEach(rep => {
+    news.slice(0, 5).forEach(n => {
         html += `
-            <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-                <b>${rep.name}</b><br>
-                Party: ${rep.party}<br>
-                Phone: ${rep.phone}<br>
-                <a href="${rep.link}" target="_blank">Website</a>
-            </div>
+        <div class="card">
+            <a href="${n.link}" target="_blank">${n.title}</a>
+        </div>
         `;
     });
 
-    document.getElementById("leaders").innerHTML = html;
-
-    loadNews();
+    document.getElementById("news").innerHTML = html;
 }
