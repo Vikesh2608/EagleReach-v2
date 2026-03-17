@@ -1,60 +1,50 @@
 body {
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     background: #f5f7fb;
     margin: 0;
-}
-
-.navbar {
-    background: #111827;
-    color: white;
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-}
-
-.navbar a {
-    color: white;
-    margin-left: 15px;
-    text-decoration: none;
+    padding: 0;
 }
 
 .container {
-    max-width: 900px;
+    max-width: 800px;
     margin: auto;
     padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 32px;
 }
 
 .search-box {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+    margin: 20px 0;
 }
 
 input {
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+    padding: 10px;
+    width: 200px;
+    font-size: 16px;
 }
 
 button {
-    padding: 12px;
+    padding: 10px 15px;
+    margin: 5px;
+    border: none;
     background: #2563eb;
     color: white;
-    border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
 }
 
-.tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+button:hover {
+    background: #1d4ed8;
 }
 
 .card {
     background: white;
     padding: 15px;
-    margin: 10px 0;
-    border-radius: 12px;
+    margin: 15px 0;
+    border-radius: 10px;
+    text-align: left;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
