@@ -16,15 +16,20 @@ h1 {
     padding: 20px;
 }
 
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
 input {
     padding: 12px;
-    width: 200px;
     border-radius: 8px;
     border: 1px solid #ccc;
 }
 
 button {
-    padding: 12px 20px;
+    padding: 12px;
     background: #2563eb;
     color: white;
     border: none;
