@@ -1,34 +1,42 @@
-<body>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>US EagleReach</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<div class="navbar">
-    <div>🇺🇸 EagleReach</div>
-    <div>
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="founder.html">Founder</a>
-    </div>
-</div>
+    <!-- ✅ CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
 
 <div class="container">
 
+    <h1>🇺🇸 US EagleReach</h1>
+
+    <!-- 🔍 SEARCH -->
     <div class="search-box">
         <input id="zip" placeholder="Enter ZIP code">
         <button onclick="searchZip()">Search</button>
         <button onclick="useLocation()">Use My Location</button>
     </div>
 
+    <!-- 🔘 TABS -->
     <div class="tabs">
         <button onclick="showTab('leaders')">Leaders</button>
         <button onclick="showTab('local')">Local News</button>
         <button onclick="showTab('world')">World News</button>
     </div>
 
+    <!-- 🏛 CONTENT -->
     <div id="leaders"></div>
-    <div id="local" style="display:none;"></div>
-    <div id="world" style="display:none;"></div>
+    <div id="local" style="display:none"></div>
+    <div id="world" style="display:none"></div>
 
 </div>
 
+<!-- ✅ JS -->
 <script src="app.js"></script>
 
 </body>
+</html>
