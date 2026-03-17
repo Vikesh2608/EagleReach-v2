@@ -10,7 +10,7 @@ def home():
     return {"message": "EagleReach API Running"}
 
 
-# CIVIC REPRESENTATIVES
+# 🏛 Civic Data
 @app.get("/api/civic")
 def civic(zip: str):
 
@@ -20,34 +20,27 @@ def civic(zip: str):
         r = requests.get(url)
         data = r.json()
 
-        leaders = {
-            "representatives": data.get("results", []),
-            "governor": None,
-            "mayor": None
+        reps = data.get("results", [])
+
+        return {
+            "representatives": reps,
+            "mayor": "Coming Soon",
+            "governor": "Coming Soon"
         }
-
-        # Example placeholders until we add full dataset
-        leaders["governor"] = "Governor information coming soon"
-        leaders["mayor"] = "Mayor lookup coming soon"
-
-        return leaders
 
     except:
         return {"error": "Unable to fetch civic data"}
 
 
-# WEATHER
+# 🌦 Weather (optional for now)
 @app.get("/api/weather")
 def weather():
-
-    lat = 40.7128
-    lon = -74.0060
 
     url = (
         "https://api.open-meteo.com/v1/forecast"
         "?latitude=40.7128"
         "&longitude=-74.0060"
-        "&daily=weathercode,temperature_2m_max,temperature_2m_min"
+        "&daily=temperature_2m_max,temperature_2m_min"
         "&timezone=auto"
     )
 
@@ -56,7 +49,7 @@ def weather():
     return r.json()
 
 
-# WORLD NEWS
+# 📰 World News (Google RSS)
 @app.get("/api/news/world")
 def news():
 
