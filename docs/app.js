@@ -104,3 +104,22 @@ async function loadNews() {
 
     document.getElementById("news").innerHTML = html;
 }
+
+function generateEmail(name) {
+
+    let subject = encodeURIComponent("Concern from a constituent");
+    let body = encodeURIComponent(
+`Dear ${name},
+
+I am a resident in your constituency and would like to raise a concern regarding:
+
+[Write your issue here]
+
+I appreciate your time and look forward to your response.
+
+Sincerely,
+A concerned citizen`
+    );
+
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
