@@ -1,13 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>🇺🇸 EagleReach</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-
 <body>
 
-<h1>🇺🇸 EagleReach</h1>
+<div class="navbar">
+    <div>🇺🇸 EagleReach</div>
+    <div>
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="founder.html">Founder</a>
+    </div>
+</div>
 
 <div class="container">
 
@@ -17,15 +17,18 @@
         <button onclick="useLocation()">Use My Location</button>
     </div>
 
-    <h2>Your Leaders</h2>
-    <div id="leaders"></div>
+    <div class="tabs">
+        <button onclick="showTab('leaders')">Leaders</button>
+        <button onclick="showTab('local')">Local News</button>
+        <button onclick="showTab('world')">World News</button>
+    </div>
 
-    <h2>World News</h2>
-    <div id="news"></div>
+    <div id="leaders"></div>
+    <div id="local" style="display:none;"></div>
+    <div id="world" style="display:none;"></div>
 
 </div>
 
 <script src="app.js"></script>
 
 </body>
-</html>
