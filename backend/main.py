@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 
 app = FastAPI()
 
-# ✅ CORS (IMPORTANT)
+# ✅ CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -23,10 +23,10 @@ def home():
 
 
 # =========================
-# 🧑‍⚖️ CIVIC API (ALL ZIPS)
+# 🧑‍⚖️ CIVIC (ALL ZIP SUPPORT)
 # =========================
 @app.get("/api/civic")
-def get_civic(zip: str):
+def civic(zip: str):
 
     try:
         geo = requests.get(f"https://api.zippopotam.us/us/{zip}").json()
@@ -34,36 +34,41 @@ def get_civic(zip: str):
         place = geo["places"][0]
         city = place["place name"]
         state = place["state abbreviation"]
-        lat = place["latitude"]
-        lon = place["longitude"]
+        lat = float(place["latitude"])
+        lon = float(place["longitude"])
 
         # District lookup
-        district = "N/A"
+        district = "Unknown"
         try:
             census_url = f"https://geo.fcc.gov/api/census/area?lat={lat}&lon={lon}&format=json"
             census = requests.get(census_url).json()
-            district = census["results"][0]["districts"][0]["district"]
-        except:
-            district = "N/A"
 
-        # Representatives (reliable fallback)
+            if "results" in census and len(census["results"]) > 0:
+                districts = census["results"][0].get("districts", [])
+                if len(districts) > 0:
+                    district = districts[0].get("district", "Unknown")
+
+        except Exception as e:
+            print("District error:", e)
+
+        # Representatives (clean fallback)
         reps = [
             {
-                "name": f"{state} U.S. Senator",
+                "name": f"U.S. Senators ({state})",
                 "party": "Federal",
                 "phone": "202-224-3121",
                 "link": "https://www.senate.gov"
             },
             {
-                "name": f"District {district} House Representative",
+                "name": f"House Representative (District {district})",
                 "party": "Federal",
                 "phone": "202-225-3121",
                 "link": "https://www.house.gov"
             },
             {
-                "name": f"{city} Mayor",
+                "name": f"{city} Mayor Office",
                 "party": "Local",
-                "phone": "Visit city website",
+                "phone": "Check city website",
                 "link": "https://www.usa.gov/local-governments"
             }
         ]
@@ -73,6 +78,8 @@ def get_civic(zip: str):
             "city": city,
             "state": state,
             "district": district,
+            "lat": lat,
+            "lon": lon,
             "representatives": reps
         }
 
@@ -80,7 +87,9 @@ def get_civic(zip: str):
         return {
             "city": "Unknown",
             "state": "",
-            "district": "N/A",
+            "district": "Unknown",
+            "lat": 40.7,
+            "lon": -74,
             "representatives": []
         }
 
@@ -90,6 +99,7 @@ def get_civic(zip: str):
 # =========================
 @app.get("/api/news/world")
 def world_news():
+
     try:
         url = "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en"
         res = requests.get(url)
@@ -101,7 +111,9 @@ def world_news():
                 "title": item.find("title").text,
                 "link": item.find("link").text
             })
+
         return news
+
     except:
         return []
 
@@ -111,6 +123,7 @@ def world_news():
 # =========================
 @app.get("/api/news/local")
 def local_news(city: str):
+
     try:
         url = f"https://news.google.com/rss/search?q={city}&hl=en-US&gl=US&ceid=US:en"
         res = requests.get(url)
@@ -122,6 +135,8 @@ def local_news(city: str):
                 "title": item.find("title").text,
                 "link": item.find("link").text
             })
+
         return news
+
     except:
         return []
