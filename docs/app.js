@@ -1,24 +1,21 @@
 const API = "https://eaglereach-v2.onrender.com";
 
-
-// 🔍 SEARCH
 async function searchZip() {
 
     let zip = document.getElementById("zip").value;
 
     if (!zip) {
-        alert("Enter ZIP code");
+        alert("Enter ZIP");
         return;
     }
 
     loadLeaders(zip);
-    loadLocalNews(zip);
+    loadNews(zip);
     loadWorldNews();
     loadWeather();
 }
 
 
-// 📍 USE LOCATION
 function useLocation() {
 
     navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -26,11 +23,11 @@ function useLocation() {
         let lat = pos.coords.latitude;
         let lon = pos.coords.longitude;
 
-        let geo = await fetch(
+        let res = await fetch(
             `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}`
         );
 
-        let data = await geo.json();
+        let data = await res.json();
 
         document.getElementById("zip").value = data.postcode;
 
@@ -39,137 +36,94 @@ function useLocation() {
 }
 
 
-// 🏛 REPRESENTATIVES
 async function loadLeaders(zip) {
 
-    try {
-        let res = await fetch(`${API}/api/civic?zip=${zip}`);
-        let data = await res.json();
+    let res = await fetch(`${API}/api/civic?zip=${zip}`);
+    let data = await res.json();
 
-        let html = "";
+    let city = data.city || "Unknown";
+    let state = data.state || "";
+    let district = data.district || "N/A";
 
-        document.getElementById("location").innerHTML =
-            `<h3>📍 ${data.city}, ${data.state} (${zip})</h3>
-             <p>🏛 District: ${data.district}</p>`;
+    document.getElementById("location").innerHTML =
+        `<h3>📍 ${city}, ${state} (${zip})</h3>
+         <p>District: ${district}</p>`;
 
-        if (!data.representatives || data.representatives.length === 0) {
-            html = "<div class='card'>⚠️ No representatives found</div>";
-        } else {
+    let html = "";
 
-            data.representatives.forEach(rep => {
-                html += `
-                <div class="card">
-                    <h3>${rep.name}</h3>
-                    <p>${rep.party}</p>
-                    <p>📞 ${rep.phone}</p>
-                    <a href="${rep.link}" target="_blank">Website</a>
-                </div>
-                `;
-            });
-        }
+    if (!data.representatives.length) {
+        html = "<div class='card'>No representatives found</div>";
+    } else {
 
-        document.getElementById("leaders").innerHTML = html;
-
-    } catch (err) {
-        document.getElementById("leaders").innerHTML =
-            "<div class='card'>Error loading representatives</div>";
+        data.representatives.forEach(rep => {
+            html += `
+            <div class="card">
+                <b>${rep.name}</b><br>
+                ${rep.party}<br>
+                📞 ${rep.phone}<br>
+                <a href="${rep.link}" target="_blank">Website</a>
+            </div>
+            `;
+        });
     }
+
+    document.getElementById("leaders").innerHTML = html;
 }
 
 
-// 📰 LOCAL NEWS
-async function loadLocalNews(zip) {
+async function loadNews(zip) {
 
-    try {
-        let civic = await fetch(`${API}/api/civic?zip=${zip}`);
-        let civicData = await civic.json();
+    let civic = await fetch(`${API}/api/civic?zip=${zip}`);
+    let data = await civic.json();
 
-        let location = civicData.city + " " + civicData.state;
+    let city = data.city || "";
 
-        let res = await fetch(`${API}/api/news/local?city=${location}`);
-        let news = await res.json();
+    let res = await fetch(`${API}/api/news/local?city=${city}`);
+    let news = await res.json();
 
-        let html = "";
+    let html = "";
 
-        if (!news.length) {
-            html = "<div class='card'>No local news found</div>";
-        } else {
-            news.slice(0,5).forEach(n => {
-                html += `
-                <div class="card">
-                    <a href="${n.link}" target="_blank">${n.title}</a>
-                </div>
-                `;
-            });
-        }
+    news.slice(0,5).forEach(n => {
+        html += `<div class="card"><a href="${n.link}" target="_blank">${n.title}</a></div>`;
+    });
 
-        document.getElementById("local").innerHTML = html;
-
-    } catch (err) {
-        document.getElementById("local").innerHTML =
-            "<div class='card'>Error loading local news</div>";
-    }
+    document.getElementById("local").innerHTML = html;
 }
 
 
-// 🌍 WORLD NEWS
 async function loadWorldNews() {
 
-    try {
-        let res = await fetch(`${API}/api/news/world`);
-        let news = await res.json();
+    let res = await fetch(`${API}/api/news/world`);
+    let news = await res.json();
 
-        let html = "";
+    let html = "";
 
-        news.slice(0,5).forEach(n => {
-            html += `
-            <div class="card">
-                <a href="${n.link}" target="_blank">${n.title}</a>
-            </div>
-            `;
-        });
+    news.slice(0,5).forEach(n => {
+        html += `<div class="card"><a href="${n.link}" target="_blank">${n.title}</a></div>`;
+    });
 
-        document.getElementById("world").innerHTML = html;
-
-    } catch {
-        document.getElementById("world").innerHTML =
-            "<div class='card'>Error loading world news</div>";
-    }
+    document.getElementById("world").innerHTML = html;
 }
 
 
-// 🌤 WEATHER
 async function loadWeather() {
 
-    try {
-        let res = await fetch(
-            "https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.00&daily=temperature_2m_max,temperature_2m_min&timezone=auto"
-        );
+    let res = await fetch(
+        "https://api.open-meteo.com/v1/forecast?latitude=40.7&longitude=-74&daily=temperature_2m_max,temperature_2m_min&timezone=auto"
+    );
 
-        let data = await res.json();
+    let data = await res.json();
 
-        const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    let html = "";
 
-        let html = "";
+    data.daily.time.forEach((d, i) => {
+        html += `
+        <div class="card">
+            ${d}<br>
+            ${data.daily.temperature_2m_max[i]}°C /
+            ${data.daily.temperature_2m_min[i]}°C
+        </div>`;
+    });
 
-        data.daily.time.forEach((date, i) => {
-
-            let d = new Date(date);
-            let dayName = days[d.getDay()];
-
-            html += `
-            <div class="card">
-                <b>${dayName}</b><br>
-                🌡 ${data.daily.temperature_2m_max[i]}°C /
-                ${data.daily.temperature_2m_min[i]}°C
-            </div>
-            `;
-        });
-
-        document.getElementById("weather").innerHTML = html;
-
-    } catch {
-        document.getElementById("weather").innerHTML =
-            "<div class='card'>Weather unavailable</div>";
-    }
+    document.getElementById("weather").innerHTML = html;
 }
