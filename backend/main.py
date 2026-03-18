@@ -1,59 +1,46 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 import requests
-import feedparser
+import xml.etree.ElementTree as ET
+from fastapi import FastAPI
 
 app = FastAPI()
 
-# ✅ FIX CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-
-@app.get("/")
-def home():
-    return {"message": "EagleReach API Running"}
-
-
-@app.get("/api/civic")
-def civic(zip: str):
-
-    url = f"https://whoismyrepresentative.com/getall_mems.php?zip={zip}&output=json"
-
-    try:
-        r = requests.get(url)
-        data = r.json()
-
-        reps = data.get("results", [])
-
-        return {
-            "representatives": reps,
-            "mayor": "Coming Soon",
-            "governor": "Coming Soon"
-        }
-
-    except Exception as e:
-        return {"error": str(e)}
-
-
+# 🌍 WORLD NEWS
 @app.get("/api/news/world")
-def news():
+def world_news():
 
     url = "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en"
 
-    feed = feedparser.parse(url)
+    res = requests.get(url)
+    root = ET.fromstring(res.content)
 
-    articles = []
+    news = []
 
-    for entry in feed.entries[:10]:
-        articles.append({
-            "title": entry.title,
-            "link": entry.link
+    for item in root.findall(".//item")[:10]:
+        news.append({
+            "title": item.find("title").text,
+            "link": item.find("link").text
         })
 
-    return articles
+    return news
+
+
+# 📰 LOCAL NEWS (IMPORTANT)
+@app.get("/api/news/local")
+def local_news(city: str):
+
+    # 🔥 This is key — search query
+    url = f"https://news.google.com/rss/search?q={city}&hl=en-US&gl=US&ceid=US:en"
+
+    res = requests.get(url)
+    root = ET.fromstring(res.content)
+
+    news = []
+
+    for item in root.findall(".//item")[:10]:
+        news.append({
+            "title": item.find("title").text,
+            "link": item.find("link").text
+        })
+
+    return news
