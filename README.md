@@ -7,6 +7,7 @@ Empowering citizens with real-time civic intelligence — access representatives
 
 ---
 
+
 ## 🚀 Overview
 
 EagleReach is a full-stack civic technology platform designed to improve public access to government and community information.
