@@ -3,24 +3,24 @@
 <head>
     <title>🇺🇸 EagleReach</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+<!-- ✅ NAVBAR -->
 <div class="navbar">
     <div class="logo">🇺🇸 EagleReach</div>
     <div class="nav-links">
-        <a href="#">Home</a>
-        <a href="#">About</a>
-        <a href="#">Founder</a>
-        <a href="#">How to Vote</a>
-        <a href="#">Contact</a>
+        <a href="./index.html">Home</a>
+        <a href="./about.html">About</a>
+        <a href="./founder.html">Founder</a>
+        <a href="./vote.html">How to Vote</a>
+        <a href="./contact.html">Contact</a>
     </div>
 </div>
 
+<!-- ✅ HERO -->
 <div class="hero">
     <h1>Empowering Citizens.<br>Strengthening Democracy.</h1>
     <p>Access leaders, local insights, and civic intelligence instantly.</p>
@@ -28,35 +28,28 @@
     <div class="search-box">
         <input id="zip" placeholder="Enter ZIP code">
         <button onclick="searchZip()">Search</button>
-        <button class="secondary" onclick="useLocation()">Use My Location</button>
+        <button onclick="useLocation()">Use My Location</button>
     </div>
 </div>
 
+<!-- ✅ LAYOUT -->
 <div class="main-layout">
 
     <div class="content">
 
         <div id="location" class="card highlight"></div>
 
-        <div class="section">
-            <h2>🏛 Representatives</h2>
-            <div id="leaders"></div>
-        </div>
+        <h2>🏛 Representatives</h2>
+        <div id="leaders"></div>
 
-        <div class="section">
-            <h2>🌤 Weather</h2>
-            <div id="weather"></div>
-        </div>
+        <h2>🌤 Weather</h2>
+        <div id="weather"></div>
 
-        <div class="section">
-            <h2>📰 Local News</h2>
-            <div id="local"></div>
-        </div>
+        <h2>📰 Local News</h2>
+        <div id="local"></div>
 
-        <div class="section">
-            <h2>🌍 World News</h2>
-            <div id="world"></div>
-        </div>
+        <h2>🌍 World News</h2>
+        <div id="world"></div>
 
     </div>
 
