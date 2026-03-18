@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 
 app = FastAPI()
 
-# ✅ CORS (VERY IMPORTANT)
+# ✅ CORS (IMPORTANT)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,19 +14,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# =========================
 # 🟢 ROOT
+# =========================
 @app.get("/")
 def home():
     return {"message": "EagleReach API running"}
 
-# ============================
-# 🧑‍⚖️ CIVIC API (ALL ZIPS WORK)
-# ============================
+
+# =========================
+# 🧑‍⚖️ CIVIC API (ALL ZIPS)
+# =========================
 @app.get("/api/civic")
 def get_civic(zip: str):
 
     try:
-        # 📍 STEP 1: ZIP → Location
         geo = requests.get(f"https://api.zippopotam.us/us/{zip}").json()
 
         place = geo["places"][0]
@@ -35,13 +37,16 @@ def get_civic(zip: str):
         lat = place["latitude"]
         lon = place["longitude"]
 
-        # 🏛 STEP 2: Get district (FCC Census)
-        census_url = f"https://geo.fcc.gov/api/census/area?lat={lat}&lon={lon}&format=json"
-        census = requests.get(census_url).json()
+        # District lookup
+        district = "N/A"
+        try:
+            census_url = f"https://geo.fcc.gov/api/census/area?lat={lat}&lon={lon}&format=json"
+            census = requests.get(census_url).json()
+            district = census["results"][0]["districts"][0]["district"]
+        except:
+            district = "N/A"
 
-        district = census["results"][0]["districts"][0]["district"]
-
-        # 🧑‍⚖️ STEP 3: Representatives (Hybrid realistic)
+        # Representatives (reliable fallback)
         reps = [
             {
                 "name": f"{state} U.S. Senator",
@@ -71,60 +76,52 @@ def get_civic(zip: str):
             "representatives": reps
         }
 
-    except Exception as e:
+    except:
         return {
-            "representatives": [],
-            "error": str(e)
+            "city": "Unknown",
+            "state": "",
+            "district": "N/A",
+            "representatives": []
         }
 
 
-# ============================
+# =========================
 # 🌍 WORLD NEWS
-# ============================
+# =========================
 @app.get("/api/news/world")
 def world_news():
-
     try:
         url = "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en"
-
         res = requests.get(url)
         root = ET.fromstring(res.content)
 
         news = []
-
         for item in root.findall(".//item")[:10]:
             news.append({
                 "title": item.find("title").text,
                 "link": item.find("link").text
             })
-
         return news
-
     except:
         return []
 
 
-# ============================
-# 📰 LOCAL NEWS (CITY BASED)
-# ============================
+# =========================
+# 📰 LOCAL NEWS
+# =========================
 @app.get("/api/news/local")
 def local_news(city: str):
-
     try:
         url = f"https://news.google.com/rss/search?q={city}&hl=en-US&gl=US&ceid=US:en"
-
         res = requests.get(url)
         root = ET.fromstring(res.content)
 
         news = []
-
         for item in root.findall(".//item")[:10]:
             news.append({
                 "title": item.find("title").text,
                 "link": item.find("link").text
             })
-
         return news
-
     except:
         return []
