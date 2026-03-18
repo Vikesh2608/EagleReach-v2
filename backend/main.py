@@ -17,7 +17,6 @@ app.add_middleware(
 def home():
     return {"message": "EagleReach API running"}
 
-# ================= CIVIC =================
 @app.get("/api/civic")
 def civic(zip: str):
 
@@ -31,6 +30,7 @@ def civic(zip: str):
         lon = float(place["longitude"])
 
         district = "Unknown"
+
         try:
             census = requests.get(
                 f"https://geo.fcc.gov/api/census/area?lat={lat}&lon={lon}&format=json"
@@ -40,6 +40,7 @@ def civic(zip: str):
                 d = census["results"][0].get("districts", [])
                 if d:
                     district = d[0].get("district", "Unknown")
+
         except:
             pass
 
@@ -83,10 +84,9 @@ def civic(zip: str):
             "representatives": []
         }
 
-# ================= WORLD NEWS =================
+
 @app.get("/api/news/world")
 def world_news():
-
     try:
         url = "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en"
         res = requests.get(url)
@@ -99,14 +99,12 @@ def world_news():
             }
             for item in root.findall(".//item")[:10]
         ]
-
     except:
         return []
 
-# ================= LOCAL NEWS =================
+
 @app.get("/api/news/local")
 def local_news(city: str):
-
     try:
         url = f"https://news.google.com/rss/search?q={city}&hl=en-US&gl=US&ceid=US:en"
         res = requests.get(url)
@@ -119,6 +117,5 @@ def local_news(city: str):
             }
             for item in root.findall(".//item")[:10]
         ]
-
     except:
         return []
