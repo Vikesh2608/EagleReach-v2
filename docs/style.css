@@ -19,31 +19,21 @@ body {
 }
 
 .container {
-    max-width: 900px;
+    max-width: 800px;
     margin: auto;
     padding: 20px;
 }
 
-.search-box {
-    margin: 20px 0;
-}
-
-input {
-    padding: 10px;
-}
-
 button {
     padding: 10px;
-    margin-left: 5px;
-    background: #2563eb;
+    margin: 5px;
+    background: blue;
     color: white;
     border: none;
-    border-radius: 6px;
 }
 
 .card {
     background: white;
-    padding: 15px;
+    padding: 10px;
     margin: 10px 0;
-    border-radius: 10px;
 }
