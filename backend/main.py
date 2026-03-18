@@ -5,7 +5,6 @@ import xml.etree.ElementTree as ET
 
 app = FastAPI()
 
-# ✅ CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,17 +13,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# =========================
-# 🟢 ROOT
-# =========================
 @app.get("/")
 def home():
     return {"message": "EagleReach API running"}
 
-
-# =========================
-# 🧑‍⚖️ CIVIC (ALL ZIP SUPPORT)
-# =========================
+# ================= CIVIC =================
 @app.get("/api/civic")
 def civic(zip: str):
 
@@ -37,21 +30,19 @@ def civic(zip: str):
         lat = float(place["latitude"])
         lon = float(place["longitude"])
 
-        # District lookup
         district = "Unknown"
         try:
-            census_url = f"https://geo.fcc.gov/api/census/area?lat={lat}&lon={lon}&format=json"
-            census = requests.get(census_url).json()
+            census = requests.get(
+                f"https://geo.fcc.gov/api/census/area?lat={lat}&lon={lon}&format=json"
+            ).json()
 
-            if "results" in census and len(census["results"]) > 0:
-                districts = census["results"][0].get("districts", [])
-                if len(districts) > 0:
-                    district = districts[0].get("district", "Unknown")
+            if census.get("results"):
+                d = census["results"][0].get("districts", [])
+                if d:
+                    district = d[0].get("district", "Unknown")
+        except:
+            pass
 
-        except Exception as e:
-            print("District error:", e)
-
-        # Representatives (clean fallback)
         reps = [
             {
                 "name": f"U.S. Senators ({state})",
@@ -74,7 +65,6 @@ def civic(zip: str):
         ]
 
         return {
-            "zip": zip,
             "city": city,
             "state": state,
             "district": district,
@@ -93,10 +83,7 @@ def civic(zip: str):
             "representatives": []
         }
 
-
-# =========================
-# 🌍 WORLD NEWS
-# =========================
+# ================= WORLD NEWS =================
 @app.get("/api/news/world")
 def world_news():
 
@@ -105,22 +92,18 @@ def world_news():
         res = requests.get(url)
         root = ET.fromstring(res.content)
 
-        news = []
-        for item in root.findall(".//item")[:10]:
-            news.append({
+        return [
+            {
                 "title": item.find("title").text,
                 "link": item.find("link").text
-            })
-
-        return news
+            }
+            for item in root.findall(".//item")[:10]
+        ]
 
     except:
         return []
 
-
-# =========================
-# 📰 LOCAL NEWS
-# =========================
+# ================= LOCAL NEWS =================
 @app.get("/api/news/local")
 def local_news(city: str):
 
@@ -129,14 +112,13 @@ def local_news(city: str):
         res = requests.get(url)
         root = ET.fromstring(res.content)
 
-        news = []
-        for item in root.findall(".//item")[:10]:
-            news.append({
+        return [
+            {
                 "title": item.find("title").text,
                 "link": item.find("link").text
-            })
-
-        return news
+            }
+            for item in root.findall(".//item")[:10]
+        ]
 
     except:
         return []
