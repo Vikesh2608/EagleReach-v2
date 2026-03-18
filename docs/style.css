@@ -1,25 +1,75 @@
 body {
-    font-family: Arial;
-    background: #f4f6fb;
+    font-family: 'Inter', sans-serif;
     margin: 0;
+    background: #f9fafb;
 }
 
+/* NAVBAR */
 .navbar {
-    background: #1e3a8a;
-    color: white;
-    padding: 15px;
     display: flex;
     justify-content: space-between;
+    padding: 16px 40px;
+    background: white;
+    border-bottom: 1px solid #eee;
 }
 
-.navbar a {
-    color: white;
-    margin-left: 15px;
+.logo {
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.nav-links a {
+    margin-left: 20px;
     text-decoration: none;
+    color: #333;
 }
 
+/* HERO */
+.hero {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.hero h1 {
+    font-size: 36px;
+    font-weight: 600;
+}
+
+.hero p {
+    color: #666;
+}
+
+.search-box {
+    margin-top: 20px;
+}
+
+input {
+    padding: 12px;
+    width: 220px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+button {
+    padding: 12px 18px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
+
+button.secondary {
+    background: #e5e7eb;
+    color: black;
+}
+
+/* LAYOUT */
 .main-layout {
     display: flex;
+    max-width: 1100px;
+    margin: auto;
     gap: 20px;
     padding: 20px;
 }
@@ -30,25 +80,28 @@ body {
 
 .sidebar {
     flex: 1;
-    position: sticky;
-    top: 20px;
 }
 
-input {
-    padding: 10px;
-}
-
-button {
-    padding: 10px;
-    margin: 5px;
-    background: #2563eb;
-    color: white;
-    border: none;
-}
-
+/* CARDS */
 .card {
     background: white;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 8px;
+    padding: 16px;
+    margin: 15px 0;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.highlight {
+    background: #eef2ff;
+}
+
+.emergency {
+    border-left: 4px solid red;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+    .main-layout {
+        flex-direction: column;
+    }
 }
