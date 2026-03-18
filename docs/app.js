@@ -1,144 +1,60 @@
-const API = "https://eaglereach-v2.onrender.com";
-
-
-// 🔍 SEARCH
-async function searchZip() {
-
-    let zip = document.getElementById("zip").value;
-    if (!zip) return;
-
-    // 📍 Get City + State
-    let geo = await fetch(`https://api.zippopotam.us/us/${zip}`);
-    let geoData = await geo.json();
-
-    let city = geoData.places[0]["place name"];
-    let state = geoData.places[0]["state abbreviation"];
-
-    document.getElementById("location").innerHTML =
-        `<h3>📍 ${city}, ${state} (${zip})</h3>`;
-
-    loadLeaders(zip);
-    loadLocalNews(city);
-    loadWorldNews();
-    loadWeather();
-}
-
-
-// 📍 USE LOCATION
-function useLocation() {
-
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-
-        let lat = pos.coords.latitude;
-        let lon = pos.coords.longitude;
-
-        let geo = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}`
-        );
-
-        let data = await geo.json();
-
-        document.getElementById("zip").value = data.postcode;
-
-        searchZip();
-    });
-}
-
-
-// 🏛 LEADERS
-async function loadLeaders(zip) {
-
-    let res = await fetch(`${API}/api/civic?zip=${zip}`);
-    let data = await res.json();
-
-    let html = "";
-
-    if (!data.representatives || data.representatives.length === 0) {
-        html = "<div class='card'>⚠️ No representatives found</div>";
-    } else {
-
-        data.representatives.forEach(rep => {
-            html += `
-            <div class="card">
-                <h3>${rep.name}</h3>
-                <p>${rep.party}</p>
-                <p>📞 ${rep.phone}</p>
-                <a href="${rep.link}" target="_blank">Website</a>
-            </div>
-            `;
-        });
-    }
-
-    document.getElementById("leaders").innerHTML = html;
-}
-
-
-// 🌤 WEATHER (WITH DAYS)
-async function loadWeather() {
-
-    let res = await fetch(
-        "https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.00&daily=temperature_2m_max,temperature_2m_min&timezone=auto"
-    );
-
-    let data = await res.json();
-
-    const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-
-    let html = "";
-
-    data.daily.time.forEach((date, i) => {
-
-        let d = new Date(date);
-        let dayName = days[d.getDay()];
-
-        html += `
-        <div class="card">
-            <b>${dayName}</b><br>
-            🌡 ${data.daily.temperature_2m_max[i]}°C /
-            ${data.daily.temperature_2m_min[i]}°C
-        </div>
-        `;
-    });
-
-    document.getElementById("weather").innerHTML = html;
-}
-
-
 // 📰 LOCAL NEWS
-async function loadLocalNews(city) {
+async function loadLocalNews(location) {
 
-    let res = await fetch(`${API}/api/news/local?city=${city}`);
-    let news = await res.json();
+    try {
+        let res = await fetch(`${API}/api/news/local?city=${location}`);
+        let news = await res.json();
 
-    let html = "";
+        let html = "";
 
-    news.slice(0,5).forEach(n => {
-        html += `
-        <div class="card">
-            <a href="${n.link}" target="_blank">${n.title}</a>
-        </div>
-        `;
-    });
+        if (!news || news.length === 0) {
+            html = "<div class='card'>No local news found</div>";
+        } else {
+            news.slice(0,5).forEach(n => {
+                html += `
+                <div class="card">
+                    <a href="${n.link}" target="_blank">${n.title}</a>
+                </div>
+                `;
+            });
+        }
 
-    document.getElementById("local").innerHTML = html;
+        document.getElementById("local").innerHTML = html;
+
+    } catch (err) {
+        console.error(err);
+        document.getElementById("local").innerHTML =
+            "<div class='card'>Error loading local news</div>";
+    }
 }
 
 
 // 🌍 WORLD NEWS
 async function loadWorldNews() {
 
-    let res = await fetch(`${API}/api/news/world`);
-    let news = await res.json();
+    try {
+        let res = await fetch(`${API}/api/news/world`);
+        let news = await res.json();
 
-    let html = "";
+        let html = "";
 
-    news.slice(0,5).forEach(n => {
-        html += `
-        <div class="card">
-            <a href="${n.link}" target="_blank">${n.title}</a>
-        </div>
-        `;
-    });
+        if (!news || news.length === 0) {
+            html = "<div class='card'>No world news available</div>";
+        } else {
+            news.slice(0,5).forEach(n => {
+                html += `
+                <div class="card">
+                    <a href="${n.link}" target="_blank">${n.title}</a>
+                </div>
+                `;
+            });
+        }
 
-    document.getElementById("world").innerHTML = html;
+        document.getElementById("world").innerHTML = html;
+
+    } catch (err) {
+        console.error(err);
+        document.getElementById("world").innerHTML =
+            "<div class='card'>Error loading world news</div>";
+    }
 }
