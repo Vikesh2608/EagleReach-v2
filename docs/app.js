@@ -9,10 +9,14 @@ async function searchZip() {
         return;
     }
 
-    loadLeaders(zip);
-    loadNews(zip);
+    let res = await fetch(`${API}/api/civic?zip=${zip}`);
+    let data = await res.json();
+
+    displayLocation(data, zip);
+    displayLeaders(data.representatives);
+    loadWeather(data.lat, data.lon);
+    loadLocalNews(data.city);
     loadWorldNews();
-    loadWeather();
 }
 
 
@@ -36,47 +40,60 @@ function useLocation() {
 }
 
 
-async function loadLeaders(zip) {
-
-    let res = await fetch(`${API}/api/civic?zip=${zip}`);
-    let data = await res.json();
-
-    let city = data.city || "Unknown";
-    let state = data.state || "";
-    let district = data.district || "N/A";
+function displayLocation(data, zip) {
 
     document.getElementById("location").innerHTML =
-        `<h3>📍 ${city}, ${state} (${zip})</h3>
-         <p>District: ${district}</p>`;
+        `<h3>📍 ${data.city}, ${data.state} (${zip})</h3>
+         <p>District: ${data.district}</p>`;
+}
+
+
+function displayLeaders(reps) {
 
     let html = "";
 
-    if (!data.representatives.length) {
+    if (!reps.length) {
         html = "<div class='card'>No representatives found</div>";
-    } else {
-
-        data.representatives.forEach(rep => {
-            html += `
-            <div class="card">
-                <b>${rep.name}</b><br>
-                ${rep.party}<br>
-                📞 ${rep.phone}<br>
-                <a href="${rep.link}" target="_blank">Website</a>
-            </div>
-            `;
-        });
     }
+
+    reps.forEach(r => {
+        html += `
+        <div class="card">
+            <b>${r.name}</b><br>
+            ${r.party}<br>
+            📞 ${r.phone}<br>
+            <a href="${r.link}" target="_blank">Website</a>
+        </div>`;
+    });
 
     document.getElementById("leaders").innerHTML = html;
 }
 
 
-async function loadNews(zip) {
+async function loadWeather(lat, lon) {
 
-    let civic = await fetch(`${API}/api/civic?zip=${zip}`);
-    let data = await civic.json();
+    let res = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min&timezone=auto`
+    );
 
-    let city = data.city || "";
+    let data = await res.json();
+
+    let html = "";
+
+    data.daily.time.forEach((d, i) => {
+        html += `
+        <div class="card">
+            ${d}<br>
+            ${data.daily.temperature_2m_max[i]}°C /
+            ${data.daily.temperature_2m_min[i]}°C
+        </div>`;
+    });
+
+    document.getElementById("weather").innerHTML = html;
+}
+
+
+async function loadLocalNews(city) {
 
     let res = await fetch(`${API}/api/news/local?city=${city}`);
     let news = await res.json();
@@ -103,27 +120,4 @@ async function loadWorldNews() {
     });
 
     document.getElementById("world").innerHTML = html;
-}
-
-
-async function loadWeather() {
-
-    let res = await fetch(
-        "https://api.open-meteo.com/v1/forecast?latitude=40.7&longitude=-74&daily=temperature_2m_max,temperature_2m_min&timezone=auto"
-    );
-
-    let data = await res.json();
-
-    let html = "";
-
-    data.daily.time.forEach((d, i) => {
-        html += `
-        <div class="card">
-            ${d}<br>
-            ${data.daily.temperature_2m_max[i]}°C /
-            ${data.daily.temperature_2m_min[i]}°C
-        </div>`;
-    });
-
-    document.getElementById("weather").innerHTML = html;
 }
