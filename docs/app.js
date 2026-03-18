@@ -4,10 +4,7 @@ async function searchZip() {
 
     let zip = document.getElementById("zip").value;
 
-    if (!zip) {
-        alert("Enter ZIP");
-        return;
-    }
+    if (!zip) return alert("Enter ZIP");
 
     let res = await fetch(`${API}/api/civic?zip=${zip}`);
     let data = await res.json();
@@ -18,7 +15,6 @@ async function searchZip() {
     loadLocalNews(data.city);
     loadWorldNews();
 }
-
 
 function useLocation() {
 
@@ -39,7 +35,6 @@ function useLocation() {
     });
 }
 
-
 function displayLocation(data, zip) {
 
     document.getElementById("location").innerHTML =
@@ -47,14 +42,9 @@ function displayLocation(data, zip) {
          <p>District: ${data.district}</p>`;
 }
 
-
 function displayLeaders(reps) {
 
     let html = "";
-
-    if (!reps.length) {
-        html = "<div class='card'>No representatives found</div>";
-    }
 
     reps.forEach(r => {
         html += `
@@ -69,21 +59,28 @@ function displayLeaders(reps) {
     document.getElementById("leaders").innerHTML = html;
 }
 
-
 async function loadWeather(lat, lon) {
 
     let res = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min&timezone=auto`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`
     );
 
     let data = await res.json();
+
+    function icon(code) {
+        if (code < 3) return "☀️";
+        if (code < 50) return "⛅";
+        if (code < 70) return "🌧";
+        if (code < 80) return "❄️";
+        return "🌩";
+    }
 
     let html = "";
 
     data.daily.time.forEach((d, i) => {
         html += `
         <div class="card">
-            ${d}<br>
+            ${icon(data.daily.weathercode[i])} ${d}<br>
             ${data.daily.temperature_2m_max[i]}°C /
             ${data.daily.temperature_2m_min[i]}°C
         </div>`;
@@ -91,7 +88,6 @@ async function loadWeather(lat, lon) {
 
     document.getElementById("weather").innerHTML = html;
 }
-
 
 async function loadLocalNews(city) {
 
@@ -101,12 +97,11 @@ async function loadLocalNews(city) {
     let html = "";
 
     news.slice(0,5).forEach(n => {
-        html += `<div class="card"><a href="${n.link}" target="_blank">${n.title}</a></div>`;
+        html += `<div class="card">📰 <a href="${n.link}" target="_blank">${n.title}</a></div>`;
     });
 
     document.getElementById("local").innerHTML = html;
 }
-
 
 async function loadWorldNews() {
 
@@ -116,7 +111,7 @@ async function loadWorldNews() {
     let html = "";
 
     news.slice(0,5).forEach(n => {
-        html += `<div class="card"><a href="${n.link}" target="_blank">${n.title}</a></div>`;
+        html += `<div class="card">🌍 <a href="${n.link}" target="_blank">${n.title}</a></div>`;
     });
 
     document.getElementById("world").innerHTML = html;
