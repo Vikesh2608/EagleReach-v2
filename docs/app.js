@@ -1,10 +1,10 @@
 const API = "https://eaglereach-v2.onrender.com";
 
-// SEARCH
+
+// 🔍 SEARCH
 async function searchZip() {
 
     let zip = document.getElementById("zip").value;
-
     if (!zip) return;
 
     // 📍 Get City + State
@@ -20,11 +20,11 @@ async function searchZip() {
     loadLeaders(zip);
     loadLocalNews(city);
     loadWorldNews();
-    loadWeather(city);
+    loadWeather();
 }
 
 
-// LOCATION
+// 📍 USE LOCATION
 function useLocation() {
 
     navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -54,7 +54,7 @@ async function loadLeaders(zip) {
     let html = "";
 
     if (!data.representatives || data.representatives.length === 0) {
-        html = "<div class='card'>No data found</div>";
+        html = "<div class='card'>⚠️ No representatives found</div>";
     } else {
 
         data.representatives.forEach(rep => {
@@ -73,22 +73,29 @@ async function loadLeaders(zip) {
 }
 
 
-// 🌤 WEATHER
-async function loadWeather(city) {
+// 🌤 WEATHER (WITH DAYS)
+async function loadWeather() {
 
-    // Using fixed NYC for now (simple MVP)
     let res = await fetch(
         "https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.00&daily=temperature_2m_max,temperature_2m_min&timezone=auto"
     );
 
     let data = await res.json();
 
+    const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
     let html = "";
 
-    data.daily.temperature_2m_max.forEach((t, i) => {
+    data.daily.time.forEach((date, i) => {
+
+        let d = new Date(date);
+        let dayName = days[d.getDay()];
+
         html += `
         <div class="card">
-            Day ${i+1}: ${t}°C / ${data.daily.temperature_2m_min[i]}°C
+            <b>${dayName}</b><br>
+            🌡 ${data.daily.temperature_2m_max[i]}°C /
+            ${data.daily.temperature_2m_min[i]}°C
         </div>
         `;
     });
