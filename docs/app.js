@@ -1,188 +1,175 @@
-const API_BASE = "https://eaglereach-v2.onrender.com";
+const API = "https://eaglereach-v2.onrender.com";
 
 
-// 🚀 MAIN SEARCH FUNCTION
+// 🔍 SEARCH
 async function searchZip() {
-    const zip = document.getElementById("zipInput").value;
+
+    let zip = document.getElementById("zip").value;
 
     if (!zip) {
         alert("Enter ZIP code");
         return;
     }
 
-    try {
-        // 📍 Location info
-        const geoRes = await fetch(`https://api.zippopotam.us/us/${zip}`);
-        const geoData = await geoRes.json();
+    loadLeaders(zip);
+    loadLocalNews(zip);
+    loadWorldNews();
+    loadWeather();
+}
 
-        const city = geoData.places[0]["place name"];
-        const state = geoData.places[0]["state abbreviation"];
+
+// 📍 USE LOCATION
+function useLocation() {
+
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+
+        let lat = pos.coords.latitude;
+        let lon = pos.coords.longitude;
+
+        let geo = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}`
+        );
+
+        let data = await geo.json();
+
+        document.getElementById("zip").value = data.postcode;
+
+        searchZip();
+    });
+}
+
+
+// 🏛 REPRESENTATIVES
+async function loadLeaders(zip) {
+
+    try {
+        let res = await fetch(`${API}/api/civic?zip=${zip}`);
+        let data = await res.json();
+
+        let html = "";
 
         document.getElementById("location").innerHTML =
-            `📍 ${city}, ${state} (${zip})`;
+            `<h3>📍 ${data.city}, ${data.state} (${zip})</h3>
+             <p>🏛 District: ${data.district}</p>`;
 
-        // 👇 Load everything
-        loadRepresentatives(zip);
-        loadWeather(city);
-        loadLocalNews(city);
-        loadWorldNews();
+        if (!data.representatives || data.representatives.length === 0) {
+            html = "<div class='card'>⚠️ No representatives found</div>";
+        } else {
+
+            data.representatives.forEach(rep => {
+                html += `
+                <div class="card">
+                    <h3>${rep.name}</h3>
+                    <p>${rep.party}</p>
+                    <p>📞 ${rep.phone}</p>
+                    <a href="${rep.link}" target="_blank">Website</a>
+                </div>
+                `;
+            });
+        }
+
+        document.getElementById("leaders").innerHTML = html;
 
     } catch (err) {
-        alert("Invalid ZIP code");
+        document.getElementById("leaders").innerHTML =
+            "<div class='card'>Error loading representatives</div>";
     }
 }
 
 
-// 🧑‍⚖️ REPRESENTATIVES
-async function loadRepresentatives(zip) {
-    const container = document.getElementById("representatives");
-    container.innerHTML = "Loading...";
+// 📰 LOCAL NEWS
+async function loadLocalNews(zip) {
 
     try {
-        const res = await fetch(`${API_BASE}/api/civic?zip=${zip}`);
-        const data = await res.json();
+        let civic = await fetch(`${API}/api/civic?zip=${zip}`);
+        let civicData = await civic.json();
 
-        if (!data.representatives) {
-            container.innerHTML = "No data found";
-            return;
+        let location = civicData.city + " " + civicData.state;
+
+        let res = await fetch(`${API}/api/news/local?city=${location}`);
+        let news = await res.json();
+
+        let html = "";
+
+        if (!news.length) {
+            html = "<div class='card'>No local news found</div>";
+        } else {
+            news.slice(0,5).forEach(n => {
+                html += `
+                <div class="card">
+                    <a href="${n.link}" target="_blank">${n.title}</a>
+                </div>
+                `;
+            });
         }
 
-        container.innerHTML = "";
+        document.getElementById("local").innerHTML = html;
 
-        data.representatives.forEach(rep => {
-            container.innerHTML += `
-                <div class="card">
-                    <h3>${rep.name}</h3>
-                    <p>${rep.party || ""}</p>
-                    <p>📞 ${rep.phone || "N/A"}</p>
-                    <a href="${rep.link}" target="_blank">Website</a>
-                </div>
+    } catch (err) {
+        document.getElementById("local").innerHTML =
+            "<div class='card'>Error loading local news</div>";
+    }
+}
+
+
+// 🌍 WORLD NEWS
+async function loadWorldNews() {
+
+    try {
+        let res = await fetch(`${API}/api/news/world`);
+        let news = await res.json();
+
+        let html = "";
+
+        news.slice(0,5).forEach(n => {
+            html += `
+            <div class="card">
+                <a href="${n.link}" target="_blank">${n.title}</a>
+            </div>
             `;
         });
 
-    } catch (err) {
-        container.innerHTML = "Error loading representatives";
+        document.getElementById("world").innerHTML = html;
+
+    } catch {
+        document.getElementById("world").innerHTML =
+            "<div class='card'>Error loading world news</div>";
     }
 }
 
 
-// 🌦 WEATHER (Open-Meteo)
-async function loadWeather(city) {
-    const container = document.getElementById("weather");
+// 🌤 WEATHER
+async function loadWeather() {
 
     try {
-        const geo = await fetch(
-            `https://geocoding-api.open-meteo.com/v1/search?name=${city}`
-        );
-        const geoData = await geo.json();
-
-        const lat = geoData.results[0].latitude;
-        const lon = geoData.results[0].longitude;
-
-        const weatherRes = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min&timezone=auto`
+        let res = await fetch(
+            "https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.00&daily=temperature_2m_max,temperature_2m_min&timezone=auto"
         );
 
-        const weatherData = await weatherRes.json();
+        let data = await res.json();
 
         const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
-        container.innerHTML = "";
+        let html = "";
 
-        weatherData.daily.time.forEach((date, i) => {
-            const dayName = days[new Date(date).getDay()];
+        data.daily.time.forEach((date, i) => {
 
-            container.innerHTML += `
-                <div class="card">
-                    <b>${dayName}</b><br>
-                    🌡 ${weatherData.daily.temperature_2m_max[i]}°C /
-                    ${weatherData.daily.temperature_2m_min[i]}°C
-                </div>
+            let d = new Date(date);
+            let dayName = days[d.getDay()];
+
+            html += `
+            <div class="card">
+                <b>${dayName}</b><br>
+                🌡 ${data.daily.temperature_2m_max[i]}°C /
+                ${data.daily.temperature_2m_min[i]}°C
+            </div>
             `;
         });
 
-    } catch (err) {
-        container.innerHTML = "Weather unavailable";
+        document.getElementById("weather").innerHTML = html;
+
+    } catch {
+        document.getElementById("weather").innerHTML =
+            "<div class='card'>Weather unavailable</div>";
     }
-}
-
-
-// 📰 LOCAL NEWS (FIXED)
-async function loadLocalNews(city) {
-    const container = document.getElementById("localNews");
-    container.innerHTML = "Loading...";
-
-    try {
-        const res = await fetch(
-            `${API_BASE}/api/news/local?city=${encodeURIComponent(city)}`
-        );
-
-        const data = await res.json();
-
-        container.innerHTML = "";
-
-        data.forEach(article => {
-            container.innerHTML += `
-                <div class="card">
-                    <a href="${article.link}" target="_blank">
-                        ${article.title}
-                    </a>
-                </div>
-            `;
-        });
-
-    } catch (err) {
-        container.innerHTML = "Error loading local news";
-    }
-}
-
-
-// 🌍 WORLD NEWS (FIXED)
-async function loadWorldNews() {
-    const container = document.getElementById("worldNews");
-    container.innerHTML = "Loading...";
-
-    try {
-        const res = await fetch(`${API_BASE}/api/news/world`);
-        const data = await res.json();
-
-        container.innerHTML = "";
-
-        data.forEach(article => {
-            container.innerHTML += `
-                <div class="card">
-                    <a href="${article.link}" target="_blank">
-                        ${article.title}
-                    </a>
-                </div>
-            `;
-        });
-
-    } catch (err) {
-        container.innerHTML = "Error loading world news";
-    }
-}
-
-
-// 📍 USE MY LOCATION
-function useMyLocation() {
-    navigator.geolocation.getCurrentPosition(async position => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-
-        const res = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
-        );
-
-        const data = await res.json();
-
-        const zip = data.postcode;
-
-        document.getElementById("zipInput").value = zip;
-
-        searchZip();
-
-    }, () => {
-        alert("Location access denied");
-    });
 }
