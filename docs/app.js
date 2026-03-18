@@ -1,203 +1,137 @@
 const API = "https://eaglereach-v2.onrender.com";
 
-
-// 🔍 SEARCH BY ZIP
+// SEARCH
 async function searchZip() {
 
     let zip = document.getElementById("zip").value;
 
-    if (!zip) {
-        alert("Enter ZIP code");
-        return;
-    }
+    if (!zip) return;
 
-    try {
-        let res = await fetch(`${API}/api/civic?zip=${zip}`);
-        let data = await res.json();
+    // 📍 Get City + State
+    let geo = await fetch(`https://api.zippopotam.us/us/${zip}`);
+    let geoData = await geo.json();
 
-        console.log("CIVIC DATA:", data);
+    let city = geoData.places[0]["place name"];
+    let state = geoData.places[0]["state abbreviation"];
 
-        let html = "";
+    document.getElementById("location").innerHTML =
+        `<h3>📍 ${city}, ${state} (${zip})</h3>`;
 
-        // ⚠️ HANDLE EMPTY OR FAILED DATA
-        if (!data.representatives || data.representatives.length === 0) {
-
-            html = `
-            <div class="card">
-                <p>⚠️ No representatives found for this ZIP.</p>
-                <p>Try another ZIP or use "Use My Location".</p>
-            </div>
-            `;
-
-        } else {
-
-            // 🏛 RENDER REPRESENTATIVES
-            data.representatives.forEach(rep => {
-
-                html += `
-                <div class="card">
-                    <h3>${rep.name}</h3>
-                    <p>${rep.party}</p>
-                    <p>📞 ${rep.phone}</p>
-                    <a href="${rep.link}" target="_blank">🔗 Website</a>
-
-                    <br><br>
-
-                    <button onclick="generateEmail('${rep.name}')">
-                        ✉ Generate Email
-                    </button>
-                </div>
-                `;
-            });
-        }
-
-        document.getElementById("leaders").innerHTML = html;
-
-        // 🌍 Load world news after search
-        loadWorldNews();
-
-        // 📍 Try local news if city exists
-        if (window.currentCity) {
-            loadLocalNews(window.currentCity);
-        }
-
-    } catch (err) {
-        console.error(err);
-        alert("Error fetching data");
-    }
+    loadLeaders(zip);
+    loadLocalNews(city);
+    loadWorldNews();
+    loadWeather(city);
 }
 
 
-// 📍 USE MY LOCATION
-async function useLocation() {
-
-    if (!navigator.geolocation) {
-        alert("Geolocation not supported");
-        return;
-    }
+// LOCATION
+function useLocation() {
 
     navigator.geolocation.getCurrentPosition(async (pos) => {
 
         let lat = pos.coords.latitude;
         let lon = pos.coords.longitude;
 
-        console.log("LOCATION:", lat, lon);
+        let geo = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}`
+        );
 
-        try {
-            let geoRes = await fetch(
-                `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
-            );
+        let data = await geo.json();
 
-            let geoData = await geoRes.json();
+        document.getElementById("zip").value = data.postcode;
 
-            console.log("GEO DATA:", geoData);
-
-            let zip = geoData.postcode;
-            let city = geoData.city;
-
-            if (!zip) {
-                alert("Could not detect ZIP");
-                return;
-            }
-
-            // Save city globally for local news
-            window.currentCity = city;
-
-            document.getElementById("zip").value = zip;
-
-            searchZip();
-
-        } catch (err) {
-            console.error(err);
-            alert("Location fetch failed");
-        }
-
-    }, () => {
-        alert("Location permission denied");
+        searchZip();
     });
 }
 
 
-// 🌍 LOAD WORLD NEWS
-async function loadWorldNews() {
+// 🏛 LEADERS
+async function loadLeaders(zip) {
 
-    try {
-        let res = await fetch(`${API}/api/news/world`);
-        let news = await res.json();
+    let res = await fetch(`${API}/api/civic?zip=${zip}`);
+    let data = await res.json();
 
-        let html = "";
+    let html = "";
 
-        news.slice(0, 5).forEach(n => {
+    if (!data.representatives || data.representatives.length === 0) {
+        html = "<div class='card'>No data found</div>";
+    } else {
+
+        data.representatives.forEach(rep => {
             html += `
             <div class="card">
-                <a href="${n.link}" target="_blank">${n.title}</a>
+                <h3>${rep.name}</h3>
+                <p>${rep.party}</p>
+                <p>📞 ${rep.phone}</p>
+                <a href="${rep.link}" target="_blank">Website</a>
             </div>
             `;
         });
-
-        document.getElementById("world").innerHTML = html;
-
-    } catch (err) {
-        console.error(err);
     }
+
+    document.getElementById("leaders").innerHTML = html;
 }
 
 
-// 📰 LOAD LOCAL NEWS
-async function loadLocalNews(city) {
+// 🌤 WEATHER
+async function loadWeather(city) {
 
-    if (!city) return;
-
-    try {
-        let res = await fetch(`${API}/api/news/local?city=${city}`);
-        let news = await res.json();
-
-        let html = "";
-
-        news.slice(0, 5).forEach(n => {
-            html += `
-            <div class="card">
-                <a href="${n.link}" target="_blank">${n.title}</a>
-            </div>
-            `;
-        });
-
-        document.getElementById("local").innerHTML = html;
-
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-
-// 🔄 TAB SWITCHING
-function showTab(tab) {
-
-    document.getElementById("leaders").style.display = "none";
-    document.getElementById("local").style.display = "none";
-    document.getElementById("world").style.display = "none";
-
-    document.getElementById(tab).style.display = "block";
-}
-
-
-// ✉ GENERATE EMAIL (USP FEATURE)
-function generateEmail(name) {
-
-    let subject = encodeURIComponent("Concern from a constituent");
-
-    let body = encodeURIComponent(
-`Dear ${name},
-
-I am a resident in your constituency and would like to raise a concern regarding:
-
-[Write your issue here]
-
-I appreciate your time and look forward to your response.
-
-Sincerely,
-A concerned citizen`
+    // Using fixed NYC for now (simple MVP)
+    let res = await fetch(
+        "https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.00&daily=temperature_2m_max,temperature_2m_min&timezone=auto"
     );
 
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    let data = await res.json();
+
+    let html = "";
+
+    data.daily.temperature_2m_max.forEach((t, i) => {
+        html += `
+        <div class="card">
+            Day ${i+1}: ${t}°C / ${data.daily.temperature_2m_min[i]}°C
+        </div>
+        `;
+    });
+
+    document.getElementById("weather").innerHTML = html;
+}
+
+
+// 📰 LOCAL NEWS
+async function loadLocalNews(city) {
+
+    let res = await fetch(`${API}/api/news/local?city=${city}`);
+    let news = await res.json();
+
+    let html = "";
+
+    news.slice(0,5).forEach(n => {
+        html += `
+        <div class="card">
+            <a href="${n.link}" target="_blank">${n.title}</a>
+        </div>
+        `;
+    });
+
+    document.getElementById("local").innerHTML = html;
+}
+
+
+// 🌍 WORLD NEWS
+async function loadWorldNews() {
+
+    let res = await fetch(`${API}/api/news/world`);
+    let news = await res.json();
+
+    let html = "";
+
+    news.slice(0,5).forEach(n => {
+        html += `
+        <div class="card">
+            <a href="${n.link}" target="_blank">${n.title}</a>
+        </div>
+        `;
+    });
+
+    document.getElementById("world").innerHTML = html;
 }
