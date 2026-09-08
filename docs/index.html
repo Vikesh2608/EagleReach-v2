@@ -43,7 +43,7 @@
   <!-- Search -->
   <section class="max-w-6xl mx-auto px-4 sm:px-6 mt-4 sm:mt-6">
     <p class="text-slate-600 text-sm sm:text-base mb-2">
-      Enter your ZIP code to see representatives, voter info, weather, city updates, traffic, and elections.
+      Enter your ZIP code to see representatives, voter info, weather, city updates, traffic, elections, and the latest bills in Congress.
     </p>
     <div class="flex flex-wrap items-center gap-2">
       <input id="zipInput" class="w-44 sm:w-56 border rounded-md px-3 py-2 text-sm sm:text-base" type="text" inputmode="numeric" maxlength="10" placeholder="ZIP (e.g., 62704)" />
@@ -108,6 +108,16 @@
       <div id="elex" class="mt-2 text-sm"></div>
     </section>
 
+    <!-- In Congress Now -->
+    <section class="md:col-span-2 bg-white rounded-xl p-4 sm:p-5 shadow-soft">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="font-semibold text-lg">In Congress Now</h2>
+        <a id="billsBrowse" class="text-xs text-blue-700 hover:underline" target="_blank" rel="noopener" href="https://www.govtrack.us/congress/bills/browse">Browse all bills →</a>
+      </div>
+      <div id="billsList" class="mt-3 space-y-2 text-sm"></div>
+      <p id="billsMeta" class="text-xs text-slate-500 mt-2"></p>
+    </section>
+
     <!-- Traffic -->
     <section class="bg-white rounded-xl p-4 sm:p-5 shadow-soft">
       <h2 class="font-semibold text-lg">Traffic</h2>
@@ -162,7 +172,7 @@
 
   <!-- Footer -->
   <footer class="max-w-6xl mx-auto px-4 sm:px-6 mb-10 text-xs text-slate-500">
-    © 2025 EagleReach by Vikesh Sagar Bairam. All rights reserved.
+    © <span id="footYear">2025</span> EagleReach by Vikesh Sagar Bairam. All rights reserved.
   </footer>
 
   <!-- Slide panels (About/Founder/Contact) -->
@@ -362,11 +372,46 @@
         setPlaceLine(j.place_name, j.state_abbr, z);
       }catch{}; run(); }
       renderHistory();
+      document.getElementById('footYear').textContent = new Date().getFullYear();
+      loadBills();
       // Handle opening panels via hash deep-link
       if (location.hash === '#about') openPanel('aboutPanel');
       if (location.hash === '#founder') openPanel('founderPanel');
       if (location.hash === '#contact') openPanel('contactPanel');
     });
+
+    // -------------------- Bills in Congress ---------
+    const billsList = $('#billsList');
+    const billsMeta = $('#billsMeta');
+    let billsLoaded = false;
+
+    async function loadBills(){
+      if (billsLoaded) return;
+      try{
+        const j = await (await fetch(`${BACKEND}/bills?limit=8`)).json();
+        billsList.innerHTML = '';
+        if(!(j.items || []).length){
+          billsList.innerHTML = `<p class="text-sm text-slate-600">Could not load recent bills right now.</p>`;
+          return;
+        }
+        j.items.forEach(b=>{
+          const el = document.createElement('div');
+          el.className = "border rounded-md px-3 py-2";
+          const num = b.number ? `<span class="font-medium">${b.number}</span>` : '';
+          const sponsor = b.sponsor ? `<span class="text-slate-500"> · ${b.sponsor}</span>` : '';
+          const title = b.link
+            ? `<a class="text-blue-700 hover:underline" href="${b.link}" target="_blank" rel="noopener">${b.title || 'Untitled measure'}</a>`
+            : (b.title || 'Untitled measure');
+          el.innerHTML = `<div class="text-sm">${num} ${title}</div>
+                          <div class="text-xs text-slate-500 mt-0.5">${b.status || ''}${b.introduced_date ? ' · introduced ' + b.introduced_date : ''}${sponsor}</div>`;
+          billsList.appendChild(el);
+        });
+        billsMeta.textContent = `Updated ${j.updated_at} — Source: ${j.source}`;
+        billsLoaded = true;
+      }catch(e){
+        billsList.innerHTML = `<p class="text-sm text-red-600">Could not load bills in Congress.</p>`;
+      }
+    }
 
     // -------------------- Main run -------------------
     async function run(){
@@ -471,6 +516,9 @@
 
       // Traffic
       trafficBtn.href = `https://www.google.com/maps/@?api=1&map_action=map&layer=traffic&query=${encodeURIComponent(zip)}`;
+
+      // Bills in Congress (national, ZIP-independent)
+      loadBills();
 
       setStatus(`Showing results for ${zip}`);
     }

@@ -1,16 +1,37 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-import httpx, asyncio, datetime as dt, time
+import os, httpx, asyncio, datetime as dt, time
 from typing import Optional, Dict, Any, Tuple
 
-app = FastAPI(title="EagleReach Backend (Open Data)")
+APP_VERSION = "1.4.0-open-data"
 
-# CORS
+app = FastAPI(
+    title="EagleReach Backend (Open Data)",
+    version=APP_VERSION,
+    description="Keyless civic-data API for EagleReach: officials, weather, voter info, "
+                "elections, city 311 feeds, news links, and recent bills in Congress.",
+)
+
+
+def utcnow_iso() -> str:
+    """Timezone-aware UTC timestamp, second precision, trailing Z."""
+    return (
+        dt.datetime.now(dt.timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
+
+
+# CORS — built-in origins plus anything in EXTRA_ALLOWED_ORIGINS (comma-separated)
 ALLOWED = [
     "https://vikesh2608.github.io",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
 ]
+ALLOWED += [o.strip() for o in os.getenv("EXTRA_ALLOWED_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED,
@@ -28,7 +49,7 @@ OPEN_METEO = "https://api.open-meteo.com/v1/forecast"
 NYC311 = "https://data.cityofnewyork.us/resource/erm2-nwe9.json"
 CHI311 = "https://data.cityofchicago.org/resource/v6vf-nfxy.json"
 
-UA = {"User-Agent": "EagleReach/1.3 (contact: vikebairam@gmail.com)"}
+UA = {"User-Agent": "EagleReach/1.4 (contact: vikebairam@gmail.com)"}
 
 def _esc(s): return (s or "").strip()
 
@@ -73,12 +94,27 @@ def wmo_label_icon(code:int):
     }
     return MAP.get(code, ("Weather", "⛅"))
 
+@app.get("/")
+def root():
+    return {
+        "service": "EagleReach Backend (Open Data)",
+        "version": APP_VERSION,
+        "docs": "/docs",
+        "endpoints": [
+            "/health", "/zipinfo", "/officials", "/weather", "/voter",
+            "/city/updates", "/elections", "/news", "/bills",
+        ],
+    }
+
 @app.get("/health")
 def health():
     return {
         "ok": True,
-        "backend_version": "1.3.0-open-data",
-        "sources": ["zippopotam.us", "FCC", "GovTrack", "Wikidata", "Open‑Meteo", "NYC 311", "Chicago 311"],
+        "backend_version": APP_VERSION,
+        "sources": [
+            "zippopotam.us", "FCC", "GovTrack", "Wikidata",
+            "Open‑Meteo", "NYC 311", "Chicago 311",
+        ],
     }
 
 # ---------- ZIP helpers ----------
@@ -258,7 +294,7 @@ async def officials(zip: str = Query(..., min_length=5, max_length=10)):
         "location": {"lat": lat, "lon": lon},
         "district": district,
         "officials": rows,
-        "generated_at": dt.datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "generated_at": utcnow_iso(),
         "sources": {
             "zip": "zippopotam.us",
             "district": "FCC Census Block",
@@ -300,7 +336,7 @@ async def weather(zip: str):
         "state": z.get("state_abbr"),
         "lat": lat, "lon": lon,
         "days": out,
-        "updated_at": dt.datetime.utcnow().isoformat(timespec="seconds")+"Z",
+        "updated_at": utcnow_iso(),
         "source": "Open‑Meteo"
     }
 
@@ -377,3 +413,57 @@ async def news(zip: str):
     local_url = f"https://news.google.com/search?hl=en-US&gl=US&ceid=US:en&q={q}"
     world_url = "https://news.google.com/topstories?hl=en-US&gl=US&ceid=US:en"
     return {"zip": zip, "local_url": local_url, "world_url": world_url}
+
+# ---------- Bills in Congress ----------
+def _bill_row(it: Dict[str, Any]) -> Dict[str, Any]:
+    sponsor = it.get("sponsor") or {}
+    return {
+        "number": it.get("display_number") or it.get("number"),
+        "title": it.get("title_without_number") or it.get("title"),
+        "status": it.get("current_status_label") or it.get("current_status"),
+        "status_date": it.get("current_status_date"),
+        "introduced_date": it.get("introduced_date"),
+        "congress": it.get("congress"),
+        "chamber": it.get("current_chamber"),
+        "sponsor": sponsor.get("name"),
+        "sponsor_party": (it.get("sponsor_role") or {}).get("party"),
+        "link": it.get("link"),
+        "is_alive": it.get("is_alive"),
+    }
+
+
+@app.get("/bills")
+async def bills(
+    limit: int = Query(8, ge=1, le=25),
+    order_by: str = Query("introduced", pattern="^(introduced|status)$"),
+):
+    """Recent activity in the U.S. Congress (GovTrack, keyless)."""
+    sort = "-introduced_date" if order_by == "introduced" else "-current_status_date"
+    ck = f"bills:{order_by}:{limit}"
+    cached = cache_get(ck)
+    if cached is not None:
+        return cached
+    params = {"sort": sort, "limit": str(limit), "fields": ",".join([
+        "display_number", "number", "title", "title_without_number",
+        "current_status", "current_status_label", "current_status_date",
+        "introduced_date", "congress", "current_chamber", "sponsor",
+        "sponsor_role", "link", "is_alive",
+    ])}
+    try:
+        async with httpx.AsyncClient(timeout=20, headers=UA) as client:
+            r = await client.get(f"{GOVTRACK}/bill", params=params)
+            r.raise_for_status()
+            objs = r.json().get("objects", []) or []
+    except Exception:
+        objs = []
+    out = {
+        "items": [_bill_row(it) for it in objs],
+        "count": len(objs),
+        "order_by": order_by,
+        "updated_at": utcnow_iso(),
+        "source": "GovTrack",
+        "browse_url": "https://www.govtrack.us/congress/bills/browse",
+    }
+    if objs:
+        cache_set(ck, out, 900)
+    return out
