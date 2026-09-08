@@ -3,12 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>EagleReach — your civics, in one search</title>
-  <meta name="description" content="Open, keyless civic assistant. One ZIP unlocks your representatives, voter info, elections, weather, city updates, and bills in Congress." />
+  <title>EagleReach — your civics, in one tap</title>
+  <meta name="description" content="Free public service. One tap on your location shows your mayor, city council, and members of Congress — English & Español, no login, no tracking." />
   <meta name="theme-color" content="#0a2463" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A6%85%3C/text%3E%3C/svg%3E" />
 
-  <!-- Public Sans is the official U.S. federal design-system typeface -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,500&display=swap" rel="stylesheet" />
@@ -17,70 +16,45 @@
   <script>
     tailwind.config = {
       darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: { sans: ['"Public Sans"', 'system-ui', '-apple-system', '"Segoe UI"', 'Roboto', 'sans-serif'] },
-          colors: {
-            federal: { 900:'#071a4a', 700:'#0a2463', 600:'#123a8a', 500:'#1e4bd8', 400:'#3b6ff0' },
-          },
-          boxShadow: { glow: '0 0 0 1px rgba(30,75,216,.35), 0 20px 60px -20px rgba(30,75,216,.45)' },
-        },
-      },
+      theme: { extend: {
+        fontFamily: { sans: ['"Public Sans"', 'system-ui', '-apple-system', '"Segoe UI"', 'Roboto', 'sans-serif'] },
+        colors: { federal: { 900:'#071a4a', 700:'#0a2463', 600:'#123a8a', 500:'#1e4bd8', 400:'#3b6ff0' } },
+        boxShadow: { glow: '0 0 0 1px rgba(30,75,216,.35), 0 20px 60px -20px rgba(30,75,216,.45)' },
+      } },
     }
   </script>
 
   <style type="text/tailwindcss">
     @layer components {
-      .card {
-        @apply rounded-2xl border border-black/[0.06] dark:border-white/10
-               bg-white/70 dark:bg-white/[0.045] backdrop-blur-xl
-               shadow-[0_10px_40px_-15px_rgba(8,15,40,0.15)] p-5 sm:p-6;
-      }
-      .btn {
-        @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3
-               text-sm font-semibold transition active:scale-[.98] select-none
-               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-federal-400 focus-visible:ring-offset-2
-               focus-visible:ring-offset-white dark:focus-visible:ring-offset-federal-900;
-      }
-      .btn-primary {
-        @apply btn text-white bg-gradient-to-b from-federal-500 to-federal-600 hover:shadow-glow;
-      }
-      .btn-ghost {
-        @apply btn bg-black/[0.04] dark:bg-white/[0.06] text-slate-700 dark:text-slate-200
-               hover:bg-black/[0.08] dark:hover:bg-white/[0.1];
-      }
-      .chip {
-        @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold
-               bg-black/[0.05] dark:bg-white/[0.08] text-slate-600 dark:text-slate-300
-               transition hover:bg-black/[0.09] dark:hover:bg-white/[0.12]
-               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-federal-400;
-      }
+      .card { @apply rounded-2xl border border-black/[0.06] dark:border-white/10 bg-white/70 dark:bg-white/[0.045]
+              backdrop-blur-xl shadow-[0_10px_40px_-15px_rgba(8,15,40,0.15)] p-5 sm:p-6; }
+      .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition
+             active:scale-[.98] select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-federal-400
+             focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-federal-900; }
+      .btn-primary { @apply btn text-white bg-gradient-to-b from-federal-500 to-federal-600 hover:shadow-glow; }
+      .btn-ghost { @apply btn bg-black/[0.04] dark:bg-white/[0.06] text-slate-700 dark:text-slate-200
+                   hover:bg-black/[0.08] dark:hover:bg-white/[0.1]; }
+      .chip { @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold
+              bg-black/[0.05] dark:bg-white/[0.08] text-slate-600 dark:text-slate-300 transition
+              hover:bg-black/[0.09] dark:hover:bg-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-federal-400; }
       .h-eyebrow { @apply text-[11px] font-extrabold uppercase tracking-[0.14em] text-federal-600 dark:text-federal-400; }
       .group-title { @apply text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400 mb-3 px-1; }
     }
   </style>
 
   <style>
-    :root { color-scheme: light; }
-    html.dark { color-scheme: dark; }
-    body { background: #eef1f7; }
-    html.dark body { background: #060a14; }
-
+    :root { color-scheme: light; } html.dark { color-scheme: dark; }
+    body { background: #eef1f7; } html.dark body { background: #060a14; }
     :focus-visible { outline: 2px solid #3b6ff0; outline-offset: 2px; border-radius: 4px; }
 
     .mesh { position: fixed; inset: -20vh -10vw; z-index: -2; pointer-events: none; filter: saturate(1.05);
-      background:
-        radial-gradient(38rem 38rem at 8% -6%, rgba(30,75,216,.20), transparent 60%),
+      background: radial-gradient(38rem 38rem at 8% -6%, rgba(30,75,216,.20), transparent 60%),
         radial-gradient(34rem 34rem at 102% 2%, rgba(220,38,38,.16), transparent 62%),
         radial-gradient(44rem 44rem at 52% 118%, rgba(30,75,216,.16), transparent 60%);
-      animation: drift 24s ease-in-out infinite alternate;
-    }
-    html.dark .mesh {
-      background:
-        radial-gradient(38rem 38rem at 8% -6%, rgba(59,111,240,.30), transparent 60%),
+      animation: drift 24s ease-in-out infinite alternate; }
+    html.dark .mesh { background: radial-gradient(38rem 38rem at 8% -6%, rgba(59,111,240,.30), transparent 60%),
         radial-gradient(34rem 34rem at 102% 2%, rgba(220,38,38,.22), transparent 62%),
-        radial-gradient(44rem 44rem at 52% 118%, rgba(30,75,216,.26), transparent 60%);
-    }
+        radial-gradient(44rem 44rem at 52% 118%, rgba(30,75,216,.26), transparent 60%); }
     @keyframes drift { to { transform: translate3d(0,-2.5rem,0) scale(1.04); } }
     .grain { position: fixed; inset: 0; z-index: -1; opacity: .04; pointer-events: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
@@ -90,6 +64,8 @@
     .rise { animation: rise .6s cubic-bezier(.2,.7,.2,1) both; }
     @keyframes floaty { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-7px) rotate(-3deg); } }
     .floaty { animation: floaty 5s ease-in-out infinite; }
+    @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(30,75,216,.45); } 70% { box-shadow: 0 0 0 16px rgba(30,75,216,0); } 100% { box-shadow: 0 0 0 0 rgba(30,75,216,0); } }
+    .pulse-ring { animation: pulse-ring 2.4s ease-out infinite; }
 
     .sk { position: relative; overflow: hidden; border-radius: .6rem; background: rgba(120,132,158,.16); }
     html.dark .sk { background: rgba(255,255,255,.06); }
@@ -107,108 +83,100 @@
 
     .panel { transform: translateX(102%); transition: transform .38s cubic-bezier(.2,.75,.2,1); }
     .panel.open { transform: translateX(0); }
-
     .nice-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
     .nice-scroll::-webkit-scrollbar-thumb { background: rgba(120,132,158,.4); border-radius: 999px; }
-
     #miniSearch { max-height: 0; opacity: 0; overflow: hidden; transition: max-height .3s ease, opacity .2s ease; }
     #miniSearch.show { max-height: 4rem; opacity: 1; }
-
     #toTop { opacity: 0; transform: translateY(10px); pointer-events: none; transition: .25s ease; }
     #toTop.show { opacity: 1; transform: none; pointer-events: auto; }
 
     @media (prefers-reduced-motion: reduce) {
-      .rise, .floaty, .mesh, .toast, .sk::after { animation: none !important; }
+      .rise, .floaty, .mesh, .toast, .sk::after, .pulse-ring { animation: none !important; }
       .panel, #miniSearch, #toTop, html { transition: none !important; scroll-behavior: auto; }
     }
   </style>
 </head>
 
 <body class="font-sans text-slate-800 dark:text-slate-100 antialiased">
-  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:z-[100] focus:top-3 focus:left-3 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-federal-600 focus:text-white focus:font-semibold">Skip to content</a>
+  <a href="#main" data-i18n="skip" class="sr-only focus:not-sr-only focus:fixed focus:z-[100] focus:top-3 focus:left-3 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-federal-600 focus:text-white focus:font-semibold">Skip to content</a>
 
   <div class="mesh"></div>
   <div class="grain"></div>
 
-  <!-- ================= Header ================= -->
   <header id="siteHeader" class="sticky top-0 z-40 border-b border-white/10 bg-federal-900/85 backdrop-blur text-white">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
       <a href="#top" class="flex items-center gap-2.5">
         <span class="text-2xl sm:text-[26px] floaty" aria-hidden="true">🦅</span>
         <span class="font-black tracking-tight text-lg sm:text-xl">EagleReach</span>
         <span class="hidden sm:inline text-white/60 text-lg" aria-hidden="true">🇺🇸</span>
       </a>
-      <nav class="flex items-center gap-0.5 sm:gap-2 text-[13px] sm:text-sm font-semibold">
-        <button data-panel="aboutPanel"   data-hash="#about"   class="navlink px-2 sm:px-2.5 py-1.5 rounded-lg hover:bg-white/10 transition">About</button>
-        <button data-panel="founderPanel" data-hash="#founder" class="navlink hidden sm:inline-block px-2.5 py-1.5 rounded-lg hover:bg-white/10 transition">Founder</button>
-        <button data-panel="contactPanel" data-hash="#contact" class="navlink px-2 sm:px-2.5 py-1.5 rounded-lg hover:bg-white/10 transition">Contact</button>
-        <a href="#feedback" class="hidden sm:inline-block px-2.5 py-1.5 rounded-lg hover:bg-white/10 transition">Feedback</a>
-        <button id="themeBtn" title="Toggle light / dark theme" aria-label="Toggle light or dark theme"
-          class="ml-1 grid place-items-center w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 transition">
+      <nav class="flex items-center gap-0.5 sm:gap-1.5 text-[13px] sm:text-sm font-semibold">
+        <div class="flex items-center rounded-lg bg-white/10 p-0.5 mr-1" role="group" aria-label="Language">
+          <button id="langEn" class="lang-btn px-2 py-1 rounded-md transition">EN</button>
+          <button id="langEs" class="lang-btn px-2 py-1 rounded-md transition">ES</button>
+        </div>
+        <button data-panel="aboutPanel" data-hash="#about" data-i18n="nav.about" class="navlink px-2 py-1.5 rounded-lg hover:bg-white/10 transition">About</button>
+        <button data-panel="contactPanel" data-hash="#contact" data-i18n="nav.contact" class="navlink hidden sm:inline-block px-2 py-1.5 rounded-lg hover:bg-white/10 transition">Contact</button>
+        <a href="#feedback" data-i18n="nav.feedback" class="hidden sm:inline-block px-2 py-1.5 rounded-lg hover:bg-white/10 transition">Feedback</a>
+        <button id="themeBtn" data-i18n-aria="a11y.theme" aria-label="Toggle light or dark theme"
+          class="ml-0.5 grid place-items-center w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 transition">
           <svg id="iconSun" class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
           <svg id="iconMoon" class="w-[18px] h-[18px] hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         </button>
       </nav>
     </div>
-    <!-- compact search revealed on scroll -->
     <div id="miniSearch" class="border-t border-white/10 bg-federal-900/70">
       <form id="miniForm" class="max-w-6xl mx-auto px-4 sm:px-6 py-2 flex items-center gap-2">
-        <label for="zipMini" class="sr-only">ZIP code</label>
-        <input id="zipMini" type="text" inputmode="numeric" maxlength="10" placeholder="Search another ZIP"
+        <label for="zipMini" class="sr-only" data-i18n="search.zipLabel">ZIP code</label>
+        <input id="zipMini" type="text" inputmode="numeric" maxlength="10" data-i18n-ph="search.another"
           class="flex-1 rounded-lg bg-white/95 text-slate-900 px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-federal-400" />
-        <button class="btn-primary !py-2 !px-4 text-xs">Go</button>
+        <button class="btn-primary !py-2 !px-4 text-xs" data-i18n="search.go">Go</button>
       </form>
     </div>
   </header>
 
   <span id="top"></span>
 
-  <!-- ================= Hero ================= -->
+  <!-- Hero -->
   <section class="relative">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 pb-4">
-      <p class="h-eyebrow rise" style="animation-delay:.02s">Open data · no sign-in · no tracking</p>
+      <p class="h-eyebrow rise" style="animation-delay:.02s" data-i18n="hero.eyebrow">Free public service · open data · no tracking</p>
       <h1 class="mt-3 text-3xl sm:text-5xl font-black tracking-tight leading-[1.08] rise" style="animation-delay:.06s">
-        Your civics,<br class="hidden sm:block" />
-        <span class="bg-gradient-to-r from-federal-500 via-federal-400 to-rose-500 bg-clip-text text-transparent">in one search.</span>
+        <span data-i18n="hero.title1">Your civics,</span><br class="hidden sm:block" />
+        <span class="bg-gradient-to-r from-federal-500 via-federal-400 to-rose-500 bg-clip-text text-transparent" data-i18n="hero.title2">in one tap.</span>
       </h1>
-      <p class="mt-4 max-w-xl text-[15px] sm:text-base text-slate-600 dark:text-slate-300 rise" style="animation-delay:.1s">
-        One ZIP code shows who represents you, how to vote, what's happening in Congress,
-        and what's going on in your area today.
+      <p class="mt-4 max-w-xl text-[15px] sm:text-base text-slate-600 dark:text-slate-300 rise" style="animation-delay:.1s" data-i18n="hero.sub">
+        One tap on your location shows your mayor, your city council member, and your members of Congress — plus voting info, local weather, and what's happening in your area.
       </p>
 
-      <!-- Search -->
       <div class="mt-6 card !p-4 sm:!p-5 max-w-2xl rise" style="animation-delay:.14s">
-        <form id="searchForm" novalidate>
-          <div class="flex flex-col sm:flex-row gap-2.5">
-            <div class="relative flex-1">
-              <label for="zipInput" class="sr-only">Enter your 5-digit ZIP code</label>
-              <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-              <input id="zipInput" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="10"
-                aria-describedby="zipHelp" placeholder="ZIP code — e.g. 62704"
-                class="w-full rounded-xl border border-black/10 dark:border-white/15 bg-white/85 dark:bg-white/[0.06] pl-10 pr-3 py-3.5 text-base outline-none focus-visible:ring-2 focus-visible:ring-federal-400 transition" />
-            </div>
-            <button id="searchBtn" type="submit" class="btn-primary sm:w-auto text-base !py-3.5">
-              Show my civics
-            </button>
-          </div>
-        </form>
-        <div class="mt-2 flex items-center gap-2">
-          <button id="locBtn" class="text-sm font-semibold text-federal-600 dark:text-federal-400 hover:underline inline-flex items-center gap-1.5">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
-            Use my current location
-          </button>
+        <button id="locBtn" class="btn-primary w-full text-base !py-4 pulse-ring">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+          <span data-i18n="search.useLocation">Use my location</span>
+        </button>
+        <div class="my-3 flex items-center gap-3 text-xs text-slate-400">
+          <div class="flex-1 h-px bg-black/10 dark:bg-white/10"></div>
+          <span data-i18n="search.or">or enter a ZIP code</span>
+          <div class="flex-1 h-px bg-black/10 dark:bg-white/10"></div>
         </div>
-        <p id="zipHelp" class="mt-1.5 text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite"></p>
+        <form id="searchForm" novalidate class="flex flex-col sm:flex-row gap-2.5">
+          <div class="relative flex-1">
+            <label for="zipInput" class="sr-only" data-i18n="search.zipLabelFull">Enter your 5-digit ZIP code</label>
+            <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="zipInput" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="10" aria-describedby="zipHelp"
+              data-i18n-ph="search.zipPh"
+              class="w-full rounded-xl border border-black/10 dark:border-white/15 bg-white/85 dark:bg-white/[0.06] pl-10 pr-3 py-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-federal-400 transition" />
+          </div>
+          <button id="searchBtn" type="submit" class="btn-ghost sm:w-auto" data-i18n="search.submit">Show my info</button>
+        </form>
+        <p id="zipHelp" class="mt-2 text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite"></p>
 
         <div class="mt-3 flex flex-wrap items-center gap-2">
-          <span id="histLabel" class="text-xs text-slate-500 dark:text-slate-400 hidden">Recent:</span>
+          <span id="histLabel" class="text-xs text-slate-500 dark:text-slate-400 hidden" data-i18n="search.recent">Recent:</span>
           <div id="history" class="flex flex-wrap gap-1.5"></div>
           <div class="flex-1 min-w-[1rem]"></div>
-          <button id="shareBtn" type="button" class="chip">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
-            Copy link
-          </button>
-          <button id="clearBtn" type="button" class="chip hidden">Clear history</button>
+          <button id="shareBtn" type="button" class="chip" data-i18n="search.copyLink">Copy link</button>
+          <button id="clearBtn" type="button" class="chip hidden" data-i18n="search.clear">Clear history</button>
         </div>
       </div>
     </div>
@@ -216,231 +184,182 @@
 
   <main id="main" class="max-w-6xl mx-auto px-4 sm:px-6 pb-14">
 
-    <!-- ============ First-run guide ============ -->
-    <section id="welcome" class="mt-4 rise" style="animation-delay:.18s" aria-label="What EagleReach shows you">
+    <!-- First-run guide -->
+    <section id="welcome" class="mt-4 rise" style="animation-delay:.18s">
       <div class="card">
-        <p class="h-eyebrow">Try it — enter a ZIP above</p>
-        <h2 class="mt-1 text-lg font-extrabold">What you'll see</h2>
-        <div class="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
-          <div class="flex gap-3"><span class="text-xl" aria-hidden="true">🏛️</span><div><div class="font-bold">Your representatives</div><div class="text-slate-500 dark:text-slate-400">Senators, House rep, and mayor — with phone and website.</div></div></div>
-          <div class="flex gap-3"><span class="text-xl" aria-hidden="true">🗳️</span><div><div class="font-bold">How &amp; when to vote</div><div class="text-slate-500 dark:text-slate-400">Registration links and a countdown to the next election.</div></div></div>
-          <div class="flex gap-3"><span class="text-xl" aria-hidden="true">📜</span><div><div class="font-bold">Bills in Congress</div><div class="text-slate-500 dark:text-slate-400">The latest measures introduced on Capitol Hill.</div></div></div>
-          <div class="flex gap-3"><span class="text-xl" aria-hidden="true">⛅</span><div><div class="font-bold">Local weather</div><div class="text-slate-500 dark:text-slate-400">A 7-day forecast for your area.</div></div></div>
-          <div class="flex gap-3"><span class="text-xl" aria-hidden="true">🚧</span><div><div class="font-bold">City updates &amp; traffic</div><div class="text-slate-500 dark:text-slate-400">311 requests (NYC &amp; Chicago today) and live traffic.</div></div></div>
-          <div class="flex gap-3"><span class="text-xl" aria-hidden="true">🆘</span><div><div class="font-bold">Emergency numbers</div><div class="text-slate-500 dark:text-slate-400">911, 988, 211, 311 and more — one tap to call.</div></div></div>
-        </div>
+        <p class="h-eyebrow" data-i18n="welcome.eyebrow">Tap the button above to begin</p>
+        <h2 class="mt-1 text-lg font-extrabold" data-i18n="welcome.title">What you'll see</h2>
+        <div id="welcomeGrid" class="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm"></div>
         <div class="mt-5 flex flex-wrap items-center gap-2">
-          <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Examples:</span>
+          <span class="text-xs font-semibold text-slate-500 dark:text-slate-400" data-i18n="welcome.examples">Examples:</span>
           <button class="exZip chip" data-zip="10001">New York 10001</button>
           <button class="exZip chip" data-zip="60601">Chicago 60601</button>
-          <button class="exZip chip" data-zip="62704">Springfield, IL 62704</button>
           <button class="exZip chip" data-zip="90012">Los Angeles 90012</button>
+          <button class="exZip chip" data-zip="62704">Springfield, IL 62704</button>
         </div>
       </div>
     </section>
 
-    <!-- ============ Results ============ -->
+    <!-- Results -->
     <div id="results" hidden aria-live="polite">
-
       <div id="apiDown" hidden class="mt-6 rounded-2xl border border-amber-300/60 bg-amber-50 dark:bg-amber-500/10 dark:border-amber-500/30 px-4 py-3 text-sm flex flex-wrap items-center gap-3">
         <span class="text-lg" aria-hidden="true">⚠️</span>
-        <span class="text-amber-800 dark:text-amber-200">The civic-data service is unavailable right now, so some cards below can't load. Your emergency numbers and quick actions still work.</span>
-        <button id="apiRetry" type="button" class="chip">Try again</button>
+        <span class="text-amber-800 dark:text-amber-200" data-i18n="err.apiDown">The civic-data service is unavailable right now, so some cards below can't load. Your emergency numbers and quick actions still work.</span>
+        <button id="apiRetry" type="button" class="chip" data-i18n="err.tryAgain">Try again</button>
       </div>
 
-      <!-- Group 1 -->
-      <h2 class="group-title mt-6">People &amp; democracy</h2>
+      <h2 class="group-title mt-6" data-i18n="grp.people">People &amp; democracy</h2>
       <div class="grid md:grid-cols-3 gap-4 sm:gap-5">
-        <section class="card md:col-span-2" aria-labelledby="h-reps">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <p class="h-eyebrow">Who represents you</p>
-              <h3 id="h-reps" class="mt-1 text-lg font-extrabold">Your representatives</h3>
-            </div>
-            <button id="genEmailBtn" type="button" class="btn-primary !px-3 !py-2 text-xs shrink-0">Write a letter</button>
-          </div>
-          <div id="repsList" class="mt-4 grid sm:grid-cols-2 gap-3"></div>
-          <p class="mt-3 text-[11px] text-slate-400 dark:text-slate-500">Sources: GovTrack · Wikidata · FCC · Zippopotam</p>
+        <section class="card md:col-span-2" aria-labelledby="h-local">
+          <p class="h-eyebrow" data-i18n="local.eyebrow">Closest to home</p>
+          <h3 id="h-local" class="mt-1 text-lg font-extrabold" data-i18n="local.title">Your local leaders</h3>
+          <div id="localList" class="mt-4 space-y-3"></div>
         </section>
 
         <section class="card relative overflow-hidden" aria-labelledby="h-elex">
           <div class="absolute -right-6 -top-6 text-[7rem] opacity-[0.06] select-none" aria-hidden="true">🗳️</div>
-          <p class="h-eyebrow">Mark your calendar</p>
-          <h3 id="h-elex" class="mt-1 text-lg font-extrabold">Next federal election</h3>
+          <p class="h-eyebrow" data-i18n="elex.eyebrow">Mark your calendar</p>
+          <h3 id="h-elex" class="mt-1 text-lg font-extrabold" data-i18n="elex.title">Next federal election</h3>
           <div id="elex" class="mt-4"></div>
         </section>
 
-        <section class="card md:col-span-2" aria-labelledby="h-bills">
-          <div class="flex items-center justify-between gap-3">
+        <section class="card md:col-span-2" aria-labelledby="h-reps">
+          <div class="flex items-start justify-between gap-3">
             <div>
-              <p class="h-eyebrow">Fresh off the floor</p>
-              <h3 id="h-bills" class="mt-1 text-lg font-extrabold">In Congress now</h3>
+              <p class="h-eyebrow" data-i18n="reps.eyebrow">In Washington</p>
+              <h3 id="h-reps" class="mt-1 text-lg font-extrabold" data-i18n="reps.title">Your members of Congress</h3>
             </div>
-            <a id="billsBrowse" target="_blank" rel="noopener" href="https://www.govtrack.us/congress/bills/browse" class="chip">Browse all →</a>
+            <button id="genEmailBtn" type="button" class="btn-primary !px-3 !py-2 text-xs shrink-0" data-i18n="reps.write">Write a letter</button>
           </div>
-          <div id="billsList" class="mt-4 space-y-2"></div>
-          <p id="billsMeta" class="mt-2 text-[11px] text-slate-400 dark:text-slate-500"></p>
+          <div id="repsList" class="mt-4 grid sm:grid-cols-2 gap-3"></div>
+          <p class="mt-3 text-[11px] text-slate-400 dark:text-slate-500">Sources: GovTrack · Wikidata · OpenStreetMap · FCC</p>
         </section>
 
         <section class="card" aria-labelledby="h-voter">
-          <p class="h-eyebrow">Get registered, get ready</p>
-          <h3 id="h-voter" class="mt-1 text-lg font-extrabold">Voter info</h3>
+          <p class="h-eyebrow" data-i18n="voter.eyebrow">Get registered, get ready</p>
+          <h3 id="h-voter" class="mt-1 text-lg font-extrabold" data-i18n="voter.title">Voter info</h3>
           <div id="voterLinks" class="mt-4 flex flex-col gap-2"></div>
+        </section>
+
+        <section class="card md:col-span-3" aria-labelledby="h-bills">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="h-eyebrow" data-i18n="bills.eyebrow">Fresh off the floor</p>
+              <h3 id="h-bills" class="mt-1 text-lg font-extrabold" data-i18n="bills.title">In Congress now</h3>
+            </div>
+            <a id="billsBrowse" target="_blank" rel="noopener" href="https://www.govtrack.us/congress/bills/browse" class="chip" data-i18n="bills.browse">Browse all →</a>
+          </div>
+          <div id="billsList" class="mt-4 grid md:grid-cols-2 gap-2"></div>
+          <p id="billsMeta" class="mt-2 text-[11px] text-slate-400 dark:text-slate-500"></p>
         </section>
       </div>
 
-      <!-- Group 2 -->
-      <h2 class="group-title mt-8">Your area today</h2>
+      <h2 class="group-title mt-8" data-i18n="grp.area">Your area today</h2>
       <div class="grid md:grid-cols-3 gap-4 sm:gap-5">
         <section class="card md:col-span-2" aria-labelledby="h-wx">
-          <p class="h-eyebrow">Next 7 days</p>
-          <h3 id="h-wx" class="mt-1 text-lg font-extrabold">Weather</h3>
+          <p class="h-eyebrow" data-i18n="wx.eyebrow">Next 7 days</p>
+          <h3 id="h-wx" class="mt-1 text-lg font-extrabold" data-i18n="wx.title">Weather</h3>
           <div id="wxList" class="mt-4 flex gap-2 overflow-x-auto nice-scroll pb-1 -mx-1 px-1"></div>
           <p id="wxMeta" class="mt-2 text-[11px] text-slate-400 dark:text-slate-500"></p>
         </section>
-
         <section class="card" aria-labelledby="h-news">
-          <p class="h-eyebrow">Stay informed</p>
-          <h3 id="h-news" class="mt-1 text-lg font-extrabold">News</h3>
+          <p class="h-eyebrow" data-i18n="news.eyebrow">Stay informed</p>
+          <h3 id="h-news" class="mt-1 text-lg font-extrabold" data-i18n="news.title">News</h3>
           <div class="mt-4 flex flex-col gap-2">
-            <a id="localNews" target="_blank" rel="noopener" class="btn-primary">Local headlines</a>
-            <a id="worldNews" target="_blank" rel="noopener" class="btn-ghost">Top stories</a>
+            <a id="localNews" target="_blank" rel="noopener" class="btn-primary" data-i18n="news.local">Local headlines</a>
+            <a id="worldNews" target="_blank" rel="noopener" class="btn-ghost" data-i18n="news.top">Top stories</a>
           </div>
         </section>
-
         <section class="card md:col-span-2" aria-labelledby="h-city">
-          <p class="h-eyebrow">311 service requests</p>
-          <h3 id="h-city" class="mt-1 text-lg font-extrabold">City updates</h3>
+          <p class="h-eyebrow" data-i18n="city.eyebrow">311 service requests</p>
+          <h3 id="h-city" class="mt-1 text-lg font-extrabold" data-i18n="city.title">City updates</h3>
           <div id="cityList" class="mt-4 space-y-2 max-h-72 overflow-y-auto nice-scroll pr-1"></div>
           <p id="cityMeta" class="mt-2 text-[11px] text-slate-400 dark:text-slate-500"></p>
         </section>
-
         <section class="card" aria-labelledby="h-traffic">
-          <p class="h-eyebrow">On the roads</p>
-          <h3 id="h-traffic" class="mt-1 text-lg font-extrabold">Traffic</h3>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Live conditions for your area in Google Maps.</p>
-          <a id="trafficBtn" target="_blank" rel="noopener" class="btn-ghost mt-4 w-full">Open traffic map</a>
+          <p class="h-eyebrow" data-i18n="traffic.eyebrow">On the roads</p>
+          <h3 id="h-traffic" class="mt-1 text-lg font-extrabold" data-i18n="traffic.title">Traffic</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400" data-i18n="traffic.body">Live conditions for your area in Google Maps.</p>
+          <a id="trafficBtn" target="_blank" rel="noopener" class="btn-ghost mt-4 w-full" data-i18n="traffic.open">Open traffic map</a>
         </section>
       </div>
 
-      <!-- Group 3 -->
-      <h2 class="group-title mt-8">Get help &amp; be heard</h2>
+      <h2 class="group-title mt-8" data-i18n="grp.help">Get help &amp; be heard</h2>
       <div class="grid md:grid-cols-3 gap-4 sm:gap-5">
         <section class="card" aria-labelledby="h-emh">
-          <p class="h-eyebrow">Quick dial</p>
-          <h3 id="h-emh" class="mt-1 text-lg font-extrabold">Emergency</h3>
+          <p class="h-eyebrow" data-i18n="em.eyebrow">Quick dial</p>
+          <h3 id="h-emh" class="mt-1 text-lg font-extrabold" data-i18n="em.title">Emergency</h3>
           <div class="mt-4 grid grid-cols-2 gap-2 text-sm font-semibold">
-            <a class="btn !py-3 text-white bg-rose-600 hover:brightness-105" href="tel:911">911 · Emergency</a>
-            <a class="btn !py-3 text-white bg-indigo-600 hover:brightness-105" href="tel:988">988 · Crisis</a>
-            <a class="btn !py-3 text-white bg-emerald-600 hover:brightness-105" href="tel:211">211 · Services</a>
-            <a class="btn !py-3 text-white bg-sky-600 hover:brightness-105" href="tel:311">311 · City</a>
-            <a class="btn !py-3 text-white bg-amber-600 hover:brightness-105" href="tel:811">811 · Dig safe</a>
-            <a class="btn !py-3 text-white bg-orange-600 hover:brightness-105" href="tel:18002221222">Poison ctrl</a>
+            <a class="btn !py-3 text-white bg-rose-600 hover:brightness-105" href="tel:911">911 · <span data-i18n="em.911">Emergency</span></a>
+            <a class="btn !py-3 text-white bg-indigo-600 hover:brightness-105" href="tel:988">988 · <span data-i18n="em.988">Crisis</span></a>
+            <a class="btn !py-3 text-white bg-emerald-600 hover:brightness-105" href="tel:211">211 · <span data-i18n="em.211">Services</span></a>
+            <a class="btn !py-3 text-white bg-sky-600 hover:brightness-105" href="tel:311">311 · <span data-i18n="em.311">City</span></a>
+            <a class="btn !py-3 text-white bg-amber-600 hover:brightness-105" href="tel:811">811 · <span data-i18n="em.811">Dig safe</span></a>
+            <a class="btn !py-3 text-white bg-orange-600 hover:brightness-105" href="tel:18002221222" data-i18n="em.poison">Poison ctrl</a>
           </div>
         </section>
-
         <section class="card md:col-span-2" aria-labelledby="h-concern">
-          <p class="h-eyebrow">Speak up</p>
-          <h3 id="h-concern" class="mt-1 text-lg font-extrabold">Raise a concern</h3>
-          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pick an issue — it opens a pre-filled message in your email app.</p>
-          <div class="mt-4 flex flex-wrap gap-2">
-            <button class="concernBtn btn-ghost" data-type="potholes">🕳️ Potholes</button>
-            <button class="concernBtn btn-ghost" data-type="trash pickup">🗑️ Trash</button>
-            <button class="concernBtn btn-ghost" data-type="street lights">💡 Street lights</button>
-            <button class="concernBtn btn-ghost" data-type="noise">🔊 Noise</button>
-            <button class="concernBtn btn-ghost" data-type="sidewalk repair">🚸 Sidewalks</button>
-          </div>
+          <p class="h-eyebrow" data-i18n="concern.eyebrow">Speak up</p>
+          <h3 id="h-concern" class="mt-1 text-lg font-extrabold" data-i18n="concern.title">Raise a concern</h3>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400" data-i18n="concern.body">Pick an issue — it opens a pre-filled message in your email app.</p>
+          <div id="concernRow" class="mt-4 flex flex-wrap gap-2"></div>
         </section>
       </div>
     </div>
   </main>
 
-  <!-- ================= Feedback ================= -->
   <section id="feedback" class="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
     <div class="card">
       <div class="grid lg:grid-cols-[1fr_1.2fr] gap-6">
         <div>
-          <p class="h-eyebrow">Help shape it</p>
-          <h2 class="mt-1 text-xl font-extrabold">Feedback</h2>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            EagleReach is a public service built in the open. Rate it and tell the founder what would make it more useful.
-          </p>
+          <p class="h-eyebrow" data-i18n="fb.eyebrow">Help shape it</p>
+          <h2 class="mt-1 text-xl font-extrabold" data-i18n="fb.title">Feedback</h2>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400" data-i18n="fb.body">EagleReach is a free public service built in the open. Rate it and tell the founder what would make it more useful.</p>
           <div class="mt-4">
-            <span id="starLabel" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Your rating</span>
+            <span id="starLabel" class="text-xs font-semibold text-slate-500 dark:text-slate-400" data-i18n="fb.rating">Your rating</span>
             <div id="stars" role="radiogroup" aria-labelledby="starLabel" class="mt-1 flex gap-1"></div>
           </div>
         </div>
         <div>
           <div class="grid sm:grid-cols-2 gap-3">
-            <div>
-              <label for="fbName" class="sr-only">Your name</label>
-              <input id="fbName" class="w-full rounded-xl border border-black/10 dark:border-white/15 bg-white/85 dark:bg-white/[0.06] px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-federal-400" placeholder="Your name" />
-            </div>
-            <div>
-              <label for="fbEmail" class="sr-only">Your email (optional)</label>
-              <input id="fbEmail" type="email" class="w-full rounded-xl border border-black/10 dark:border-white/15 bg-white/85 dark:bg-white/[0.06] px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-federal-400" placeholder="Email (optional)" />
-            </div>
+            <div><label for="fbName" class="sr-only" data-i18n="fb.name">Your name</label>
+              <input id="fbName" data-i18n-ph="fb.name" class="w-full rounded-xl border border-black/10 dark:border-white/15 bg-white/85 dark:bg-white/[0.06] px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-federal-400" /></div>
+            <div><label for="fbEmail" class="sr-only" data-i18n="fb.email">Email (optional)</label>
+              <input id="fbEmail" type="email" data-i18n-ph="fb.email" class="w-full rounded-xl border border-black/10 dark:border-white/15 bg-white/85 dark:bg-white/[0.06] px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-federal-400" /></div>
           </div>
-          <label for="fbMsg" class="sr-only">Your feedback</label>
-          <textarea id="fbMsg" rows="5" class="mt-3 w-full rounded-xl border border-black/10 dark:border-white/15 bg-white/85 dark:bg-white/[0.06] px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-federal-400" placeholder="What works, what's missing, what you'd love to see…"></textarea>
-          <button id="fbSend" type="button" class="btn-primary mt-3 w-full sm:w-auto">Send feedback</button>
+          <label for="fbMsg" class="sr-only" data-i18n="fb.msg">Your feedback</label>
+          <textarea id="fbMsg" rows="5" data-i18n-ph="fb.msgPh" class="mt-3 w-full rounded-xl border border-black/10 dark:border-white/15 bg-white/85 dark:bg-white/[0.06] px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-federal-400"></textarea>
+          <button id="fbSend" type="button" class="btn-primary mt-3 w-full sm:w-auto" data-i18n="fb.send">Send feedback</button>
         </div>
       </div>
     </div>
   </section>
 
   <footer class="max-w-6xl mx-auto px-4 sm:px-6 pb-10 text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-x-2 gap-y-1">
-    <span>© <span id="footYear">2025</span> EagleReach by Vikesh Sagar Bairam.</span>
+    <span>© <span id="footYear">2025</span> EagleReach · <span data-i18n="foot.free">free for the community, forever</span>.</span>
     <span class="opacity-50">·</span>
-    <span>Built on open government data.</span>
+    <a href="https://github.com/Vikesh2608/EagleReach-v2" target="_blank" rel="noopener" class="hover:underline" data-i18n="foot.addCity">Open source — add your city</a>
   </footer>
 
-  <button id="toTop" aria-label="Back to top"
+  <button id="toTop" data-i18n-aria="a11y.top" aria-label="Back to top"
     class="fixed bottom-5 right-5 z-40 grid place-items-center w-11 h-11 rounded-full bg-federal-600 text-white shadow-lg hover:bg-federal-500">
     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
   </button>
 
-  <!-- ================= Slide-over panels ================= -->
   <div id="overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-40"></div>
 
   <aside id="aboutPanel" class="panel fixed right-0 top-0 h-full w-full sm:w-[560px] bg-white dark:bg-federal-900 shadow-2xl overflow-y-auto z-50" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
     <div class="p-5 border-b border-black/10 dark:border-white/10 flex justify-between items-center">
-      <h2 id="aboutTitle" class="text-lg font-extrabold">About EagleReach</h2>
-      <button class="closePanel btn-ghost !p-2" aria-label="Close panel">✕</button>
+      <h2 id="aboutTitle" class="text-lg font-extrabold" data-i18n="about.title">About EagleReach</h2>
+      <button class="closePanel btn-ghost !p-2" data-i18n-aria="a11y.close" aria-label="Close panel">✕</button>
     </div>
-    <div class="p-5 space-y-4 text-[15px] leading-relaxed text-slate-700 dark:text-slate-200">
-      <p><strong>EagleReach</strong> is a public, open-source civic assistant for U.S. residents. One ZIP code unlocks your elected representatives with official links and phone numbers, voter information, election dates, weather, city updates, traffic, news, and the bills moving through Congress.</p>
-      <p><strong>Why this exists.</strong> Democracy works best when access is simple. EagleReach brings civic info together — cleanly, quickly, and without tracking.</p>
-      <ul class="list-disc pl-5 space-y-1">
-        <li>100% <strong>open data</strong>, no sign-in, no paywalls, no tracking.</li>
-        <li><strong>Frictionless</strong>: one place, one search, human-readable results.</li>
-        <li><strong>Trustworthy sources</strong>: GovTrack, vote.gov, Open-Meteo, city open data.</li>
-        <li><strong>Accessible</strong>: large touch targets, keyboard friendly, dark mode, mobile-ready.</li>
-      </ul>
-      <p><strong>Vision.</strong> Make civic participation as easy as checking the weather.</p>
-    </div>
-  </aside>
-
-  <aside id="founderPanel" class="panel fixed right-0 top-0 h-full w-full sm:w-[560px] bg-white dark:bg-federal-900 shadow-2xl overflow-y-auto z-50" role="dialog" aria-modal="true" aria-labelledby="founderTitle">
-    <div class="p-5 border-b border-black/10 dark:border-white/10 flex justify-between items-center">
-      <h2 id="founderTitle" class="text-lg font-extrabold">Founder</h2>
-      <button class="closePanel btn-ghost !p-2" aria-label="Close panel">✕</button>
-    </div>
-    <div class="p-5 space-y-4 text-[15px] leading-relaxed text-slate-700 dark:text-slate-200">
-      <p><strong>Vikesh Sagar Bairam</strong> — <em>Founder of EagleReach · Tech Evangelist &amp; Business Solutions Architect · AI/ML &amp; Data Engineer · DevOps Specialist · Generative-AI Builder</em></p>
-      <ul class="list-disc pl-5 space-y-1">
-        <li>Master's in Information Systems &amp; Management (University of Illinois, Springfield)</li>
-        <li>Bachelor's in Psychology; Bachelor's in Computer Science</li>
-        <li>Currently at <strong>Jabil</strong> (previously <strong>Surfaces by Pacific</strong>)</li>
-      </ul>
-      <p>I build human-centered systems that remove friction and amplify public good.</p>
-    </div>
+    <div id="aboutBody" class="p-5 space-y-4 text-[15px] leading-relaxed text-slate-700 dark:text-slate-200"></div>
   </aside>
 
   <aside id="contactPanel" class="panel fixed right-0 top-0 h-full w-full sm:w-[460px] bg-white dark:bg-federal-900 shadow-2xl overflow-y-auto z-50" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
     <div class="p-5 border-b border-black/10 dark:border-white/10 flex justify-between items-center">
-      <h2 id="contactTitle" class="text-lg font-extrabold">Contact</h2>
-      <button class="closePanel btn-ghost !p-2" aria-label="Close panel">✕</button>
+      <h2 id="contactTitle" class="text-lg font-extrabold" data-i18n="nav.contact">Contact</h2>
+      <button class="closePanel btn-ghost !p-2" data-i18n-aria="a11y.close" aria-label="Close panel">✕</button>
     </div>
     <div class="p-5 space-y-3 text-[15px]">
       <a class="block text-federal-600 dark:text-federal-400 hover:underline" href="https://www.linkedin.com/in/vikesh-bairam-219769258/" target="_blank" rel="noopener">LinkedIn</a>
@@ -452,7 +371,6 @@
   <div id="toasts" aria-live="polite" aria-atomic="true"></div>
 
   <script>
-    // ==================== Config / helpers ====================
     const BACKEND = "https://eaglereach-1.onrender.com";
     const $  = (s, r=document) => r.querySelector(s);
     const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
@@ -462,26 +380,204 @@
     const LS = { get(k){ try { return localStorage.getItem(k); } catch(_) { return null; } },
                  set(k,v){ try { localStorage.setItem(k,v); } catch(_) {} },
                  del(k){ try { localStorage.removeItem(k); } catch(_) {} } };
+    const state = { zip: null, lat: null, lon: null };
 
-    const state = { zip: null };
+    // ==================== i18n ====================
+    const I18N = {
+      en: {
+        skip:"Skip to content",
+        "nav.about":"About","nav.contact":"Contact","nav.feedback":"Feedback",
+        "a11y.theme":"Toggle light or dark theme","a11y.close":"Close panel","a11y.top":"Back to top",
+        "search.zipLabel":"ZIP code","search.zipLabelFull":"Enter your 5-digit ZIP code",
+        "search.another":"Search another ZIP","search.go":"Go",
+        "hero.eyebrow":"Free public service · open data · no tracking",
+        "hero.title1":"Your civics,","hero.title2":"in one tap.",
+        "hero.sub":"One tap on your location shows your mayor, your city council member, and your members of Congress — plus voting info, local weather, and what's happening in your area.",
+        "search.useLocation":"Use my location","search.or":"or enter a ZIP code",
+        "search.zipPh":"ZIP code — e.g. 62704","search.submit":"Show my info",
+        "search.recent":"Recent:","search.copyLink":"Copy link","search.clear":"Clear history",
+        "search.locating":"Finding your location…","search.denied":"Location permission denied — please type your ZIP.",
+        "search.noZip":"Found you, but no ZIP nearby — please type it in.",
+        "search.badZip":"Please enter a valid 5-digit U.S. ZIP code.","search.noGeo":"Location isn't available on this device.",
+        "welcome.eyebrow":"Tap the button above to begin","welcome.title":"What you'll see","welcome.examples":"Examples:",
+        "grp.people":"People & democracy","grp.area":"Your area today","grp.help":"Get help & be heard",
+        "local.eyebrow":"Closest to home","local.title":"Your local leaders",
+        "local.mayor":"Mayor","local.council":"City council","local.mayorOffice":"Office of the Mayor",
+        "local.bestEffort":"Best-effort — confirm on the official site.",
+        "local.noCouncil":"We don't have council data for {city} yet.",
+        "local.findCouncil":"Find your council district →","local.supported":"Full council data today: {cities}.",
+        "local.addCity":"Add your city →","local.noLocal":"Use “Use my location” for your mayor and council member.",
+        "elex.eyebrow":"Mark your calendar","elex.title":"Next federal election","elex.days":"days away",
+        "reps.eyebrow":"In Washington","reps.title":"Your members of Congress","reps.write":"Write a letter","reps.none":"No members found for this location.",
+        "voter.eyebrow":"Get registered, get ready","voter.title":"Voter info",
+        "voter.register":"Register to vote","voter.office":"Find my election office","voter.howto":"How to vote",
+        "bills.eyebrow":"Fresh off the floor","bills.title":"In Congress now","bills.browse":"Browse all →","bills.none":"No recent bills to show right now.",
+        "bills.introduced":"Introduced","bills.updated":"Updated {t} · Source: {s}",
+        "wx.eyebrow":"Next 7 days","wx.title":"Weather","wx.today":"Today","wx.meta":"Temperatures in °C · {place} · Source: {s}",
+        "news.eyebrow":"Stay informed","news.title":"News","news.local":"Local headlines","news.top":"Top stories",
+        "city.eyebrow":"311 service requests","city.title":"City updates","city.none":"No city feed for this ZIP yet — New York City and Chicago are live today.","city.source":"Source: {s}",
+        "traffic.eyebrow":"On the roads","traffic.title":"Traffic","traffic.body":"Live conditions for your area in Google Maps.","traffic.open":"Open traffic map",
+        "em.eyebrow":"Quick dial","em.title":"Emergency","em.911":"Emergency","em.988":"Crisis","em.211":"Services","em.311":"City","em.811":"Dig safe","em.poison":"Poison ctrl",
+        "concern.eyebrow":"Speak up","concern.title":"Raise a concern","concern.body":"Pick an issue — it opens a pre-filled message in your email app.",
+        "concern.potholes":"Potholes","concern.trash":"Trash","concern.lights":"Street lights","concern.noise":"Noise","concern.sidewalk":"Sidewalks",
+        "fb.eyebrow":"Help shape it","fb.title":"Feedback","fb.body":"EagleReach is a free public service built in the open. Rate it and tell the founder what would make it more useful.",
+        "fb.rating":"Your rating","fb.name":"Your name","fb.email":"Email (optional)","fb.msg":"Your feedback","fb.msgPh":"What works, what's missing, what you'd love to see…","fb.send":"Send feedback","fb.need":"Add a rating or a note first",
+        "foot.free":"free for the community, forever","foot.addCity":"Open source — add your city",
+        "toast.copied":"Link copied","toast.cleared":"History cleared","toast.showing":"Showing {q}",
+        "err.apiDown":"The civic-data service is unavailable right now, so some cards below can't load. Your emergency numbers and quick actions still work.",
+        "err.tryAgain":"Try again","err.retry":"Retry",
+        "err.reps":"Couldn't load your members of Congress.","err.local":"Couldn't load your local leaders.",
+        "err.wx":"Couldn't load the forecast.","err.voter":"Couldn't load voter info.","err.city":"Couldn't load city updates.",
+        "err.elex":"Couldn't load election dates.","err.bills":"Couldn't load bills in Congress.",
+        "letter.subject":"Constituent message from {zip}","letter.body":"Dear Representative,\n\nI am a resident of ZIP {zip}. I am writing about…\n\n[your message]\n\nThank you for your time,\n[your name]",
+        "concernMail.subject":"City concern: {type}{loc}","concernMail.body":"Hello,\n\nI'd like to report a {type} issue{loc}.\n\nLocation / details:\n\nThank you,\n",
+        "about.title":"About EagleReach",
+        "w.reps.t":"Your representatives","w.reps.d":"Mayor, city council, House rep, and Senators — with phone and website.",
+        "w.vote.t":"How & when to vote","w.vote.d":"Registration links and a countdown to the next election.",
+        "w.bills.t":"Bills in Congress","w.bills.d":"The latest measures introduced on Capitol Hill.",
+        "w.wx.t":"Local weather","w.wx.d":"A 7-day forecast for your area.",
+        "w.city.t":"City updates & traffic","w.city.d":"311 requests (NYC & Chicago today) and live traffic.",
+        "w.em.t":"Emergency numbers","w.em.d":"911, 988, 211, 311 and more — one tap to call.",
+      },
+      es: {
+        skip:"Saltar al contenido",
+        "nav.about":"Acerca de","nav.contact":"Contacto","nav.feedback":"Comentarios",
+        "a11y.theme":"Cambiar tema claro u oscuro","a11y.close":"Cerrar panel","a11y.top":"Volver arriba",
+        "search.zipLabel":"Código postal","search.zipLabelFull":"Ingresa tu código postal de 5 dígitos",
+        "search.another":"Buscar otro código postal","search.go":"Ir",
+        "hero.eyebrow":"Servicio público gratuito · datos abiertos · sin rastreo",
+        "hero.title1":"Tu vida cívica,","hero.title2":"en un toque.",
+        "hero.sub":"Un toque en tu ubicación muestra tu alcalde, tu concejal y tus miembros del Congreso — además de información para votar, el clima local y lo que pasa en tu zona.",
+        "search.useLocation":"Usar mi ubicación","search.or":"o ingresa un código postal",
+        "search.zipPh":"Código postal — ej. 62704","search.submit":"Ver mi información",
+        "search.recent":"Recientes:","search.copyLink":"Copiar enlace","search.clear":"Borrar historial",
+        "search.locating":"Buscando tu ubicación…","search.denied":"Permiso de ubicación denegado — escribe tu código postal.",
+        "search.noZip":"Te encontramos, pero no hay código postal cercano — escríbelo.",
+        "search.badZip":"Ingresa un código postal válido de 5 dígitos.","search.noGeo":"La ubicación no está disponible en este dispositivo.",
+        "welcome.eyebrow":"Toca el botón de arriba para empezar","welcome.title":"Lo que verás","welcome.examples":"Ejemplos:",
+        "grp.people":"Personas y democracia","grp.area":"Tu zona hoy","grp.help":"Ayuda y participación",
+        "local.eyebrow":"Lo más cercano","local.title":"Tus líderes locales",
+        "local.mayor":"Alcalde/Alcaldesa","local.council":"Concejo municipal","local.mayorOffice":"Oficina del Alcalde",
+        "local.bestEffort":"Aproximado — confírmalo en el sitio oficial.",
+        "local.noCouncil":"Aún no tenemos datos del concejo para {city}.",
+        "local.findCouncil":"Encuentra tu distrito del concejo →","local.supported":"Datos completos del concejo hoy: {cities}.",
+        "local.addCity":"Agrega tu ciudad →","local.noLocal":"Usa «Usar mi ubicación» para ver tu alcalde y concejal.",
+        "elex.eyebrow":"Marca tu calendario","elex.title":"Próxima elección federal","elex.days":"días",
+        "reps.eyebrow":"En Washington","reps.title":"Tus miembros del Congreso","reps.write":"Escribir una carta","reps.none":"No se encontraron miembros para esta ubicación.",
+        "voter.eyebrow":"Regístrate y prepárate","voter.title":"Información para votar",
+        "voter.register":"Regístrate para votar","voter.office":"Encuentra tu oficina electoral","voter.howto":"Cómo votar",
+        "bills.eyebrow":"Recién del pleno","bills.title":"En el Congreso ahora","bills.browse":"Ver todos →","bills.none":"No hay proyectos de ley recientes por ahora.",
+        "bills.introduced":"Presentado","bills.updated":"Actualizado {t} · Fuente: {s}",
+        "wx.eyebrow":"Próximos 7 días","wx.title":"Clima","wx.today":"Hoy","wx.meta":"Temperaturas en °C · {place} · Fuente: {s}",
+        "news.eyebrow":"Mantente informado","news.title":"Noticias","news.local":"Titulares locales","news.top":"Lo más destacado",
+        "city.eyebrow":"Solicitudes 311","city.title":"Novedades de la ciudad","city.none":"Aún no hay datos para este código postal — Nueva York y Chicago están disponibles hoy.","city.source":"Fuente: {s}",
+        "traffic.eyebrow":"En las calles","traffic.title":"Tráfico","traffic.body":"Condiciones en vivo de tu zona en Google Maps.","traffic.open":"Abrir mapa de tráfico",
+        "em.eyebrow":"Marcación rápida","em.title":"Emergencias","em.911":"Emergencia","em.988":"Crisis","em.211":"Servicios","em.311":"Ciudad","em.811":"Excavar seguro","em.poison":"Ctrl. venenos",
+        "concern.eyebrow":"Alza la voz","concern.title":"Reportar un problema","concern.body":"Elige un tema — abre un mensaje ya redactado en tu correo.",
+        "concern.potholes":"Baches","concern.trash":"Basura","concern.lights":"Alumbrado","concern.noise":"Ruido","concern.sidewalk":"Aceras",
+        "fb.eyebrow":"Ayuda a mejorarlo","fb.title":"Comentarios","fb.body":"EagleReach es un servicio público gratuito y de código abierto. Califícalo y dile al fundador qué lo haría más útil.",
+        "fb.rating":"Tu calificación","fb.name":"Tu nombre","fb.email":"Correo (opcional)","fb.msg":"Tu comentario","fb.msgPh":"Qué funciona, qué falta, qué te encantaría ver…","fb.send":"Enviar comentario","fb.need":"Agrega una calificación o una nota primero",
+        "foot.free":"gratis para la comunidad, para siempre","foot.addCity":"Código abierto — agrega tu ciudad",
+        "toast.copied":"Enlace copiado","toast.cleared":"Historial borrado","toast.showing":"Mostrando {q}",
+        "err.apiDown":"El servicio de datos cívicos no está disponible ahora, así que algunas tarjetas no cargan. Tus números de emergencia y acciones rápidas siguen funcionando.",
+        "err.tryAgain":"Reintentar","err.retry":"Reintentar",
+        "err.reps":"No se pudieron cargar tus miembros del Congreso.","err.local":"No se pudieron cargar tus líderes locales.",
+        "err.wx":"No se pudo cargar el pronóstico.","err.voter":"No se pudo cargar la información para votar.","err.city":"No se pudieron cargar las novedades.",
+        "err.elex":"No se pudieron cargar las fechas de elección.","err.bills":"No se pudieron cargar los proyectos de ley.",
+        "letter.subject":"Mensaje de un constituyente del código postal {zip}","letter.body":"Estimado(a) Representante:\n\nSoy residente del código postal {zip}. Le escribo sobre…\n\n[su mensaje]\n\nGracias por su tiempo,\n[su nombre]",
+        "concernMail.subject":"Problema de la ciudad: {type}{loc}","concernMail.body":"Hola:\n\nQuisiera reportar un problema de {type}{loc}.\n\nUbicación / detalles:\n\nGracias,\n",
+        "about.title":"Acerca de EagleReach",
+        "w.reps.t":"Tus representantes","w.reps.d":"Alcalde, concejo, representante y senadores — con teléfono y sitio web.",
+        "w.vote.t":"Cómo y cuándo votar","w.vote.d":"Enlaces de registro y una cuenta regresiva a la próxima elección.",
+        "w.bills.t":"Proyectos en el Congreso","w.bills.d":"Las últimas medidas presentadas en el Capitolio.",
+        "w.wx.t":"Clima local","w.wx.d":"Un pronóstico de 7 días para tu zona.",
+        "w.city.t":"Novedades y tráfico","w.city.d":"Solicitudes 311 (NYC y Chicago hoy) y tráfico en vivo.",
+        "w.em.t":"Números de emergencia","w.em.d":"911, 988, 211, 311 y más — un toque para llamar.",
+      },
+    };
+    let LANG = 'en';
+    function t(key, vars){
+      let s = (I18N[LANG] && I18N[LANG][key]) || I18N.en[key] || key;
+      if (vars) for (const k in vars) s = s.replaceAll('{'+k+'}', vars[k]);
+      return s;
+    }
+    const ABOUT_HTML = {
+      en: `<p><strong>EagleReach</strong> is a free, open-source civic assistant for U.S. residents. One tap on your location shows your mayor, your city council member, and your members of Congress — with official links and phone numbers — plus voter information, election dates, weather, city updates, and the bills moving through Congress.</p>
+        <p><strong>Why this exists.</strong> Democracy works best when access is simple. EagleReach brings civic info together — cleanly, quickly, in English and Spanish, and without tracking.</p>
+        <ul class="list-disc pl-5 space-y-1"><li>100% <strong>open data</strong>, no sign-in, no paywalls, no tracking.</li><li><strong>Free for the community, forever.</strong></li><li><strong>Bilingual</strong> — English & Español.</li><li><strong>Accessible</strong>: keyboard friendly, dark mode, large touch targets.</li><li><strong>Community-built</strong>: adding your city's council data is a small pull request.</li></ul>
+        <p>Full local council data today covers <strong>New York City</strong> and <strong>Chicago</strong>, with mayors nationwide and more cities on the way.</p>`,
+      es: `<p><strong>EagleReach</strong> es un asistente cívico gratuito y de código abierto para residentes de EE. UU. Un toque en tu ubicación muestra tu alcalde, tu concejal y tus miembros del Congreso — con enlaces oficiales y teléfonos — además de información para votar, fechas de elecciones, clima, novedades de la ciudad y los proyectos de ley en el Congreso.</p>
+        <p><strong>Por qué existe.</strong> La democracia funciona mejor cuando el acceso es simple. EagleReach reúne la información cívica — de forma clara, rápida, en inglés y español, y sin rastreo.</p>
+        <ul class="list-disc pl-5 space-y-1"><li>100% <strong>datos abiertos</strong>, sin registro, sin muros de pago, sin rastreo.</li><li><strong>Gratis para la comunidad, para siempre.</strong></li><li><strong>Bilingüe</strong> — inglés y español.</li><li><strong>Accesible</strong>: compatible con teclado, modo oscuro, botones grandes.</li><li><strong>Hecho en comunidad</strong>: agregar los datos del concejo de tu ciudad es una pequeña contribución.</li></ul>
+        <p>Los datos completos del concejo cubren hoy <strong>Nueva York</strong> y <strong>Chicago</strong>, con alcaldes en todo el país y más ciudades en camino.</p>`,
+    };
+    const CONCERNS = [
+      { type:'concern.potholes', emoji:'🕳️' }, { type:'concern.trash', emoji:'🗑️' },
+      { type:'concern.lights', emoji:'💡' }, { type:'concern.noise', emoji:'🔊' }, { type:'concern.sidewalk', emoji:'🚸' },
+    ];
+    const OFFICE_ES = {
+      "United States Senator":"Senador(a) de EE. UU.",
+      "United States Representative":"Representante de EE. UU.",
+      "Mayor":"Alcalde/Alcaldesa","City Council Member":"Concejal(a)","Alderman":"Concejal(a)",
+    };
+    const localizeOffice = s => {
+      if (LANG !== 'es' || !s) return s;
+      for (const k in OFFICE_ES) if (s.startsWith(k)) return s.replace(k, OFFICE_ES[k]);
+      return s;
+    };
+
+    function applyLang(lang, rerun){
+      LANG = I18N[lang] ? lang : 'en';
+      document.documentElement.lang = LANG;
+      LS.set('er_lang', LANG);
+      $('#langEn').classList.toggle('bg-white/25', LANG === 'en');
+      $('#langEs').classList.toggle('bg-white/25', LANG === 'es');
+      $$('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+      $$('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+      $$('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+      renderWelcomeGrid();
+      renderConcerns();
+      $('#aboutBody').innerHTML = ABOUT_HTML[LANG];
+      if (rerun && state.zip) run({ silent: true });
+    }
+    $('#langEn').addEventListener('click', () => applyLang('en', true));
+    $('#langEs').addEventListener('click', () => applyLang('es', true));
+
+    function renderWelcomeGrid(){
+      const items = [['🏛️','w.reps'],['🗳️','w.vote'],['📜','w.bills'],['⛅','w.wx'],['🚧','w.city'],['🆘','w.em']];
+      $('#welcomeGrid').innerHTML = items.map(([e,k]) =>
+        `<div class="flex gap-3"><span class="text-xl" aria-hidden="true">${e}</span><div>
+          <div class="font-bold">${esc(t(k+'.t'))}</div>
+          <div class="text-slate-500 dark:text-slate-400">${esc(t(k+'.d'))}</div></div></div>`).join('');
+    }
+    function renderConcerns(){
+      $('#concernRow').innerHTML = CONCERNS.map(c =>
+        `<button class="concernBtn btn-ghost" data-type="${c.type}">${c.emoji} ${esc(t(c.type))}</button>`).join('');
+      $$('.concernBtn').forEach(b => b.addEventListener('click', () => {
+        const zip = state.zip || $('#zipInput').value.trim();
+        const type = t(b.dataset.type).toLowerCase();
+        const loc = zip ? (LANG === 'es' ? ` en el código postal ${zip}` : ` in ZIP ${zip}`) : '';
+        location.href = `mailto:?subject=${encodeURIComponent(t('concernMail.subject',{type,loc}))}&body=${encodeURIComponent(t('concernMail.body',{type,loc}))}`;
+      }));
+    }
 
     // ==================== Theme ====================
     (function initTheme(){
-      let t = LS.get('er_theme');
-      if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      applyTheme(t);
+      let th = LS.get('er_theme');
+      if (!th) th = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      applyTheme(th);
     })();
-    function applyTheme(t){
-      document.documentElement.classList.toggle('dark', t === 'dark');
-      $('#iconSun').classList.toggle('hidden', t === 'dark');
-      $('#iconMoon').classList.toggle('hidden', t !== 'dark');
+    function applyTheme(th){
+      document.documentElement.classList.toggle('dark', th === 'dark');
+      $('#iconSun').classList.toggle('hidden', th === 'dark');
+      $('#iconMoon').classList.toggle('hidden', th !== 'dark');
     }
     $('#themeBtn').addEventListener('click', () => {
       const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
       applyTheme(next); LS.set('er_theme', next);
     });
 
-    // ==================== Toasts ====================
+    // ==================== Toasts / helpers ====================
     function toast(msg, ms=2200){
       const el = document.createElement('div');
       el.className = 'toast'; el.textContent = msg;
@@ -489,73 +585,50 @@
       setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, ms);
     }
     const setHelp = txt => { $('#zipHelp').textContent = txt || ''; };
-
-    // ==================== Header: mini search + back-to-top ====================
-    addEventListener('scroll', () => {
-      const y = scrollY;
-      $('#miniSearch').classList.toggle('show', y > 360 && !!state.zip);
-      $('#toTop').classList.toggle('show', y > 600);
-    }, { passive: true });
-    $('#toTop').addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
-    $('#apiRetry').addEventListener('click', () => { billsLoaded = false; if (state.zip) run(state.zip); });
-    $('#miniForm').addEventListener('submit', e => {
-      e.preventDefault();
-      const z = $('#zipMini').value.trim();
-      if (!isZip(z)) return toast('Enter a valid 5-digit ZIP');
-      $('#zipInput').value = z; $('#zipMini').value = '';
-      run(z, { scroll: true });
-    });
-
-    // ==================== Panels ====================
-    const overlay = $('#overlay');
-    let lastFocus = null;
-    function openPanel(id, hash){
-      lastFocus = document.activeElement;
-      $('#'+id).classList.add('open');
-      overlay.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
-      $('#'+id+' .closePanel').focus();
-      if (hash) history.pushState({ panel: id }, '', hash);
-    }
-    function closePanels(){
-      $$('.panel').forEach(p => p.classList.remove('open'));
-      overlay.classList.add('hidden');
-      document.body.style.overflow = '';
-      if (lastFocus) { lastFocus.focus(); lastFocus = null; }
-      if (['#about','#founder','#contact'].includes(location.hash))
-        history.pushState({}, '', location.pathname + location.search);
-    }
-    overlay.addEventListener('click', closePanels);
-    addEventListener('keydown', e => { if (e.key === 'Escape') closePanels(); });
-    addEventListener('popstate', closePanels);
-    $$('.navlink').forEach(b => b.addEventListener('click', () => openPanel(b.dataset.panel, b.dataset.hash)));
-    $$('.closePanel').forEach(b => b.addEventListener('click', closePanels));
-
-    // ==================== Render helpers ====================
     const skeleton = (n, cls) => Array.from({length:n}, () => `<div class="sk ${cls}"></div>`).join('');
-    function cardError(sel, label, retry){
+    function cardError(sel, key, retry){
       const el = $(sel); if (!el) return;
       el.innerHTML = `<div class="flex items-center gap-3 text-sm text-rose-600 dark:text-rose-400">
-        <span>${esc(label)}</span>
-        <button type="button" class="chip !text-rose-600 dark:!text-rose-300">Retry</button></div>`;
+        <span>${esc(t(key))}</span><button type="button" class="chip">${esc(t('err.retry'))}</button></div>`;
       el.querySelector('button').onclick = retry;
     }
     function partyStyle(party){
       const p = (party || '').toLowerCase();
       if (p.startsWith('democrat')) return { ring:'from-blue-500 to-blue-700', tag:'D', cls:'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300' };
       if (p.startsWith('republic')) return { ring:'from-rose-500 to-rose-700', tag:'R', cls:'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300' };
-      return { ring:'from-slate-400 to-slate-600', tag:'I', cls:'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300' };
+      return { ring:'from-slate-400 to-slate-600', tag:'·', cls:'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300' };
     }
     const initials = n => (n || '?').replace(/\b(rep\.|sen\.|dr\.|mr\.|mrs\.|ms\.)\s*/ig,'').trim()
       .split(/\s+/).slice(0,2).map(w => w[0] || '').join('').toUpperCase();
+    function personRow(o){
+      const ps = partyStyle(o.party);
+      const phone = (o.phones && o.phones[0]) || '';
+      const email = (o.emails && o.emails[0]) || '';
+      const url = (o.urls && o.urls[0]) || '';
+      return `<div class="rounded-xl border border-black/[0.06] dark:border-white/10 bg-white/50 dark:bg-white/[0.03] p-3.5 flex gap-3">
+        <div class="shrink-0 w-11 h-11 rounded-full grid place-items-center text-white text-sm font-extrabold bg-gradient-to-br ${ps.ring} overflow-hidden">
+          ${o.photo_url ? `<img src="${esc(o.photo_url)}" alt="" class="w-full h-full object-cover">` : esc(initials(o.name))}</div>
+        <div class="min-w-0">
+          <div class="font-extrabold text-sm">${esc(o.name || '—')}</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">${esc(localizeOffice(o.office) || '')}
+            ${o.district ? ` · ${esc(String(o.district))}` : ''}
+            ${o.party ? `<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-extrabold ${ps.cls}">${ps.tag}</span>` : ''}</div>
+          <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+            ${url ? `<a class="text-federal-600 dark:text-federal-400 font-semibold hover:underline" href="${esc(url)}" target="_blank" rel="noopener">${LANG==='es'?'Sitio web':'Website'}</a>` : ''}
+            ${phone ? `<a class="text-federal-600 dark:text-federal-400 font-semibold hover:underline" href="${telLink(phone)}">${esc(phone)}</a>` : ''}
+            ${email ? `<a class="text-federal-600 dark:text-federal-400 font-semibold hover:underline" href="mailto:${esc(email)}">${LANG==='es'?'Correo':'Email'}</a>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }
 
-    // ==================== History + share ====================
+    // ==================== History / share ====================
     const HKEY = 'er_hist';
     const readHist = () => { try { return JSON.parse(LS.get(HKEY) || '[]'); } catch(_) { return []; } };
     function pushHistory(zip){
+      if (!zip) return;
       const out = [[zip, Date.now()], ...readHist().filter(x => x[0] !== zip)].slice(0, 6);
-      LS.set(HKEY, JSON.stringify(out));
-      renderHistory();
+      LS.set(HKEY, JSON.stringify(out)); renderHistory();
     }
     function renderHistory(){
       const arr = readHist();
@@ -565,278 +638,291 @@
       arr.forEach(([z]) => {
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'chip'; b.textContent = z;
-        b.onclick = () => { $('#zipInput').value = z; run(z, { scroll: true }); };
+        b.onclick = () => { $('#zipInput').value = z; run({ zip: z, scroll: true }); };
         $('#history').appendChild(b);
       });
     }
-    $('#clearBtn').onclick = () => { LS.del(HKEY); renderHistory(); toast('History cleared'); };
+    $('#clearBtn').onclick = () => { LS.del(HKEY); renderHistory(); toast(t('toast.cleared')); };
     $('#shareBtn').onclick = async () => {
-      const url = state.zip
-        ? `${location.origin}${location.pathname}?zip=${encodeURIComponent(state.zip)}`
-        : location.href;
-      try { await navigator.clipboard.writeText(url); toast('Link copied'); }
-      catch(_) { toast('Could not copy link'); }
+      const url = state.zip ? `${location.origin}${location.pathname}?zip=${encodeURIComponent(state.zip)}&lang=${LANG}` : location.href;
+      try { await navigator.clipboard.writeText(url); toast(t('toast.copied')); } catch(_) { toast('×'); }
     };
 
-    // ==================== Location ====================
-    async function reverseZip(lat, lon){
-      const u = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
-      const j = await (await fetch(u, { headers: { Accept: 'application/json' } })).json();
-      return { zip: j?.address?.postcode || null };
-    }
+    // ==================== Location + search ====================
     $('#locBtn').onclick = () => {
-      if (!navigator.geolocation) return toast('Location is not available on this device');
-      setHelp('Finding your location…');
-      navigator.geolocation.getCurrentPosition(async pos => {
-        try {
-          const { latitude, longitude } = pos.coords;
-          const { zip } = await reverseZip(latitude, longitude);
-          if (zip){ $('#zipInput').value = zip; setHelp(''); run(zip, { scroll: true }); }
-          else setHelp('Found you, but no ZIP nearby — please type it in.');
-        } catch(_) { setHelp('Could not resolve your location — please type your ZIP.'); }
-      }, () => setHelp('Location permission denied — please type your ZIP.'),
-      { enableHighAccuracy: true, timeout: 15000 });
+      if (!navigator.geolocation) return setHelp(t('search.noGeo'));
+      setHelp(t('search.locating'));
+      navigator.geolocation.getCurrentPosition(pos => {
+        setHelp('');
+        run({ lat: pos.coords.latitude, lon: pos.coords.longitude, scroll: true });
+      }, () => setHelp(t('search.denied')), { enableHighAccuracy: true, timeout: 15000 });
     };
-
-    // ==================== Search form ====================
     $('#searchForm').addEventListener('submit', e => {
       e.preventDefault();
       const z = $('#zipInput').value.trim();
-      if (!isZip(z)){ setHelp('Please enter a valid 5-digit U.S. ZIP code.'); $('#zipInput').focus(); return; }
-      setHelp('');
-      run(z, { scroll: true });
+      if (!isZip(z)){ setHelp(t('search.badZip')); $('#zipInput').focus(); return; }
+      setHelp(''); run({ zip: z, scroll: true });
+    });
+    $('#miniForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const z = $('#zipMini').value.trim();
+      if (!isZip(z)) return toast(t('search.badZip'));
+      $('#zipInput').value = z; $('#zipMini').value = '';
+      run({ zip: z, scroll: true });
     });
     $$('.exZip').forEach(b => b.addEventListener('click', () => {
-      $('#zipInput').value = b.dataset.zip;
-      run(b.dataset.zip, { scroll: true });
+      $('#zipInput').value = b.dataset.zip; run({ zip: b.dataset.zip, scroll: true });
     }));
 
-    // ==================== Card loaders ====================
-    async function loadReps(zip){
-      $('#repsList').innerHTML = `<div class="sm:col-span-2 grid sm:grid-cols-2 gap-3">${skeleton(4,'h-24 w-full')}</div>`;
-      try {
-        const j = await (await fetch(`${BACKEND}/officials?zip=${zip}`)).json();
-        const list = $('#repsList'); list.innerHTML = '';
-        (j.officials || []).forEach(o => {
-          const ps = partyStyle(o.party);
-          const phone = (o.phones && o.phones[0]) || '';
-          const url = (o.urls && o.urls[0]) || '';
-          const el = document.createElement('div');
-          el.className = 'rounded-xl border border-black/[0.06] dark:border-white/10 bg-white/50 dark:bg-white/[0.03] p-3.5 flex gap-3';
-          el.innerHTML = `
-            <div class="shrink-0 w-11 h-11 rounded-full grid place-items-center text-white text-sm font-extrabold bg-gradient-to-br ${ps.ring}">${esc(initials(o.name))}</div>
-            <div class="min-w-0">
-              <div class="font-extrabold text-sm">${esc(o.name || 'Unknown')}</div>
-              <div class="text-xs text-slate-500 dark:text-slate-400">${esc(o.office || '')}
-                ${o.party ? `<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-extrabold ${ps.cls}">${ps.tag}</span>` : ''}</div>
-              <div class="mt-1.5 flex items-center gap-3 text-xs">
-                ${url ? `<a class="text-federal-600 dark:text-federal-400 font-semibold hover:underline" href="${esc(url)}" target="_blank" rel="noopener">Website</a>` : ''}
-                ${phone ? `<a class="text-federal-600 dark:text-federal-400 font-semibold hover:underline" href="${telLink(phone)}">${esc(phone)}</a>` : `<span class="text-slate-400">no phone listed</span>`}
-              </div>
-            </div>`;
-          list.appendChild(el);
-        });
-        if (!list.children.length) list.innerHTML = `<p class="text-sm text-slate-500 dark:text-slate-400">No officials found for this ZIP.</p>`;
-      } catch(_) { cardError('#repsList', "Couldn't load your representatives.", () => loadReps(zip)); }
+    // ==================== Panels ====================
+    const overlay = $('#overlay');
+    let lastFocus = null;
+    function openPanel(id, hash){
+      lastFocus = document.activeElement;
+      $('#'+id).classList.add('open'); overlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      $('#'+id+' .closePanel').focus();
+      if (hash) history.pushState({ panel: id }, '', hash);
+    }
+    function closePanels(){
+      $$('.panel').forEach(p => p.classList.remove('open'));
+      overlay.classList.add('hidden'); document.body.style.overflow = '';
+      if (lastFocus) { lastFocus.focus(); lastFocus = null; }
+      if (['#about','#contact'].includes(location.hash)) history.pushState({}, '', location.pathname + location.search);
+    }
+    overlay.addEventListener('click', closePanels);
+    addEventListener('keydown', e => { if (e.key === 'Escape') closePanels(); });
+    addEventListener('popstate', closePanels);
+    $$('.navlink').forEach(b => b.addEventListener('click', () => openPanel(b.dataset.panel, b.dataset.hash)));
+    $$('.closePanel').forEach(b => b.addEventListener('click', closePanels));
+
+    addEventListener('scroll', () => {
+      $('#miniSearch').classList.toggle('show', scrollY > 360 && !!state.zip);
+      $('#toTop').classList.toggle('show', scrollY > 600);
+    }, { passive: true });
+    $('#toTop').addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
+    $('#apiRetry').addEventListener('click', () => { billsLoaded = false; if (state.zip || state.lat) run({ silent: true }); });
+
+    // ==================== Loaders ====================
+    async function checkApi(){
+      try { const c = new AbortController(); const to = setTimeout(() => c.abort(), 8000);
+        const r = await fetch(`${BACKEND}/`, { signal: c.signal }); clearTimeout(to); return r.ok;
+      } catch(_) { return false; }
     }
 
-    async function loadWeather(zip){
+    function renderLocal(j){
+      const box = $('#localList'); box.innerHTML = '';
+      const loc = j.local || {};
+      const mayor = loc.mayor;
+      const council = loc.council || {};
+      if (mayor){
+        box.insertAdjacentHTML('beforeend', personRow({
+          name: mayor.name || t('local.mayorOffice'),
+          office: t('local.mayor') + (mayor.city ? ` · ${mayor.city}` : ''),
+          urls: mayor.urls, phones: mayor.phones, emails: mayor.emails,
+        }));
+        if (!mayor.verified) box.insertAdjacentHTML('beforeend',
+          `<p class="text-[11px] text-slate-400 dark:text-slate-500 -mt-1">${esc(t('local.bestEffort'))}</p>`);
+      }
+      if (council.supported && (council.members || []).length){
+        council.members.forEach(m => box.insertAdjacentHTML('beforeend', personRow({
+          name: m.name,
+          office: t('local.council') + (council.district_label ? ` · ${council.district_label}` : ''),
+          urls: m.urls, phones: m.phones, emails: m.emails, photo_url: m.photo_url,
+        })));
+      } else {
+        const cities = (council.supported_cities || []).join(' · ');
+        box.insertAdjacentHTML('beforeend', `<div class="rounded-xl border border-dashed border-black/15 dark:border-white/15 p-3.5 text-sm">
+          <div class="text-slate-600 dark:text-slate-300">${esc(t('local.noCouncil', { city: j.place || (LANG==='es'?'tu ciudad':'your city') }))}</div>
+          ${council.find_url ? `<a class="inline-block mt-2 text-federal-600 dark:text-federal-400 font-semibold hover:underline" href="${esc(council.find_url)}" target="_blank" rel="noopener">${esc(t('local.findCouncil'))}</a>` : ''}
+          <div class="text-[11px] text-slate-400 dark:text-slate-500 mt-2">${esc(t('local.supported', { cities }))}
+            <a class="hover:underline" href="https://github.com/Vikesh2608/EagleReach-v2" target="_blank" rel="noopener">${esc(t('local.addCity'))}</a></div>
+        </div>`);
+      }
+      if (!box.children.length) box.innerHTML = `<p class="text-sm text-slate-500 dark:text-slate-400">${esc(t('local.noLocal'))}</p>`;
+    }
+
+    async function loadLocal(){
+      $('#localList').innerHTML = skeleton(2, 'h-20 w-full');
+      $('#repsList').innerHTML = `<div class="sm:col-span-2 grid sm:grid-cols-2 gap-3">${skeleton(3,'h-20 w-full')}</div>`;
+      try {
+        let url;
+        if (state.lat != null) url = `${BACKEND}/local?lat=${state.lat}&lon=${state.lon}&lang=${LANG}`;
+        else {
+          const zi = await (await fetch(`${BACKEND}/zipinfo?zip=${state.zip}`)).json();
+          state.lat = zi.lat; state.lon = zi.lon;
+          url = `${BACKEND}/local?lat=${zi.lat}&lon=${zi.lon}&lang=${LANG}`;
+        }
+        const j = await (await fetch(url)).json();
+        if (j.zip){ state.zip = j.zip; $('#zipInput').value = j.zip; }
+        setPlace(j);
+        renderLocal(j);
+        const fed = j.federal || [];
+        $('#repsList').innerHTML = fed.length ? fed.map(personRow).join('') : `<p class="text-sm text-slate-500 dark:text-slate-400">${esc(t('reps.none'))}</p>`;
+      } catch(_) {
+        cardError('#localList', 'err.local', loadLocal);
+        cardError('#repsList', 'err.reps', loadLocal);
+      }
+    }
+    function setPlace(j){
+      const bits = [j.place, j.state_abbr || j.state, j.zip].filter(Boolean);
+      // (place line lives only in help text area on this layout — keep it quiet)
+      if (bits.length) $('#zipHelp').textContent = bits.join(' · ');
+    }
+
+    async function loadWeather(){
       $('#wxList').innerHTML = skeleton(7, 'h-28 w-[92px] shrink-0');
       try {
-        const j = await (await fetch(`${BACKEND}/weather?zip=${zip}`)).json();
+        const j = await (await fetch(`${BACKEND}/weather?zip=${state.zip}`)).json();
         const box = $('#wxList'); box.innerHTML = '';
         (j.days || []).forEach((d, i) => {
-          const day = new Date(d.date + 'T00:00').toLocaleDateString(undefined, { weekday: 'short' });
-          const el = document.createElement('div');
-          el.className = `shrink-0 w-[92px] rounded-xl border px-2 py-3 text-center ${i===0 ? 'border-federal-400 bg-federal-500/10' : 'border-black/[0.06] dark:border-white/10 bg-white/50 dark:bg-white/[0.03]'}`;
-          el.innerHTML = `
-            <div class="text-[11px] font-extrabold ${i===0 ? 'text-federal-600 dark:text-federal-300' : 'text-slate-500 dark:text-slate-400'}">${i===0 ? 'Today' : day}</div>
+          const day = new Date(d.date + 'T00:00').toLocaleDateString(LANG === 'es' ? 'es' : 'en', { weekday: 'short' });
+          box.insertAdjacentHTML('beforeend', `<div class="shrink-0 w-[92px] rounded-xl border px-2 py-3 text-center ${i===0 ? 'border-federal-400 bg-federal-500/10' : 'border-black/[0.06] dark:border-white/10 bg-white/50 dark:bg-white/[0.03]'}">
+            <div class="text-[11px] font-extrabold ${i===0 ? 'text-federal-600 dark:text-federal-300' : 'text-slate-500 dark:text-slate-400'}">${i===0 ? esc(t('wx.today')) : esc(day)}</div>
             <div class="text-2xl mt-1">${d.icon || '⛅'}</div>
             <div class="text-sm font-extrabold mt-1">${Math.round(d.tmax_c)}°</div>
             <div class="text-[11px] text-slate-500 dark:text-slate-400">${Math.round(d.tmin_c)}°</div>
-            <div class="text-[10px] mt-1 text-sky-500">💧${d.precip_pct ?? 0}%</div>`;
-          box.appendChild(el);
+            <div class="text-[10px] mt-1 text-sky-500">💧${d.precip_pct ?? 0}%</div></div>`);
         });
-        $('#wxMeta').textContent = `Temperatures in °C · ${j.place || ''} · Source: ${j.source}`;
-      } catch(_) { cardError('#wxList', "Couldn't load the forecast.", () => loadWeather(zip)); }
+        $('#wxMeta').textContent = t('wx.meta', { place: j.place || '', s: j.source });
+      } catch(_) { cardError('#wxList', 'err.wx', loadWeather); }
     }
 
-    async function loadVoter(zip){
+    async function loadVoter(){
       $('#voterLinks').innerHTML = skeleton(3, 'h-11 w-full');
       try {
-        const j = await (await fetch(`${BACKEND}/voter?zip=${zip}`)).json();
+        const j = await (await fetch(`${BACKEND}/voter?zip=${state.zip}&lang=${LANG}`)).json();
+        const L = j.labels || {};
         $('#voterLinks').innerHTML = `
-          <a class="btn-primary" target="_blank" rel="noopener" href="${esc(j.register_url)}">Register to vote</a>
-          <a class="btn-ghost" target="_blank" rel="noopener" href="${esc(j.polling_url)}">Find my election office</a>
-          <a class="btn-ghost" target="_blank" rel="noopener" href="${esc(j.howto_url)}">How to vote</a>`;
-      } catch(_) { cardError('#voterLinks', "Couldn't load voter info.", () => loadVoter(zip)); }
+          <a class="btn-primary" target="_blank" rel="noopener" href="${esc(j.register_url)}">${esc(L.register || t('voter.register'))}</a>
+          <a class="btn-ghost" target="_blank" rel="noopener" href="${esc(j.polling_url)}">${esc(L.office || t('voter.office'))}</a>
+          <a class="btn-ghost" target="_blank" rel="noopener" href="${esc(j.howto_url)}">${esc(L.howto || t('voter.howto'))}</a>`;
+      } catch(_) { cardError('#voterLinks', 'err.voter', loadVoter); }
     }
 
-    async function loadCity(zip){
+    async function loadCity(){
       $('#cityList').innerHTML = skeleton(4, 'h-12 w-full');
       try {
-        const j = await (await fetch(`${BACKEND}/city/updates?zip=${zip}&limit=8`)).json();
+        const j = await (await fetch(`${BACKEND}/city/updates?zip=${state.zip}&limit=8`)).json();
         const box = $('#cityList'); box.innerHTML = '';
         if (!(j.items || []).length){
-          box.innerHTML = `<p class="text-sm text-slate-500 dark:text-slate-400">No city feed for this ZIP yet — New York City and Chicago are live today.</p>`;
+          box.innerHTML = `<p class="text-sm text-slate-500 dark:text-slate-400">${esc(t('city.none'))}</p>`;
         } else {
-          j.items.forEach(it => {
-            const el = document.createElement('div');
-            el.className = 'rounded-xl border border-black/[0.06] dark:border-white/10 bg-white/50 dark:bg-white/[0.03] px-3.5 py-2.5';
-            el.innerHTML = `
-              <div class="text-sm font-extrabold">${esc(it.type || 'Issue')}</div>
-              <div class="text-xs text-slate-500 dark:text-slate-400">${esc(it.detail || '')}</div>
-              <div class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">${esc(it.address || '')}</div>`;
-            box.appendChild(el);
-          });
+          j.items.forEach(it => box.insertAdjacentHTML('beforeend', `<div class="rounded-xl border border-black/[0.06] dark:border-white/10 bg-white/50 dark:bg-white/[0.03] px-3.5 py-2.5">
+            <div class="text-sm font-extrabold">${esc(it.type || 'Issue')}</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">${esc(it.detail || '')}</div>
+            <div class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">${esc(it.address || '')}</div></div>`));
         }
-        $('#cityMeta').textContent = j.source ? `Source: ${j.source}` : '';
-      } catch(_) { cardError('#cityList', "Couldn't load city updates.", () => loadCity(zip)); }
+        $('#cityMeta').textContent = j.source ? t('city.source', { s: j.source }) : '';
+      } catch(_) { cardError('#cityList', 'err.city', loadCity); }
     }
 
-    async function loadElections(zip){
+    async function loadElections(){
       $('#elex').innerHTML = `<div class="sk h-14 w-28"></div><div class="sk h-4 w-40 mt-3"></div>`;
       try {
-        const j = await (await fetch(`${BACKEND}/elections?zip=${zip}`)).json();
-        const target = new Date(j.next_federal);
+        const j = await (await fetch(`${BACKEND}/elections?zip=${state.zip}&lang=${LANG}`)).json();
+        const target = new Date(j.next_federal_iso || j.next_federal);
         const days = isNaN(target) ? null : Math.max(0, Math.ceil((target - new Date()) / 86400000));
         $('#elex').innerHTML = `
           <div class="flex items-baseline gap-2">
             <span class="text-5xl font-black bg-gradient-to-r from-federal-500 to-rose-500 bg-clip-text text-transparent">${days ?? '—'}</span>
-            <span class="text-sm font-extrabold text-slate-500 dark:text-slate-400">days away</span>
-          </div>
+            <span class="text-sm font-extrabold text-slate-500 dark:text-slate-400">${esc(t('elex.days'))}</span></div>
           <div class="mt-2 text-sm font-extrabold">${esc(j.next_federal || '')}</div>
           <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">${esc(j.notes || '')}</div>`;
-      } catch(_) { cardError('#elex', "Couldn't load election dates.", () => loadElections(zip)); }
+      } catch(_) { cardError('#elex', 'err.elex', loadElections); }
     }
 
-    async function loadNews(zip){
+    async function loadNews(){
       try {
-        const j = await (await fetch(`${BACKEND}/news?zip=${zip}`)).json();
-        $('#localNews').href = j.local_url;
-        $('#worldNews').href = j.world_url;
+        const j = await (await fetch(`${BACKEND}/news?zip=${state.zip}`)).json();
+        $('#localNews').href = j.local_url; $('#worldNews').href = j.world_url;
       } catch(_) {}
     }
 
-    // Bills are national (no ZIP) — load once.
     let billsLoaded = false;
     function billStatusClass(s){
-      const t = (s || '').toLowerCase();
-      if (/(enacted|became law|signed)/.test(t)) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300';
-      if (/(passed|agreed|reported)/.test(t))    return 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300';
-      if (/(failed|vetoed|rejected)/.test(t))    return 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300';
+      const x = (s || '').toLowerCase();
+      if (/(enacted|became law|signed)/.test(x)) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300';
+      if (/(passed|agreed|reported)/.test(x)) return 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300';
+      if (/(failed|vetoed|rejected)/.test(x)) return 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300';
       return 'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300';
     }
     async function loadBills(force){
       if (billsLoaded && !force) return;
-      const box = $('#billsList');
-      box.innerHTML = skeleton(4, 'h-14 w-full');
+      const box = $('#billsList'); box.innerHTML = skeleton(4, 'h-14 w-full');
       try {
         const j = await (await fetch(`${BACKEND}/bills?limit=8`)).json();
-        if (!(j.items || []).length){ box.innerHTML = `<p class="text-sm text-slate-500 dark:text-slate-400">No recent bills to show right now.</p>`; return; }
+        if (!(j.items || []).length){ box.innerHTML = `<p class="text-sm text-slate-500 dark:text-slate-400">${esc(t('bills.none'))}</p>`; return; }
         box.innerHTML = '';
         j.items.forEach(b => {
-          const el = document.createElement('div');
-          el.className = 'rounded-xl border border-black/[0.06] dark:border-white/10 bg-white/50 dark:bg-white/[0.03] px-3.5 py-2.5';
           const title = b.link
-            ? `<a class="hover:underline decoration-federal-400" href="${esc(b.link)}" target="_blank" rel="noopener">${esc(b.title || 'Untitled measure')}</a>`
-            : esc(b.title || 'Untitled measure');
-          el.innerHTML = `
+            ? `<a class="hover:underline decoration-federal-400" href="${esc(b.link)}" target="_blank" rel="noopener">${esc(b.title || '—')}</a>`
+            : esc(b.title || '—');
+          box.insertAdjacentHTML('beforeend', `<div class="rounded-xl border border-black/[0.06] dark:border-white/10 bg-white/50 dark:bg-white/[0.03] px-3.5 py-2.5">
             <div class="flex items-center gap-2 flex-wrap">
               <span class="font-extrabold text-sm">${esc(b.number || '')}</span>
-              <span class="text-[10px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded ${billStatusClass(b.status)}">${esc(b.status || '—')}</span>
-            </div>
+              <span class="text-[10px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded ${billStatusClass(b.status)}">${esc(b.status || '—')}</span></div>
             <div class="text-sm mt-1 leading-snug">${title}</div>
-            <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">${b.introduced_date ? 'Introduced ' + esc(b.introduced_date) : ''}${b.sponsor ? ' · ' + esc(b.sponsor) : ''}</div>`;
-          box.appendChild(el);
+            <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">${b.introduced_date ? esc(t('bills.introduced')) + ' ' + esc(b.introduced_date) : ''}${b.sponsor ? ' · ' + esc(b.sponsor) : ''}</div></div>`);
         });
-        $('#billsMeta').textContent = `Updated ${j.updated_at} · Source: ${j.source}`;
+        $('#billsMeta').textContent = t('bills.updated', { t: j.updated_at, s: j.source });
         billsLoaded = true;
-      } catch(_) { cardError('#billsList', "Couldn't load bills in Congress.", () => loadBills(true)); }
+      } catch(_) { cardError('#billsList', 'err.bills', () => loadBills(true)); }
     }
 
     // ==================== Orchestrator ====================
-    async function checkApi(){
-      try {
-        const c = new AbortController();
-        const t = setTimeout(() => c.abort(), 8000);
-        const r = await fetch(`${BACKEND}/`, { signal: c.signal });
-        clearTimeout(t);
-        return r.ok;
-      } catch(_) { return false; }
-    }
-
-    function run(zip, opts = {}){
-      zip = (zip || '').trim();
-      if (!isZip(zip)) return;
-      state.zip = zip;
-      LS.set('er_last', zip);
-      pushHistory(zip);
-      history.replaceState({}, '', `${location.pathname}?zip=${zip}`);
+    function run(opts = {}){
+      if (opts.zip){ state.zip = opts.zip.trim(); state.lat = null; state.lon = null; }
+      if (opts.lat != null){ state.lat = opts.lat; state.lon = opts.lon; state.zip = null; }
+      if (!state.zip && state.lat == null) return;
 
       $('#welcome').hidden = true;
       $('#results').hidden = false;
-      $('#zipInput').value = zip;
+      if (state.zip){
+        pushHistory(state.zip);
+        LS.set('er_last_zip', state.zip);
+        history.replaceState({}, '', `${location.pathname}?zip=${state.zip}&lang=${LANG}`);
+        $('#zipInput').value = state.zip;
+      }
 
       checkApi().then(ok => { $('#apiDown').hidden = ok; });
 
-      loadReps(zip);
-      loadElections(zip);
-      loadVoter(zip);
-      loadWeather(zip);
-      loadCity(zip);
-      loadNews(zip);
+      loadLocal().then(() => {
+        loadElections();
+        if (state.zip){
+          $('#trafficBtn').href = `https://www.google.com/maps/@?api=1&map_action=map&layer=traffic&query=${encodeURIComponent(state.zip)}`;
+          loadWeather(); loadVoter(); loadCity(); loadNews();
+        }
+      });
       loadBills();
-      $('#trafficBtn').href = `https://www.google.com/maps/@?api=1&map_action=map&layer=traffic&query=${encodeURIComponent(zip)}`;
 
       $('#genEmailBtn').onclick = () => {
-        const subj = encodeURIComponent(`Constituent message from ${zip}`);
-        const body = encodeURIComponent(`Dear Representative,\n\nI am a resident of ZIP ${zip}. I am writing about…\n\n[your message]\n\nThank you for your time,\n[your name]`);
-        location.href = `mailto:?subject=${subj}&body=${body}`;
+        const zip = state.zip || '';
+        location.href = `mailto:?subject=${encodeURIComponent(t('letter.subject',{zip}))}&body=${encodeURIComponent(t('letter.body',{zip}))}`;
       };
 
       if (opts.scroll){
         const y = $('#results').getBoundingClientRect().top + scrollY - 72;
         scrollTo({ top: y, behavior: 'smooth' });
       }
-      toast(`Showing ${zip}`);
+      if (!opts.silent) toast(t('toast.showing', { q: state.zip || (LANG==='es'?'tu zona':'your area') }));
     }
 
-    // ==================== Concern templates ====================
-    $$('.concernBtn').forEach(b => b.addEventListener('click', () => {
-      const zip = state.zip || $('#zipInput').value.trim();
-      const type = b.dataset.type;
-      const subj = `City concern: ${type}${zip ? ` (ZIP ${zip})` : ''}`;
-      const body = `Hello,\n\nI'd like to report a ${type} issue${zip ? ` in ZIP ${zip}` : ''}.\n\nLocation / details:\n\nThank you,\n`;
-      location.href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
-    }));
-
-    // ==================== Feedback (accessible star rating) ====================
+    // ==================== Feedback ====================
     (function feedback(){
       const wrap = $('#stars'); let rating = 0;
       for (let i = 1; i <= 5; i++){
         const b = document.createElement('button');
-        b.type = 'button'; b.dataset.v = i; b.role = 'radio';
-        b.setAttribute('aria-checked', 'false');
-        b.setAttribute('aria-label', `${i} star${i>1?'s':''}`);
+        b.type = 'button'; b.dataset.v = i; b.setAttribute('role','radio');
+        b.setAttribute('aria-checked','false'); b.setAttribute('aria-label', `${i}`);
         b.className = 'text-3xl leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-federal-400 rounded';
-        b.textContent = '★';
-        b.tabIndex = i === 1 ? 0 : -1;
+        b.textContent = '★'; b.tabIndex = i === 1 ? 0 : -1;
         wrap.appendChild(b);
       }
       const stars = $$('#stars button');
-      const paint = v => stars.forEach(s => {
-        const on = Number(s.dataset.v) <= v;
-        s.style.color = on ? '#f59e0b' : 'rgba(120,132,158,.4)';
-      });
-      const setRating = v => {
-        rating = v; paint(v);
-        stars.forEach(s => {
-          const sel = Number(s.dataset.v) === v;
-          s.setAttribute('aria-checked', sel ? 'true' : 'false');
-          s.tabIndex = sel ? 0 : -1;
-        });
-      };
+      const paint = v => stars.forEach(s => { s.style.color = Number(s.dataset.v) <= v ? '#f59e0b' : 'rgba(120,132,158,.4)'; });
+      const setRating = v => { rating = v; paint(v); stars.forEach(s => {
+        const sel = Number(s.dataset.v) === v; s.setAttribute('aria-checked', sel ? 'true':'false'); s.tabIndex = sel ? 0 : -1; }); };
       paint(0);
       stars.forEach((s, idx) => {
         s.addEventListener('mouseenter', () => paint(Number(s.dataset.v)));
@@ -850,9 +936,9 @@
       });
       $('#fbSend').onclick = () => {
         const name = $('#fbName').value.trim(), email = $('#fbEmail').value.trim(), msg = $('#fbMsg').value.trim();
-        if (!msg && !rating) return toast('Add a rating or a note first');
+        if (!msg && !rating) return toast(t('fb.need'));
         const subject = `EagleReach Feedback ${rating ? '★'.repeat(rating) : ''}`.trim();
-        const body = `Name: ${name}\nEmail: ${email}\nRating: ${rating || '—'}/5\n\n${msg}`;
+        const body = `Name: ${name}\nEmail: ${email}\nRating: ${rating || '—'}/5\nLang: ${LANG}\n\n${msg}`;
         location.href = `mailto:vikebairam@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       };
     })();
@@ -860,15 +946,18 @@
     // ==================== Boot ====================
     addEventListener('DOMContentLoaded', () => {
       $('#footYear').textContent = new Date().getFullYear();
+      const url = new URL(location.href);
+      let lang = url.searchParams.get('lang') || LS.get('er_lang');
+      if (!lang) lang = (navigator.language || 'en').toLowerCase().startsWith('es') ? 'es' : 'en';
+      applyLang(lang, false);
       renderHistory();
 
-      const urlZip = new URL(location.href).searchParams.get('zip');
-      const lastZip = LS.get('er_last');
-      if (urlZip && isZip(urlZip)) run(urlZip);
-      else if (lastZip && isZip(lastZip)) { $('#zipInput').value = lastZip; run(lastZip); }
+      const urlZip = url.searchParams.get('zip');
+      const lastZip = LS.get('er_last_zip') || (readHist()[0] || [])[0];
+      if (urlZip && isZip(urlZip)) run({ zip: urlZip });
+      else if (lastZip && isZip(lastZip)) { $('#zipInput').value = lastZip; run({ zip: lastZip }); }
 
-      if (location.hash === '#about')   openPanel('aboutPanel');
-      if (location.hash === '#founder') openPanel('founderPanel');
+      if (location.hash === '#about') openPanel('aboutPanel');
       if (location.hash === '#contact') openPanel('contactPanel');
     });
   </script>

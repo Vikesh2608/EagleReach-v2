@@ -1,12 +1,37 @@
 # 🦅 EagleReach
 
-**An open, keyless civic-engagement assistant for U.S. residents.**
-One ZIP code unlocks your elected officials, voter information, upcoming
-elections, local weather, city 311 updates, news, traffic, and the latest
-bills moving through Congress — no sign-in, no paywalls, no tracking.
+**A free, open civic assistant for U.S. residents — in English & Español.**
+One tap on your location shows your **mayor**, your **city council member**, and
+your **members of Congress** — plus voter info, elections, weather, city 311
+updates, news, traffic, and the latest bills in Congress. No sign-in, no
+paywalls, no tracking. Free for the community, forever.
 
 - **Live site:** https://vikesh2608.github.io/EagleReach/
-- **API:** FastAPI backend on Render (`/docs` for interactive OpenAPI)
+- **API:** FastAPI backend (`/docs` for interactive OpenAPI)
+
+---
+
+## What's new in 3.0
+
+| Area | Change |
+| --- | --- |
+| **One-tap local** | `GET /local?lat=&lon=` — from a coordinate, returns your **mayor** (Wikidata), **city council member** (city open-data portals), and **federal delegation** (GovTrack) in one call. Wired to the site's **"Use my location"** button. |
+| **Bilingual** | Full **English / Español** UI with a header toggle (auto-detects `navigator.language`, persists, `?lang=es` shareable). `/elections` and `/voter` return localized strings + `next_federal_iso` for a locale-free countdown. |
+| **Mayor, reliably** | Curated Wikidata QIDs for the 30 largest cities + a population-ranked coordinate search elsewhere; bare-QID / stub results are rejected, and an official "office of the mayor" link is always offered. |
+| **City council** | Point-in-district lookup for **New York City** and **Chicago** today (`backend/providers/council.py`); every other city gets a "find your council district" deep link. Adding a city = one small adapter. |
+| **Redesigned site** | Location-first hero, first-run guide, cards grouped into three sections, per-card retry, a single "service unavailable" banner, skeleton loaders, dark mode, back-to-top, and an accessibility pass (skip link, focus rings, labelled inputs, keyboard star rating, dialog roles). |
+
+### Local-data coverage
+
+| City | Mayor | City council |
+| --- | --- | --- |
+| New York City | ✅ | ✅ Council District lookup |
+| Chicago | ✅ | ✅ Ward / alderman lookup |
+| Los Angeles, and ~30 large cities | ✅ (curated) | 🔜 fallback link |
+| Everywhere else | best-effort (coordinate search) | fallback link |
+
+> There is no free nationwide source for city-council membership, so it is built
+> city-by-city. Contributions welcome — see `backend/providers/council.py`.
 
 ---
 
@@ -91,10 +116,11 @@ pytest -q
 | `GET /` | Service metadata and endpoint index. |
 | `GET /health` | Liveness check + backend version + source list. |
 | `GET /zipinfo?zip=` | City, state, and coordinates for a ZIP. |
+| `GET /local?lat=&lon=&lang=en\|es` | **One-tap local:** mayor, city council member, and federal delegation from a coordinate. |
 | `GET /officials?zip=` | U.S. Senators, House Representative, and (best-effort) Mayor. |
 | `GET /weather?zip=` | 7-day forecast (Open-Meteo). |
-| `GET /voter?zip=` | Registration, "how to vote", and election-office links for the state. |
-| `GET /elections?zip=` | Next federal general-election date. |
+| `GET /voter?zip=&lang=en\|es` | Registration, "how to vote", and election-office links for the state. |
+| `GET /elections?zip=&lang=en\|es` | Next federal general-election date (`next_federal_iso` for parsing). |
 | `GET /city/updates?zip=&limit=` | Recent 311 service requests (NYC and Chicago today). |
 | `GET /news?zip=` | Local and world news links. |
 | `GET /bills?limit=&order_by=introduced\|status` | Recent bills in Congress (GovTrack). |
@@ -126,10 +152,20 @@ variable is optional — the backend runs with no keys.
 
 ## Roadmap
 
+- City-council adapters for more cities (LA, SF, Seattle, Boston, Austin, Denver…).
+- County officials and state legislators (OpenStates).
 - Voice interface for accessibility.
-- More cities in `/city/updates` (Los Angeles, Boston, Seattle open data).
 - Per-state primary / local election dates from Secretary of State feeds.
-- Filter `/bills` by the visitor's own state delegation.
+- More UI languages.
+
+## Contributing a city's council data
+
+1. Add an `async def _yourcity(client, lat, lon)` adapter in
+   `backend/providers/council.py` that resolves the point to a district and
+   returns the member(s) — model it on `_chicago` / `_nyc`.
+2. Register it in `_ADAPTERS` under `(place_lowercase, state_abbr)`.
+3. Add the city to `SUPPORTED_CITIES` and add a test in
+   `backend/tests/test_helpers.py`.
 
 ---
 
@@ -142,4 +178,4 @@ indefinitely on free infrastructure.
 
 ## License
 
-© EagleReach by Vikesh Sagar Bairam. All rights reserved.
+[MIT](LICENSE) — free for anyone to use, run, and build on. © Vikesh Sagar Bairam.

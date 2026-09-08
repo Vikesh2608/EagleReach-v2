@@ -1,9 +1,11 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-import os, httpx, asyncio, datetime as dt, time
+import os, re, httpx, asyncio, datetime as dt, time
 from typing import Optional, Dict, Any, Tuple
 
-APP_VERSION = "1.4.0-open-data"
+from .providers.council import council_for
+
+APP_VERSION = "3.0.0-open-data"
 
 app = FastAPI(
     title="EagleReach Backend (Open Data)",
@@ -49,9 +51,30 @@ OPEN_METEO = "https://api.open-meteo.com/v1/forecast"
 NYC311 = "https://data.cityofnewyork.us/resource/erm2-nwe9.json"
 CHI311 = "https://data.cityofchicago.org/resource/v6vf-nfxy.json"
 
-UA = {"User-Agent": "EagleReach/1.4 (contact: vikebairam@gmail.com)"}
+NOMINATIM = "https://nominatim.openstreetmap.org/reverse"
+
+UA = {"User-Agent": "EagleReach/3.0 (contact: vikebairam@gmail.com)"}
 
 def _esc(s): return (s or "").strip()
+
+US_STATE_ABBR = {
+    "alabama": "AL", "alaska": "AK", "arizona": "AZ", "arkansas": "AR", "california": "CA",
+    "colorado": "CO", "connecticut": "CT", "delaware": "DE", "district of columbia": "DC",
+    "florida": "FL", "georgia": "GA", "hawaii": "HI", "idaho": "ID", "illinois": "IL",
+    "indiana": "IN", "iowa": "IA", "kansas": "KS", "kentucky": "KY", "louisiana": "LA",
+    "maine": "ME", "maryland": "MD", "massachusetts": "MA", "michigan": "MI", "minnesota": "MN",
+    "mississippi": "MS", "missouri": "MO", "montana": "MT", "nebraska": "NE", "nevada": "NV",
+    "new hampshire": "NH", "new jersey": "NJ", "new mexico": "NM", "new york": "NY",
+    "north carolina": "NC", "north dakota": "ND", "ohio": "OH", "oklahoma": "OK", "oregon": "OR",
+    "pennsylvania": "PA", "rhode island": "RI", "south carolina": "SC", "south dakota": "SD",
+    "tennessee": "TN", "texas": "TX", "utah": "UT", "vermont": "VT", "virginia": "VA",
+    "washington": "WA", "west virginia": "WV", "wisconsin": "WI", "wyoming": "WY",
+    "puerto rico": "PR", "guam": "GU", "u.s. virgin islands": "VI",
+}
+
+
+def state_to_abbr(name: str) -> str:
+    return US_STATE_ABBR.get((name or "").strip().lower(), "")
 
 # Simple TTL cache
 _cache: Dict[str, Tuple[float, Any]] = {}
@@ -101,9 +124,10 @@ def root():
         "version": APP_VERSION,
         "docs": "/docs",
         "endpoints": [
-            "/health", "/zipinfo", "/officials", "/weather", "/voter",
+            "/health", "/zipinfo", "/officials", "/local", "/weather", "/voter",
             "/city/updates", "/elections", "/news", "/bills",
         ],
+        "languages": ["en", "es"],
     }
 
 @app.get("/health")
@@ -262,6 +286,144 @@ async def fetch_mayor(place_name:str, state_name:str):
         cache_set(ck, out, 3600)
         return out
 
+
+async def reverse_geocode(lat: float, lon: float) -> Dict[str, Any]:
+    """lat/lon -> {place, state, state_abbr, county, zip} via OpenStreetMap Nominatim."""
+    ck = f"rev:{lat:.4f},{lon:.4f}"
+    c = cache_get(ck)
+    if c is not None:
+        return c
+    out: Dict[str, Any] = {"place": None, "state": None, "state_abbr": "", "county": None, "zip": None}
+    try:
+        async with httpx.AsyncClient(timeout=15, headers=UA) as client:
+            r = await client.get(NOMINATIM, params={
+                "format": "jsonv2", "lat": lat, "lon": lon, "zoom": 12, "addressdetails": 1,
+            })
+            r.raise_for_status()
+            a = (r.json() or {}).get("address", {}) or {}
+        out["place"] = (a.get("city") or a.get("town") or a.get("village")
+                        or a.get("hamlet") or a.get("municipality") or a.get("borough"))
+        out["state"] = a.get("state")
+        out["state_abbr"] = state_to_abbr(a.get("state") or "")
+        out["county"] = a.get("county")
+        out["zip"] = a.get("postcode")
+    except Exception:
+        pass
+    cache_set(ck, out, 3600)
+    return out
+
+
+# Curated Wikidata QIDs for large cities — avoids the coordinate search matching a
+# borough/neighborhood instead of the city. Everywhere else uses the geo search.
+MAYOR_QID = {
+    ("new york", "NY"): "Q60", ("los angeles", "CA"): "Q65", ("chicago", "IL"): "Q1297",
+    ("houston", "TX"): "Q16555", ("phoenix", "AZ"): "Q16556", ("philadelphia", "PA"): "Q1345",
+    ("san antonio", "TX"): "Q975", ("san diego", "CA"): "Q16552", ("dallas", "TX"): "Q16557",
+    ("san jose", "CA"): "Q16553", ("austin", "TX"): "Q16559", ("jacksonville", "FL"): "Q16568",
+    ("fort worth", "TX"): "Q49266", ("columbus", "OH"): "Q16567", ("charlotte", "NC"): "Q16565",
+    ("indianapolis", "IN"): "Q6346", ("san francisco", "CA"): "Q62", ("seattle", "WA"): "Q5083",
+    ("denver", "CO"): "Q16554", ("washington", "DC"): "Q61", ("boston", "MA"): "Q100",
+    ("nashville", "TN"): "Q23197", ("baltimore", "MD"): "Q5092", ("portland", "OR"): "Q6106",
+    ("atlanta", "GA"): "Q23556", ("miami", "FL"): "Q8652", ("detroit", "MI"): "Q12439",
+    ("minneapolis", "MN"): "Q36091", ("new orleans", "LA"): "Q34404", ("las vegas", "NV"): "Q23768",
+}
+# Stable "office of the mayor" pages, used when Wikidata has no usable name.
+MAYOR_OFFICE_URL = {
+    ("new york", "NY"): "https://www.nyc.gov/office-of-the-mayor/",
+}
+
+
+def _clean_label(v: Optional[str]) -> Optional[str]:
+    v = (v or "").strip()
+    return None if (not v or re.fullmatch(r"Q\d+", v)) else v
+
+
+async def _mayor_by_qid(qid: str, lang: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    """(name, city, website) for the *current* holder of P6 on a city item."""
+    langs = "es,en" if lang == "es" else "en,es"
+    q = f"""
+    SELECT ?cityLabel ?mayorLabel ?site WHERE {{
+      wd:{qid} p:P6 ?st . ?st ps:P6 ?mayor .
+      FILTER NOT EXISTS {{ ?st pq:P582 ?end }}
+      OPTIONAL {{ ?mayor wdt:P856 ?site }}
+      BIND(wd:{qid} AS ?city)
+      SERVICE wikibase:label {{ bd:serviceParam wikibase:language "{langs}" }}
+    }} LIMIT 1
+    """
+    try:
+        async with httpx.AsyncClient(timeout=25, headers={**UA, "Accept": "application/sparql-results+json"}) as client:
+            r = await client.get(WIKIDATA_SPARQL, params={"query": q})
+            r.raise_for_status()
+            b = r.json().get("results", {}).get("bindings", [])
+    except Exception:
+        return None, None, None
+    if not b:
+        return None, None, None
+    row = b[0]
+    return (_clean_label(row.get("mayorLabel", {}).get("value")),
+            _clean_label(row.get("cityLabel", {}).get("value")),
+            (row.get("site", {}) or {}).get("value"))
+
+
+async def _city_qid_near(lat: float, lon: float) -> Optional[str]:
+    q = f"""
+    SELECT ?city (SAMPLE(?pop) AS ?p) WHERE {{
+      SERVICE wikibase:around {{
+        ?city wdt:P625 ?loc .
+        bd:serviceParam wikibase:center "Point({lon} {lat})"^^geo:wktLiteral .
+        bd:serviceParam wikibase:radius "22" .
+      }}
+      ?city wdt:P31/wdt:P279* wd:Q515 .
+      ?city wdt:P6 [] .
+      OPTIONAL {{ ?city wdt:P1082 ?pop }}
+    }} GROUP BY ?city ORDER BY DESC(?p) LIMIT 1
+    """
+    try:
+        async with httpx.AsyncClient(timeout=25, headers={**UA, "Accept": "application/sparql-results+json"}) as client:
+            r = await client.get(WIKIDATA_SPARQL, params={"query": q})
+            r.raise_for_status()
+            b = r.json().get("results", {}).get("bindings", [])
+    except Exception:
+        return None
+    if not b:
+        return None
+    uri = b[0].get("city", {}).get("value", "")
+    return uri.rsplit("/", 1)[-1] or None
+
+
+async def fetch_mayor_geo(lat: float, lon: float, lang: str = "en",
+                          place: str = "", state_abbr: str = "") -> Optional[Dict[str, Any]]:
+    """Best-effort mayor for a point. Curated QID for big cities, geo search otherwise."""
+    ck = f"mayorgeo:{lat:.3f},{lon:.3f}:{lang}"
+    c = cache_get(ck)
+    if c is not None:
+        return c or None
+
+    key = ((place or "").strip().lower(), (state_abbr or "").strip().upper())
+    qid = MAYOR_QID.get(key) or await _city_qid_near(lat, lon)
+    office = "Alcalde/Alcaldesa" if lang == "es" else "Mayor"
+    name = city = site = None
+    if qid:
+        name, city, site = await _mayor_by_qid(qid, lang)
+
+    office_url = MAYOR_OFFICE_URL.get(key)
+    if not name and not office_url:
+        cache_set(ck, {}, 600)
+        return None
+
+    url = site or office_url or (fallback_search_url(name, city or place, "Mayor") if name else None)
+    out = {
+        "name": name,                       # may be None when only an office page is known
+        "office": office,
+        "city": city or (place or None),
+        "verified": bool(name and site),
+        "phones": [], "emails": [],
+        "urls": [url] if url else [],
+    }
+    cache_set(ck, out, 3600)
+    return out
+
+
 def normalize_officials(rows):
     def w(row):
         off = (row.get("office") or "").lower()
@@ -303,6 +465,52 @@ async def officials(zip: str = Query(..., min_length=5, max_length=10)):
         }
     }
 
+# ---------- Local (one tap from "use my location") ----------
+@app.get("/local")
+async def local(
+    lat: float = Query(..., ge=-90, le=90),
+    lon: float = Query(..., ge=-180, le=180),
+    lang: str = Query("en", pattern="^(en|es)$"),
+):
+    """Everything tied to a point: mayor, city council, and federal delegation.
+
+    Designed for the "use my location" button — one call, local officials first.
+    """
+    geo = await reverse_geocode(lat, lon)
+    place, state_name, state_abbr = geo["place"], geo["state"], geo["state_abbr"]
+
+    cd_task    = asyncio.create_task(fetch_cd(lat, lon))
+    mayor_task = asyncio.create_task(fetch_mayor_geo(lat, lon, lang, place or "", state_abbr))
+    council_task = asyncio.create_task(council_for(lat, lon, place or "", state_abbr))
+    senate_task = asyncio.create_task(fetch_senators(state_abbr)) if state_abbr else None
+
+    cd = await cd_task
+    district = cd.get("district")
+    rep_rows = await fetch_rep(state_abbr, district) if state_abbr else []
+    sen_rows = await senate_task if senate_task else []
+    mayor, council = await asyncio.gather(mayor_task, council_task)
+
+    return {
+        "location": {"lat": lat, "lon": lon},
+        "place": place,
+        "state": state_name,
+        "state_abbr": state_abbr,
+        "county": geo["county"],
+        "zip": geo["zip"],
+        "district": district,
+        "lang": lang,
+        "local": {"mayor": mayor, "council": council},
+        "federal": normalize_officials(sen_rows + rep_rows),
+        "generated_at": utcnow_iso(),
+        "sources": {
+            "place": "OpenStreetMap Nominatim",
+            "district": "FCC Census Block",
+            "congress": "GovTrack",
+            "mayor": "Wikidata (coordinate search)",
+            "council": "city open-data portals",
+        },
+    }
+
 # ---------- Weather ----------
 @app.get("/weather")
 async def weather(zip: str):
@@ -342,18 +550,24 @@ async def weather(zip: str):
 
 # ---------- Voter ----------
 @app.get("/voter")
-async def voter(zip: str):
+async def voter(zip: str, lang: str = "en"):
     z = await fetch_zip(zip)
     abbr = z["state_abbr"].lower()
-    register_url = f"https://www.vote.gov/register/{abbr}/"
-    howto_url = "https://www.vote.gov/how-to-vote/"
-    polling_url = "https://www.usa.gov/election-office"
+    es = lang == "es"
     return {
         "zip": zip,
         "state": z["state_name"],
-        "register_url": register_url,
-        "howto_url": howto_url,
-        "polling_url": polling_url
+        "register_url": (f"https://vote.gov/es/registrarse/{abbr}/" if es
+                         else f"https://www.vote.gov/register/{abbr}/"),
+        "howto_url": ("https://vote.gov/es/como-votar/" if es
+                      else "https://www.vote.gov/how-to-vote/"),
+        "polling_url": ("https://www.usa.gov/es/oficinas-electorales" if es
+                        else "https://www.usa.gov/election-office"),
+        "labels": {
+            "register": "Regístrese para votar" if es else "Register to vote",
+            "office": "Encuentre su oficina electoral" if es else "Find my election office",
+            "howto": "Cómo votar" if es else "How to vote",
+        },
     }
 
 # ---------- City updates (NYC & Chicago) ----------
@@ -396,15 +610,22 @@ async def city_updates(zip: str, limit: int = 8):
     return {"zip": zip, "items": out[:limit], "count": len(out), "source": source}
 
 # ---------- Elections ----------
+_MONTHS_ES = ["", "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
+              "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+
+
 @app.get("/elections")
-async def elections(zip: str):
+async def elections(zip: str, lang: str = "en"):
     today = dt.date.today()
     this_year = first_tuesday_after_first_monday(today.year)
     next_date = this_year if this_year >= today else first_tuesday_after_first_monday(today.year + 1)
-    notes = "State primary dates coming soon (open data, state SoS sources)."
-    # strftime portable for Windows: avoid %-d
-    pretty = next_date.strftime("%B %d, %Y").replace(" 0", " ")
-    return {"zip": zip, "next_federal": pretty, "notes": notes}
+    if lang == "es":
+        pretty = f"{next_date.day} de {_MONTHS_ES[next_date.month]} de {next_date.year}"
+        notes = "Las fechas de las primarias estatales se agregarán pronto (datos abiertos)."
+    else:
+        pretty = next_date.strftime("%B %d, %Y").replace(" 0", " ")
+        notes = "State primary dates coming soon (open data, state SoS sources)."
+    return {"zip": zip, "next_federal": pretty, "next_federal_iso": next_date.isoformat(), "notes": notes}
 
 # ---------- News ----------
 @app.get("/news")

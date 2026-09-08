@@ -3,14 +3,19 @@ import datetime as dt
 
 from fastapi.testclient import TestClient
 
+import asyncio
+
 from backend.main import (
     app,
     first_tuesday_after_first_monday,
     normalize_officials,
+    state_to_abbr,
     utcnow_iso,
     wmo_label_icon,
     _bill_row,
+    _clean_label,
 )
+from backend.providers.council import _flip_name, _unwrap_url, council_for
 
 client = TestClient(app)
 
@@ -87,7 +92,51 @@ def test_root_and_health_routes_need_no_network():
     assert r.status_code == 200
     body = r.json()
     assert "/bills" in body["endpoints"]
+    assert "/local" in body["endpoints"]
+    assert body["languages"] == ["en", "es"]
 
     h = client.get("/health")
     assert h.status_code == 200
     assert h.json()["ok"] is True
+
+
+def test_state_to_abbr():
+    assert state_to_abbr("Illinois") == "IL"
+    assert state_to_abbr("new york") == "NY"
+    assert state_to_abbr("District of Columbia") == "DC"
+    assert state_to_abbr("Nowhere") == ""
+    assert state_to_abbr(None) == ""
+
+
+def test_clean_label_rejects_bare_qids():
+    assert _clean_label("Karen Bass") == "Karen Bass"
+    assert _clean_label("Q28034971") is None
+    assert _clean_label("  ") is None
+    assert _clean_label(None) is None
+    assert _clean_label("Q4 Media") == "Q4 Media"  # not a bare QID
+
+
+def test_council_flip_name_and_unwrap():
+    assert _flip_name("La Spata, Daniel") == "Daniel La Spata"
+    assert _flip_name("Robinson, Lamont J.") == "Lamont J. Robinson"
+    assert _flip_name("Someone") == "Someone"
+    assert _unwrap_url({"url": "https://x.gov"}) == "https://x.gov"
+    assert _unwrap_url("https://y.gov") == "https://y.gov"
+    assert _unwrap_url(None) is None
+
+
+def test_council_for_unsupported_city_returns_fallback():
+    out = asyncio.run(council_for(38.5, -99.9, "Hays", "KS"))
+    assert out["supported"] is False
+    assert out["members"] == []
+    assert out["find_url"].startswith("https://www.google.com/search")
+    assert "New York City, NY" in out["supported_cities"]
+
+
+def test_elections_route_localizes(monkeypatch):
+    # /elections computes locally, no network.
+    en = client.get("/elections?zip=62704").json()
+    es = client.get("/elections?zip=62704&lang=es").json()
+    assert en["next_federal_iso"] == es["next_federal_iso"]
+    assert "de" in es["next_federal"]  # e.g. "3 de noviembre de 2026"
+    assert es["notes"] != en["notes"]
