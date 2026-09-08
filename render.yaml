@@ -1,9 +1,14 @@
 services:
   - type: web
     name: eaglereach-api
-    env: python
-    buildCommand: ""
-    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port 10000
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
-        value: 3.12.1
+        value: "3.12.6"
+      # Add your GitHub Pages origin if it isn't already allow-listed in main.py
+      # - key: EXTRA_ALLOWED_ORIGINS
+      #   value: https://vikesh2608.github.io
