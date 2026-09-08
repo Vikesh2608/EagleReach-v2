@@ -377,7 +377,7 @@
        URL below. To test a different backend without editing this file, add
        ?api=https://your-api.example.com to the page URL.
        ====================================================================== */
-    const API_DEFAULT = "https://eaglereach-1.onrender.com";
+    const API_DEFAULT = "https://eaglereach-v2.onrender.com";
     const BACKEND = (new URL(location.href).searchParams.get('api') || API_DEFAULT).replace(/\/+$/, '');
     const $  = (s, r=document) => r.querySelector(s);
     const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
