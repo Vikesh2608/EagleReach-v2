@@ -1,119 +1,15 @@
-const API = "https://eaglereach-v2.onrender.com";
-
-async function searchZip() {
-
-    let zip = document.getElementById("zip").value;
-
-    if (!zip) return alert("Enter ZIP");
-
-    let res = await fetch(`${API}/api/civic?zip=${zip}`);
-    let data = await res.json();
-
-    displayLocation(data, zip);
-    displayLeaders(data.representatives);
-    loadWeather(data.lat, data.lon);
-    loadLocalNews(data.city);
-    loadWorldNews();
-}
-
-function useLocation() {
-
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-
-        let lat = pos.coords.latitude;
-        let lon = pos.coords.longitude;
-
-        let res = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}`
-        );
-
-        let data = await res.json();
-
-        document.getElementById("zip").value = data.postcode;
-
-        searchZip();
-    });
-}
-
-function displayLocation(data, zip) {
-
-    document.getElementById("location").innerHTML =
-        `<h3>📍 ${data.city}, ${data.state}</h3>
-         <p>ZIP: ${zip}</p>
-         <p>District: ${data.district}</p>`;
-}
-
-function displayLeaders(reps) {
-
-    let html = "";
-
-    reps.forEach(r => {
-        html += `
-        <div class="card">
-            <b>${r.name}</b><br>
-            ${r.party}<br>
-            📞 ${r.phone}<br>
-            <a href="${r.link}" target="_blank">Website</a>
-        </div>`;
-    });
-
-    document.getElementById("leaders").innerHTML = html;
-}
-
-async function loadWeather(lat, lon) {
-
-    let res = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`
-    );
-
-    let data = await res.json();
-
-    function icon(code) {
-        if (code < 3) return "☀️";
-        if (code < 50) return "⛅";
-        if (code < 70) return "🌧";
-        if (code < 80) return "❄️";
-        return "🌩";
-    }
-
-    let html = "";
-
-    data.daily.time.forEach((d, i) => {
-        html += `
-        <div class="card">
-            ${icon(data.daily.weathercode[i])} ${d}<br>
-            ${data.daily.temperature_2m_max[i]}°C /
-            ${data.daily.temperature_2m_min[i]}°C
-        </div>`;
-    });
-
-    document.getElementById("weather").innerHTML = html;
-}
-
-async function loadLocalNews(city) {
-
-    let res = await fetch(`${API}/api/news/local?city=${city}`);
-    let news = await res.json();
-
-    let html = "";
-
-    news.slice(0,5).forEach(n => {
-        html += `<div class="card">📰 <a href="${n.link}" target="_blank">${n.title}</a></div>`;
-    });
-
-    document.getElementById("local").innerHTML = html;
-}
-
-async function loadWorldNews() {
-
-    let res = await fetch(`${API}/api/news/world`);
-    let news = await res.json();
-
-    let html = "";
-
-    news.slice(0,5).forEach(n => {
-        html += `<div class="card">🌍 <a href="${n.link}" target="_blank">${n.title}</a></div>`;
-    });
-
-    document.getElementById("world").innerHTML = html;
-}
+'use strict';
+const API='https://eaglereach-v2.onrender.com';
+const $=id=>document.getElementById(id);
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const allowedLink=u=>{try{const x=new URL(u);return ['https:','http:'].includes(x.protocol)?x.href:'#'}catch{return '#'}};
+const state={city:'',zip:'',news:'local'};
+async function json(url){const r=await fetch(url,{signal:AbortSignal.timeout(16000)});if(!r.ok)throw Error('Service unavailable ('+r.status+')');return r.json()}
+function status(s){$('status').textContent=s}
+function weatherIcon(code){if(code===0)return '☀️';if(code<=3)return '⛅';if(code<=48)return '🌫️';if(code<=67)return '🌧️';if(code<=77)return '❄️';if(code<=82)return '🌦️';return '⛈️'}
+async function weather(lat,lon){try{const d=await json(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit&timezone=auto&forecast_days=7`);$('heroTemp').textContent=Math.round(d.current.temperature_2m)+'°F';$('heroConditions').textContent=weatherIcon(d.current.weather_code)+' Current conditions';$('weather').innerHTML=d.daily.time.map((day,i)=>`<div class="day"><b>${safe(new Date(day+'T12:00:00').toLocaleDateString('en-US',{weekday:'short'}))}</b><strong>${weatherIcon(d.daily.weather_code[i])}</strong>${Math.round(d.daily.temperature_2m_max[i])}° / ${Math.round(d.daily.temperature_2m_min[i])}°F</div>`).join('')}catch{$('weather').textContent='Forecast is temporarily unavailable.'}}
+function reps(items){if(!Array.isArray(items)||!items.length){$('leaders').textContent='Representative information is unavailable for this ZIP. Check your officials using your full street address at USA.gov.';return} $('leaders').innerHTML=items.map(r=>`<p><strong>${safe(r.name||'Official')}</strong> ${safe(r.party||'')}<br>${r.link?`<a href="${safe(allowedLink(r.link))}" target="_blank" rel="noopener noreferrer">Official website ↗</a>`:''}</p>`).join('')}
+async function searchZip(zip){if(!/^\d{5}$/.test(zip)){status('Enter a valid 5-digit U.S. ZIP code.');return}state.zip=zip;$('results').hidden=false;$('resultTitle').textContent='Community resources for '+zip;status('Loading location, weather and civic information…');try{const d=await json(`${API}/api/civic?zip=${encodeURIComponent(zip)}`);state.city=d.city||'';$('resultTitle').textContent=[d.city,d.state].filter(Boolean).join(', ')||'Community '+zip;$('resultSubtitle').textContent='ZIP '+zip;$('heroCity').textContent=state.city||'Your area';reps(d.representatives);if(Number.isFinite(Number(d.lat))&&Number.isFinite(Number(d.lon)))await weather(d.lat,d.lon);else $('weather').textContent='Forecast location unavailable.';status('Location loaded.');loadNews()}catch(e){status('Civic data could not load: '+e.message);$('leaders').innerHTML='<a href="https://www.usa.gov/elected-officials" target="_blank" rel="noopener noreferrer">Find your elected officials on USA.gov ↗</a>';try{const z=await json('https://api.zippopotam.us/us/'+zip);const p=z.places?.[0];if(p){state.city=p['place name'];$('resultTitle').textContent=state.city+', '+p['state abbreviation'];$('heroCity').textContent=state.city;await weather(Number(p.latitude),Number(p.longitude));loadNews()}}catch{}}}
+function useLocation(){if(!navigator.geolocation){status('Location is not supported by this browser.');return}status('Requesting location permission…');navigator.geolocation.getCurrentPosition(async p=>{try{const d=await json(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${p.coords.latitude}&longitude=${p.coords.longitude}&localityLanguage=en`);const zip=d.postcode;if(!/^\d{5}$/.test(zip||''))throw Error('No U.S. ZIP code found');$('zip').value=zip;searchZip(zip)}catch(e){status('Unable to determine ZIP: '+e.message)}},e=>status('Location unavailable: '+e.message),{timeout:12000,enableHighAccuracy:false})}
+async function loadNews(){const type=state.news;const box=$('newsCards');box.innerHTML='<div class="panel">Loading headlines…</div>';try{let news;if(type==='local'){if(!state.city){box.innerHTML='<div class="panel">Enter a ZIP code above to see local headlines.</div>';return}news=await json(`${API}/api/news/local?city=${encodeURIComponent(state.city)}`)}else if(type==='world'){news=await json(`${API}/api/news/world`)}else{box.innerHTML=`<div class="panel"><h3>${type==='us'?'U.S. News':'Technology & AI'}</h3><p>This category needs a dedicated news endpoint. Meanwhile, browse current coverage from Google News.</p><a href="https://news.google.com/search?q=${type==='us'?'United%20States':'artificial%20intelligence%20technology'}" target="_blank" rel="noopener noreferrer">Browse headlines ↗</a></div>`;return}if(!Array.isArray(news))news=news.articles||news.items||[];if(!news.length)throw Error('No headlines returned');box.innerHTML=news.slice(0,12).map(n=>`<article class="news-card"><small>${safe(n.source?.name||n.source||'News')}</small><h3>${safe(n.title||'Headline')}</h3><a href="${safe(allowedLink(n.link||n.url))}" target="_blank" rel="noopener noreferrer">Read article ↗</a></article>`).join('')}catch(e){box.innerHTML=`<div class="panel"><p>Headlines are temporarily unavailable.</p><a href="https://news.google.com/" target="_blank" rel="noopener noreferrer">Browse Google News ↗</a></div>`}}
+$('searchForm').addEventListener('submit',e=>{e.preventDefault();searchZip($('zip').value.trim())});$('locateHero').addEventListener('click',useLocation);$('locateTop').addEventListener('click',useLocation);document.querySelectorAll('[data-news]').forEach(b=>b.addEventListener('click',()=>{state.news=b.dataset.news;document.querySelectorAll('[data-news]').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-selected',String(x===b))});loadNews()}));
