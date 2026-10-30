@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import requests
+from fastapi import HTTPException
+import re
 import xml.etree.ElementTree as ET
 
 app = FastAPI()
@@ -20,8 +22,15 @@ def home():
 @app.get("/api/civic")
 def civic(zip: str):
 
+    if not re.fullmatch(r"\d{5}", zip):
+        raise HTTPException(status_code=400, detail="Enter a valid five-digit U.S. ZIP code")
+
     try:
-        geo = requests.get(f"https://api.zippopotam.us/us/{zip}").json()
+        geo_response = requests.get(f"https://api.zippopotam.us/us/{zip}", timeout=10)
+        if geo_response.status_code == 404:
+            raise HTTPException(status_code=404, detail="ZIP code not found")
+        geo_response.raise_for_status()
+        geo = geo_response.json()
 
         place = geo["places"][0]
         city = place["place name"]
@@ -33,7 +42,7 @@ def civic(zip: str):
 
         try:
             census = requests.get(
-                f"https://geo.fcc.gov/api/census/area?lat={lat}&lon={lon}&format=json"
+                f"https://geo.fcc.gov/api/census/area?lat={lat}&lon={lon}&format=json", timeout=10
             ).json()
 
             if census.get("results"):
@@ -46,19 +55,19 @@ def civic(zip: str):
 
         reps = [
             {
-                "name": f"U.S. Senators ({state})",
+                "name": f"Find U.S. Senators for {state}",
                 "party": "Federal",
                 "phone": "202-224-3121",
                 "link": "https://www.senate.gov"
             },
             {
-                "name": f"House Representative (District {district})",
+                "name": f"Find your U.S. House Representative (district estimate: {district})",
                 "party": "Federal",
                 "phone": "202-225-3121",
                 "link": "https://www.house.gov"
             },
             {
-                "name": f"{city} Mayor Office",
+                "name": f"Find local government offices in {city}",
                 "party": "Local",
                 "phone": "Check city website",
                 "link": "https://www.usa.gov/local-governments"
@@ -74,15 +83,10 @@ def civic(zip: str):
             "representatives": reps
         }
 
-    except:
-        return {
-            "city": "Unknown",
-            "state": "",
-            "district": "Unknown",
-            "lat": 40.7,
-            "lon": -74,
-            "representatives": []
-        }
+    except HTTPException:
+        raise
+    except (requests.RequestException, ValueError, KeyError, IndexError, TypeError):
+        raise HTTPException(status_code=503, detail="Location lookup is temporarily unavailable")
 
 
 @app.get("/api/news/world")
