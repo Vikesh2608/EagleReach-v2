@@ -18,7 +18,7 @@ The project is independently developed and is **not affiliated with or endorsed 
 
 | Area | Current functionality |
 | --- | --- |
-| 🏛️ Civic information | ZIP-based representative information when available; links to official civic resources |
+| 🏛️ Civic information | U.S. Senators and House Representative by ZIP (or device location), with party, phone and website; links to official civic resources |
 | 🌤️ Weather | Seven-day forecast using Open-Meteo |
 | 🚑 Emergency support | Quick-call links for U.S. 911 and 988, plus additional helplines |
 | 🏥 Healthcare | Google Maps and Apple Maps searches for hospitals, urgent care, CVS and Walgreens, using a ZIP or permitted device location |
@@ -40,7 +40,8 @@ Explore the [live EagleReach homepage](https://vikesh2608.github.io/EagleReach-v
 - **Weather:** Open-Meteo
 - **Location:** Browser Geolocation API, reverse geocoding, ZIP-code lookup
 - **Maps:** Google Maps search links and Apple Maps search links
-- **Civic and news data:** Backend integrations and external public-information sources
+- **Civic data:** U.S. Census Geocoder (congressional district) + [`unitedstates/congress-legislators`](https://github.com/unitedstates/congress-legislators) (public-domain list of current members)
+- **News data:** Google News RSS via the backend
 
 ## Architecture
 
