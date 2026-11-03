@@ -105,14 +105,77 @@ function updateCareMaps() {
 // Weather forecast (Open-Meteo) and alerts (National Weather Service)
 // ---------------------------------------------------------------------------
 
-function weatherIcon(code) {
-  if (code === 0) return '☀️';
-  if (code <= 3) return '⛅';
-  if (code <= 48) return '🌫️';
-  if (code <= 67) return '🌧️';
-  if (code <= 77) return '❄️';
-  if (code <= 82) return '🌦️';
-  return '⛈️';
+// WMO weather codes -> description and icon (day/night variants).
+function weatherInfo(code, isDay = 1) {
+  const day = isDay !== 0;
+  if (code === 0) return { text: 'Clear', icon: day ? '☀️' : '🌙' };
+  if (code === 1) return { text: 'Mostly clear', icon: day ? '🌤️' : '🌙' };
+  if (code === 2) return { text: 'Partly cloudy', icon: day ? '⛅' : '☁️' };
+  if (code === 3) return { text: 'Cloudy', icon: '☁️' };
+  if (code <= 48) return { text: 'Fog', icon: '🌫️' };
+  if (code <= 55) return { text: 'Drizzle', icon: day ? '🌦️' : '🌧️' };
+  if (code <= 57) return { text: 'Freezing drizzle', icon: '🌧️' };
+  if (code === 61) return { text: 'Light rain', icon: '🌧️' };
+  if (code === 63) return { text: 'Rain', icon: '🌧️' };
+  if (code <= 65) return { text: 'Heavy rain', icon: '🌧️' };
+  if (code <= 67) return { text: 'Freezing rain', icon: '🌧️' };
+  if (code <= 75) return { text: 'Snow', icon: '🌨️' };
+  if (code === 77) return { text: 'Snow grains', icon: '🌨️' };
+  if (code <= 82) return { text: 'Showers', icon: day ? '🌦️' : '🌧️' };
+  if (code <= 86) return { text: 'Snow showers', icon: '🌨️' };
+  if (code === 95) return { text: 'Thunderstorms', icon: '⛈️' };
+  return { text: 'Thunderstorms with hail', icon: '⛈️' };
+}
+
+// Kept for anything that only needs an icon.
+function weatherIcon(code, isDay = 1) { return weatherInfo(code, isDay).icon; }
+
+// Background theme for the weather card, based on current conditions.
+function weatherTheme(code, isDay) {
+  const night = isDay === 0;
+  if (code >= 95) return 'wx-storm';
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return night ? 'wx-night-dim' : 'wx-snow';
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return night ? 'wx-night-dim' : 'wx-rain';
+  if (code === 45 || code === 48) return night ? 'wx-night-dim' : 'wx-fog';
+  if (code === 3) return night ? 'wx-night-dim' : 'wx-cloudy';
+  if (night) return 'wx-night';
+  return code === 2 ? 'wx-partly' : 'wx-clear';
+}
+
+// Temperature (°F) -> color, from icy blue to hot red, for the range bars.
+function tempColor(f) {
+  const stops = [[10, [94, 159, 255]], [35, [90, 200, 250]], [50, [99, 211, 198]], [62, [166, 224, 90]],
+                 [74, [255, 214, 10]], [85, [255, 159, 10]], [97, [255, 69, 58]]];
+  if (f <= stops[0][0]) return `rgb(${stops[0][1]})`;
+  for (let i = 1; i < stops.length; i++) {
+    if (f <= stops[i][0]) {
+      const [t0, c0] = stops[i - 1], [t1, c1] = stops[i], k = (f - t0) / (t1 - t0);
+      return `rgb(${c0.map((v, j) => Math.round(v + (c1[j] - v) * k)).join(',')})`;
+    }
+  }
+  return `rgb(${stops[stops.length - 1][1]})`;
+}
+
+function compass(deg) {
+  const dirs = LANG === 'es' ? ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'] : ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  return dirs[Math.round(((deg % 360) / 45)) % 8];
+}
+
+function uvLabel(uv) {
+  if (uv < 3) return t('Low');
+  if (uv < 6) return t('Moderate');
+  if (uv < 8) return t('High');
+  if (uv < 11) return t('Very high');
+  return t('Extreme');
+}
+
+// Open-Meteo returns local times without a zone ("2026-11-02T18:45"); parsing and
+// formatting them the same way keeps the location's own clock time.
+function localHour(str) {
+  return new Date(str).toLocaleTimeString(LOCALE, { hour: 'numeric' });
+}
+function localTime(str) {
+  return new Date(str).toLocaleTimeString(LOCALE, { hour: 'numeric', minute: '2-digit' });
 }
 
 async function weather(lat, lon) {
@@ -120,23 +183,104 @@ async function weather(lat, lon) {
   try {
     const d = await json(
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
-      '&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code' +
-      '&temperature_unit=fahrenheit&timezone=auto&forecast_days=7'
+      '&current=temperature_2m,apparent_temperature,relative_humidity_2m,is_day,weather_code,wind_speed_10m,wind_direction_10m' +
+      '&hourly=temperature_2m,weather_code,precipitation_probability,is_day' +
+      '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,uv_index_max' +
+      '&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=7'
     );
     if (d.timezone) state.tz = d.timezone;
     state.point = { lat, lon };
     tickClock();
     $('updatedAt').textContent = ' · ' + t('Forecast updated {time}, refreshes every 10 min', { time: clockText(new Date(), false) });
-    $('heroTemp').textContent = Math.round(d.current.temperature_2m) + '°F';
-    if (!$('heroConditions').dataset.alert) {
-      $('heroConditions').textContent = weatherIcon(d.current.weather_code) + ' ' + t('Current conditions');
-    }
-    $('weather').innerHTML = d.daily.time.map((day, i) => `
-      <div class="day">
-        <b>${safe(new Date(day + 'T12:00:00').toLocaleDateString(LOCALE, { weekday: 'short' }))}</b>
-        <strong>${weatherIcon(d.daily.weather_code[i])}</strong>
-        ${Math.round(d.daily.temperature_2m_max[i])}° / ${Math.round(d.daily.temperature_2m_min[i])}°F
-      </div>`).join('');
+
+    const c = d.current, daily = d.daily, hourly = d.hourly || {};
+    const now = weatherInfo(c.weather_code, c.is_day);
+    const temp = Math.round(c.temperature_2m);
+    const hi = Math.round(daily.temperature_2m_max[0]);
+    const lo = Math.round(daily.temperature_2m_min[0]);
+
+    $('heroTemp').textContent = temp + '°F';
+    if (!$('heroConditions').dataset.alert) $('heroConditions').textContent = now.icon + ' ' + t(now.text);
+
+    // Card background follows the sky.
+    const panel = $('forecast');
+    panel.className = panel.className.replace(/\bwx-[\w-]+/g, '').trim() + ' ' + weatherTheme(c.weather_code, c.is_day);
+
+    // Hourly: from the current hour, next 24 hours.
+    let start = (hourly.time || []).findIndex(h => h.slice(0, 13) === String(c.time || '').slice(0, 13));
+    if (start < 0) start = 0;
+    const hours = (hourly.time || []).slice(start, start + 24).map((h, k) => {
+      const i = start + k;
+      const info = weatherInfo(hourly.weather_code[i], hourly.is_day[i]);
+      const rain = hourly.precipitation_probability ? hourly.precipitation_probability[i] : null;
+      return `
+        <div class="wx-hour">
+          <span class="wx-hour-time">${k === 0 ? t('Now') : safe(localHour(h))}</span>
+          <span class="wx-hour-icon" title="${safe(t(info.text))}">${info.icon}</span>
+          <span class="wx-rain">${rain >= 20 ? rain + '%' : ''}</span>
+          <b>${Math.round(k === 0 ? c.temperature_2m : hourly.temperature_2m[i])}°</b>
+        </div>`;
+    }).join('');
+
+    // 7-day list with Apple-style temperature range bars.
+    const weekMin = Math.min(...daily.temperature_2m_min);
+    const weekMax = Math.max(...daily.temperature_2m_max);
+    const span = Math.max(1, weekMax - weekMin);
+    const days = daily.time.map((day, i) => {
+      const info = weatherInfo(daily.weather_code[i], 1);
+      const dlo = daily.temperature_2m_min[i], dhi = daily.temperature_2m_max[i];
+      const left = ((dlo - weekMin) / span) * 100, width = Math.max(4, ((dhi - dlo) / span) * 100);
+      const rain = daily.precipitation_probability_max ? daily.precipitation_probability_max[i] : null;
+      const dot = i === 0
+        ? `<i class="wx-dot" style="left:${Math.min(100, Math.max(0, ((c.temperature_2m - weekMin) / span) * 100))}%"></i>` : '';
+      const name = i === 0 ? t('Today')
+        : new Date(day + 'T12:00:00').toLocaleDateString(LOCALE, { weekday: 'short' });
+      return `
+        <div class="wx-day">
+          <span class="wx-day-name">${safe(name)}</span>
+          <span class="wx-day-icon" title="${safe(t(info.text))}">${info.icon}<small class="wx-rain">${rain >= 20 ? rain + '%' : ''}</small></span>
+          <span class="wx-lo">${Math.round(dlo)}°</span>
+          <span class="wx-bar"><span class="wx-fill" style="left:${left}%;width:${width}%;background:linear-gradient(90deg,${tempColor(dlo)},${tempColor(dhi)})"></span>${dot}</span>
+          <span class="wx-hi">${Math.round(dhi)}°</span>
+        </div>`;
+    }).join('');
+
+    // Detail tiles.
+    const feels = Math.round(c.apparent_temperature);
+    const feelsNote = Math.abs(feels - temp) < 3 ? t('Similar to the actual temperature.')
+      : feels < temp ? t('Wind is making it feel cooler.') : t('Humidity is making it feel warmer.');
+    const uv = Math.round(daily.uv_index_max ? daily.uv_index_max[0] : 0);
+    const tile = (icon, label, value, note = '') => `
+      <div class="wx-tile">
+        <span class="wx-tile-label">${icon} ${safe(label)}</span>
+        <b>${value}</b>
+        ${note ? `<small>${note}</small>` : ''}
+      </div>`;
+    const tiles = [
+      tile('🌡️', t('Feels like'), feels + '°', safe(feelsNote)),
+      tile('💧', t('Humidity'), Math.round(c.relative_humidity_2m) + '%'),
+      tile('💨', t('Wind'), Math.round(c.wind_speed_10m) + ' <span class="wx-unit">mph</span>', safe(compass(c.wind_direction_10m || 0))),
+      tile('🔆', t('UV index'), uv, safe(uvLabel(uv))),
+      tile('🌅', t('Sunrise'), safe(localTime(daily.sunrise[0]))),
+      tile('🌇', t('Sunset'), safe(localTime(daily.sunset[0])))
+    ].join('');
+
+    $('weather').innerHTML = `
+      <div class="wx-now">
+        ${state.city ? `<div class="wx-place">${safe(state.city)}</div>` : ''}
+        <div class="wx-temp">${temp}°</div>
+        <div class="wx-cond">${now.icon} ${safe(t(now.text))}</div>
+        <div class="wx-hl">${safe(t('H:{hi}°  L:{lo}°', { hi, lo }))}</div>
+      </div>
+      <section class="wx-glass">
+        <h4>🕒 ${safe(t('Hourly forecast'))}</h4>
+        <div class="wx-hours" tabindex="0" aria-label="${safe(t('Hourly forecast'))}">${hours}</div>
+      </section>
+      <section class="wx-glass">
+        <h4>📅 ${safe(t('7-day forecast'))}</h4>
+        <div class="wx-days">${days}</div>
+      </section>
+      <div class="wx-tiles">${tiles}</div>`;
   } catch {
     $('weather').textContent = t('Forecast is temporarily unavailable.');
   }

@@ -102,3 +102,69 @@ body:not(.searched) .locate-big:not(:disabled){animation:locatePulse 2.2s ease-o
   .hero h2{font-size:22px;margin-bottom:12px}
   .locate-note{margin-top:6px}
 }
+
+/* ===== Weather card (phone weather app style) ===== */
+.panel.wx{color:#fff;border:0;padding:20px;overflow:hidden;position:relative;transition:background .6s}
+.wx-clear{background:linear-gradient(165deg,#1f6fd6 0%,#4a9be8 55%,#86c3f5 100%)}
+.wx-partly{background:linear-gradient(165deg,#3f74b0 0%,#6d9ac8 55%,#a3c0dc 100%)}
+.wx-cloudy{background:linear-gradient(165deg,#56677d 0%,#788a9f 55%,#97a6b7 100%)}
+.wx-rain{background:linear-gradient(165deg,#34465d 0%,#4f647d 55%,#6c8098 100%)}
+.wx-snow{background:linear-gradient(165deg,#5f7896 0%,#8399b4 55%,#a8bbd0 100%)}
+.wx-storm{background:linear-gradient(165deg,#22253d 0%,#3b3f62 55%,#56598a 100%)}
+.wx-fog{background:linear-gradient(165deg,#68727e 0%,#86909b 55%,#a3abb4 100%)}
+.wx-night{background:linear-gradient(165deg,#070f29 0%,#16234d 55%,#2b3c70 100%)}
+.wx-night-dim{background:linear-gradient(165deg,#111827 0%,#222e48 55%,#36456a 100%)}
+.panel.wx #weather{font-size:14px}
+.wx-now{text-align:center;padding:6px 0 14px;text-shadow:0 1px 8px rgba(0,0,0,.18)}
+.wx-place{font-size:22px;font-weight:600;letter-spacing:.2px}
+.wx-temp{font-size:76px;font-weight:200;line-height:1;margin:2px 0 2px 18px;letter-spacing:-2px}
+.wx-cond{font-size:17px;font-weight:600;opacity:.95}
+.wx-hl{font-size:15px;font-weight:600;opacity:.9;margin-top:2px;white-space:pre}
+.wx-glass,.wx-tile{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);border-radius:16px;
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.wx-glass{padding:10px 12px 8px;margin-top:10px}
+.wx-glass h4{margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;opacity:.75;
+  padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.18)}
+.wx-hours{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;scroll-snap-type:x proximity;padding-bottom:6px}
+.wx-hours:focus-visible{outline:2px solid #fff;outline-offset:2px;border-radius:8px}
+.wx-hour{flex:0 0 56px;display:flex;flex-direction:column;align-items:center;gap:3px;scroll-snap-align:start;padding:4px 0}
+.wx-hour-time{font-size:13px;font-weight:600;opacity:.9;white-space:nowrap}
+.wx-hour-icon{font-size:22px;line-height:1.2}
+.wx-hour b{font-size:16px;font-weight:600}
+.wx-rain{color:#9fe1ff;font-size:11px;font-weight:700;line-height:1}
+.wx-days{display:flex;flex-direction:column}
+.wx-day{display:grid;grid-template-columns:52px 38px 34px 1fr 34px;align-items:center;gap:8px;padding:8px 0;border-top:1px solid rgba(255,255,255,.14)}
+.wx-day:first-child{border-top:0}
+.wx-day-name{font-weight:600;font-size:15px}
+.wx-day-icon{font-size:20px;display:flex;flex-direction:column;align-items:center;line-height:1.1}
+.wx-day-icon small{margin-top:1px}
+.wx-lo{opacity:.65;font-weight:600;text-align:right}
+.wx-hi{font-weight:600}
+.wx-bar{position:relative;height:5px;border-radius:5px;background:rgba(0,0,0,.18)}
+.wx-fill{position:absolute;top:0;bottom:0;border-radius:5px}
+.wx-dot{position:absolute;top:50%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:#fff;border:2px solid rgba(0,0,0,.25)}
+.wx-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+.wx-tile{padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-height:92px}
+.wx-tile-label{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;opacity:.75}
+.wx-tile b{font-size:24px;font-weight:500}
+.wx-tile small{font-size:12px;opacity:.85;line-height:1.3}
+.wx-unit{font-size:14px;font-weight:600;opacity:.8}
+.panel.wx .live-line{color:rgba(255,255,255,.8);margin-top:12px}
+/* alerts inside the dark card */
+.panel.wx #alerts{margin-bottom:6px}
+.panel.wx .alert-card{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.22);color:#fff;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.panel.wx .alert-card.severe{border-left-color:#ff5a4f}
+.panel.wx .alert-card.moderate{border-left-color:#ff9f0a}
+.panel.wx .alert-card.minor{border-left-color:#ffd60a}
+.panel.wx .alert-card small{color:rgba(255,255,255,.85)}
+.panel.wx .alert-card a{color:#fff;text-decoration:underline}
+.panel.wx .alert-none{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.2);color:#fff}
+@media(max-width:650px){
+  #results .two-col{grid-template-columns:1fr}
+  .wx-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .wx-temp{font-size:68px}
+}
+.wx-rain{font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-variant-emoji:text;min-height:11px;display:block;background:none}
+.wx-hour-icon,.wx-day-icon{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.wx-day-icon .wx-rain{font-size:11px}
+.wx-rain{color:#dff6ff;font-weight:800;text-shadow:0 1px 2px rgba(0,40,90,.35)}
