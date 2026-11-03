@@ -19,11 +19,13 @@ The project is independently developed and is **not affiliated with or endorsed 
 | Area | Current functionality |
 | --- | --- |
 | 🏛️ Civic information | U.S. Senators and House Representative by ZIP (or device location), with party, phone and website; links to official civic resources |
-| 🌤️ Weather | Seven-day forecast using Open-Meteo |
+| 🌤️ Weather | Seven-day forecast (Open-Meteo) and active National Weather Service alerts, with a live local clock for the searched ZIP |
 | 🚑 Emergency support | Quick-call links for U.S. 911 and 988, plus additional helplines |
 | 🏥 Healthcare | Google Maps and Apple Maps searches for hospitals, urgent care, CVS and Walgreens, using a ZIP or permitted device location |
 | 🤝 Public assistance | Links to official information about food, housing and government benefits |
-| 📰 News | Local and world headline feeds where available; links to external coverage for other categories |
+| 📰 News | Local, U.S., world and technology headlines with source and age, refreshed automatically |
+| 🔗 Sharing | Shareable links such as `?zip=45220` open straight to that ZIP's results |
+| 🌎 Languages | English and Spanish (`?lang=es`), including results, alerts and news |
 | 📍 Location | Five-digit U.S. ZIP search and optional browser geolocation, subject to user permission |
 
 **Important:** Healthcare map links open external search services. EagleReach does not currently verify facility hours, availability, medical services or benefit eligibility. If someone is in immediate danger in the U.S., call **911**. For suicide or mental health crisis support in the U.S., call or text **988**.
@@ -37,7 +39,7 @@ Explore the [live EagleReach homepage](https://vikesh2608.github.io/EagleReach-v
 - **Frontend:** HTML5, CSS3, vanilla JavaScript
 - **Backend:** Python, FastAPI, REST endpoints
 - **Hosting:** GitHub Pages (frontend), Render (backend)
-- **Weather:** Open-Meteo
+- **Weather:** Open-Meteo forecast and time zone; National Weather Service alerts
 - **Location:** Browser Geolocation API, reverse geocoding, ZIP-code lookup
 - **Maps:** Google Maps search links and Apple Maps search links
 - **Civic data:** U.S. Census Geocoder (congressional district) + [`unitedstates/congress-legislators`](https://github.com/unitedstates/congress-legislators) (public-domain list of current members)
