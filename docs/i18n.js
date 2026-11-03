@@ -156,6 +156,21 @@ const ES = {
   'Snow': 'Nieve', 'Snow grains': 'Granizo fino', 'Showers': 'Chubascos', 'Snow showers': 'Chubascos de nieve',
   'Thunderstorms': 'Tormentas eléctricas', 'Thunderstorms with hail': 'Tormentas con granizo',
 
+  // --- Community Card
+  '🖼️ Make my Community Card': '🖼️ Crear mi tarjeta comunitaria',
+  'Your Community Card': 'Su tarjeta comunitaria',
+  'Share it on Instagram, WhatsApp, LinkedIn or anywhere. Every card links back to your results.':
+    'Compártala en Instagram, WhatsApp, LinkedIn o donde quiera. Cada tarjeta lleva a sus resultados.',
+  'Community Card preview': 'Vista previa de la tarjeta comunitaria',
+  '📤 Share image': '📤 Compartir imagen',
+  '⬇️ Download': '⬇️ Descargar',
+  'Close': 'Cerrar',
+  'MY COMMUNITY': 'MI COMUNIDAD',
+  'Who represents me in Congress': 'Quién me representa en el Congreso',
+  'Find yours — free & nonpartisan': 'Encuentre la suya: gratis y apartidista',
+  'Making your card…': 'Creando su tarjeta…',
+  'Sorry, the card could not be created on this device.': 'Lo sentimos, no se pudo crear la tarjeta en este dispositivo.',
+
   // --- Home: news
   'News & Community Updates': 'Noticias y novedades de la comunidad',
   'Current headlines from external publishers.': 'Titulares actuales de medios externos.',
@@ -330,8 +345,8 @@ function translatePage() {
     }
   });
 
-  document.querySelectorAll('[placeholder],[aria-label]').forEach(el => {
-    ['placeholder', 'aria-label'].forEach(attr => {
+  document.querySelectorAll('[placeholder],[aria-label],img[alt]').forEach(el => {
+    ['placeholder', 'aria-label', 'alt'].forEach(attr => {
       const v = el.getAttribute(attr);
       if (v && ES[v]) el.setAttribute(attr, ES[v]);
     });

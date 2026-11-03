@@ -23,7 +23,7 @@ const allowedLink = u => {
   }
 };
 
-const state = { city: '', stateAbbr: '', zip: '', news: 'local', coords: null, tz: null, point: null };
+const state = { city: '', stateAbbr: '', zip: '', news: 'local', coords: null, tz: null, point: null, reps: [], wx: null };
 
 function status(s) { $('status').textContent = s; }
 
@@ -204,7 +204,10 @@ async function weather(lat, lon) {
 
     // Card background follows the sky.
     const panel = $('forecast');
-    panel.className = panel.className.replace(/\bwx-[\w-]+/g, '').trim() + ' ' + weatherTheme(c.weather_code, c.is_day);
+    const theme = weatherTheme(c.weather_code, c.is_day);
+    panel.className = panel.className.replace(/\bwx-[\w-]+/g, '').trim() + ' ' + theme;
+    renderFx(c.weather_code, c.is_day);
+    state.wx = { temp, hi, lo, theme, text: now.text, icon: now.icon };
 
     // Hourly: from the current hour, next 24 hours.
     let start = (hourly.time || []).findIndex(h => h.slice(0, 13) === String(c.time || '').slice(0, 13));
@@ -217,7 +220,7 @@ async function weather(lat, lon) {
         <div class="wx-hour">
           <span class="wx-hour-time">${k === 0 ? t('Now') : safe(localHour(h))}</span>
           <span class="wx-hour-icon" title="${safe(t(info.text))}">${info.icon}</span>
-          <span class="wx-rain">${rain >= 20 ? rain + '%' : ''}</span>
+          <span class="wx-pop">${rain >= 20 ? rain + '%' : ''}</span>
           <b>${Math.round(k === 0 ? c.temperature_2m : hourly.temperature_2m[i])}°</b>
         </div>`;
     }).join('');
@@ -238,7 +241,7 @@ async function weather(lat, lon) {
       return `
         <div class="wx-day">
           <span class="wx-day-name">${safe(name)}</span>
-          <span class="wx-day-icon" title="${safe(t(info.text))}">${info.icon}<small class="wx-rain">${rain >= 20 ? rain + '%' : ''}</small></span>
+          <span class="wx-day-icon" title="${safe(t(info.text))}">${info.icon}<small class="wx-pop">${rain >= 20 ? rain + '%' : ''}</small></span>
           <span class="wx-lo">${Math.round(dlo)}°</span>
           <span class="wx-bar"><span class="wx-fill" style="left:${left}%;width:${width}%;background:linear-gradient(90deg,${tempColor(dlo)},${tempColor(dhi)})"></span>${dot}</span>
           <span class="wx-hi">${Math.round(dhi)}°</span>
@@ -284,6 +287,69 @@ async function weather(lat, lon) {
   } catch {
     $('weather').textContent = t('Forecast is temporarily unavailable.');
   }
+}
+
+// ---------------------------------------------------------------------------
+// Animated sky behind the weather card: sun glow, drifting clouds, rain, snow,
+// fog, stars and lightning, depending on current conditions. Purely decorative;
+// it is skipped when the visitor's device asks for reduced motion.
+// ---------------------------------------------------------------------------
+
+function fxLayers(code, isDay) {
+  const night = isDay === 0;
+  if (code >= 95) return ['clouds-dark', 'rain-heavy', 'flash'];
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return ['clouds', 'snow'].concat(night ? ['stars-few'] : []);
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return ['clouds-dark', code >= 63 && code !== 80 ? 'rain-heavy' : 'rain'];
+  if (code === 45 || code === 48) return ['fog'];
+  if (code === 3) return ['clouds', 'clouds'].concat(night ? ['stars-few'] : []);
+  if (night) return ['stars', 'moon'].concat(code === 2 ? ['clouds-thin'] : []);
+  if (code === 2) return ['sun', 'clouds-thin'];
+  return code === 1 ? ['sun', 'rays', 'clouds-thin'] : ['sun', 'rays'];
+}
+
+function renderFx(code, isDay) {
+  const panel = $('forecast');
+  let fx = panel.querySelector('.wx-fx');
+  if (!fx) {
+    fx = document.createElement('div');
+    fx.className = 'wx-fx';
+    fx.setAttribute('aria-hidden', 'true');
+    panel.prepend(fx);
+  }
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const bits = [];
+  const add = (cls, n, style) => { for (let i = 0; i < n; i++) bits.push(`<i class="${cls}" style="${style(i)}"></i>`); };
+
+  fxLayers(code, isDay).forEach(layer => {
+    switch (layer) {
+      case 'sun': bits.push('<i class="fx-sun"></i>'); break;
+      case 'rays': bits.push('<i class="fx-rays"></i>'); break;
+      case 'moon': bits.push('<i class="fx-moon"></i>'); break;
+      case 'flash': bits.push('<i class="fx-flash"></i>'); break;
+      case 'stars': case 'stars-few':
+        add('fx-star', layer === 'stars' ? 46 : 14, () =>
+          `left:${rnd(0, 100)}%;top:${rnd(0, 55)}%;animation-duration:${rnd(2, 5)}s;animation-delay:-${rnd(0, 5)}s;transform:scale(${rnd(.6, 1.4)})`);
+        break;
+      case 'clouds': case 'clouds-dark': case 'clouds-thin':
+        add('fx-cloud' + (layer === 'clouds-dark' ? ' dark' : layer === 'clouds-thin' ? ' thin' : ''), layer === 'clouds-thin' ? 2 : 3, () =>
+          `top:${rnd(-2, 30)}%;animation-duration:${rnd(45, 90)}s;animation-delay:-${rnd(0, 90)}s;transform:scale(${rnd(.8, 1.5)})`);
+        break;
+      case 'rain': case 'rain-heavy':
+        add('fx-drop', layer === 'rain' ? 45 : 85, () =>
+          `left:${rnd(-5, 105)}%;animation-duration:${rnd(.55, .95)}s;animation-delay:-${rnd(0, 1)}s;opacity:${rnd(.35, .8)}`);
+        break;
+      case 'snow':
+        add('fx-flake', 42, () => {
+          const size = rnd(3, 7);
+          return `left:${rnd(-5, 100)}%;width:${size}px;height:${size}px;animation-duration:${rnd(7, 14)}s;animation-delay:-${rnd(0, 14)}s;opacity:${rnd(.5, .95)}`;
+        });
+        break;
+      case 'fog':
+        add('fx-fog', 3, i => `top:${18 + i * 26}%;animation-duration:${rnd(30, 50)}s;animation-delay:-${rnd(0, 40)}s`);
+        break;
+    }
+  });
+  fx.innerHTML = bits.join('');
 }
 
 function severityClass(sev) {
@@ -338,6 +404,7 @@ function partyClass(p) {
 }
 
 function reps(items) {
+  state.reps = Array.isArray(items) ? items : [];
   if (!Array.isArray(items) || !items.length) {
     $('leaders').textContent =
       t('Representative information is unavailable for this ZIP. Check your officials using your full street address at USA.gov.');
@@ -620,6 +687,230 @@ function searchFromUrl() {
 }
 
 // ---------------------------------------------------------------------------
+// Community Card: a shareable image (1080×1350) with the city, today's weather
+// and representatives, drawn on a canvas in the visitor's browser.
+// ---------------------------------------------------------------------------
+
+const CARD_SKIES = {
+  'wx-clear': ['#1f6fd6', '#4a9be8', '#86c3f5'], 'wx-partly': ['#3f74b0', '#6d9ac8', '#a3c0dc'],
+  'wx-cloudy': ['#56677d', '#788a9f', '#97a6b7'], 'wx-rain': ['#34465d', '#4f647d', '#6c8098'],
+  'wx-snow': ['#5f7896', '#8399b4', '#a8bbd0'], 'wx-storm': ['#22253d', '#3b3f62', '#56598a'],
+  'wx-fog': ['#68727e', '#86909b', '#a3abb4'], 'wx-night': ['#070f29', '#16234d', '#2b3c70'],
+  'wx-night-dim': ['#111827', '#222e48', '#36456a']
+};
+const CARD_FONT = 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+let cardBlob = null;
+
+function loadImage(src, ms = 4000) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    const timer = setTimeout(() => resolve(null), ms);
+    img.onload = () => { clearTimeout(timer); resolve(img); };
+    img.onerror = () => { clearTimeout(timer); resolve(null); };
+    img.src = src;
+  });
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+// Shrink text until it fits the width.
+function fitText(ctx, text, maxWidth, weight, size, min = 28) {
+  let s = size;
+  do { ctx.font = `${weight} ${s}px ${CARD_FONT}`; s -= 2; } while (ctx.measureText(text).width > maxWidth && s > min);
+  if (ctx.measureText(text).width > maxWidth) {
+    while (text.length > 3 && ctx.measureText(text + '…').width > maxWidth) text = text.slice(0, -1);
+    text += '…';
+  }
+  return text;
+}
+
+async function drawCommunityCard() {
+  const W = 1080, H = 1350, P = 72;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  const sky = CARD_SKIES[state.wx?.theme] || CARD_SKIES['wx-clear'];
+
+  // Background sky + soft glow
+  const g = ctx.createLinearGradient(0, 0, W * .35, H);
+  g.addColorStop(0, sky[0]); g.addColorStop(.55, sky[1]); g.addColorStop(1, sky[2]);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const glow = ctx.createRadialGradient(W - 80, 60, 10, W - 80, 60, 520);
+  glow.addColorStop(0, 'rgba(255,255,255,.28)'); glow.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+
+  const glass = (x, y, w, h, r = 36) => {
+    roundRect(ctx, x, y, w, h, r);
+    ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#fff'; // back to white text
+  };
+  ctx.fillStyle = '#fff'; ctx.textBaseline = 'alphabetic';
+
+  // Header
+  ctx.font = `800 46px ${CARD_FONT}`;
+  ctx.fillText('🦅 EagleReach', P, 112);
+  ctx.font = `600 28px ${CARD_FONT}`; ctx.globalAlpha = .85; ctx.textAlign = 'right';
+  ctx.fillText(new Date().toLocaleDateString(LOCALE, { month: 'long', day: 'numeric', year: 'numeric' }), W - P, 108);
+  ctx.textAlign = 'left'; ctx.globalAlpha = 1;
+
+  // Place
+  ctx.font = `700 30px ${CARD_FONT}`; ctx.globalAlpha = .8;
+  ctx.fillText(t('MY COMMUNITY').toUpperCase(), P, 206);
+  ctx.globalAlpha = 1;
+  const place = state.city || ('ZIP ' + state.zip);
+  ctx.fillText(fitText(ctx, place, W - 2 * P, 800, 96), P, 300);
+  ctx.font = `600 36px ${CARD_FONT}`; ctx.globalAlpha = .9;
+  ctx.fillText([state.stateAbbr, 'ZIP ' + state.zip].filter(Boolean).join(' · '), P, 352);
+  ctx.globalAlpha = 1;
+
+  // Weather
+  const wy = 392, wh = 230;
+  glass(P, wy, W - 2 * P, wh);
+  if (state.wx) {
+    ctx.font = `110px ${CARD_FONT}`;
+    ctx.fillText(state.wx.icon, P + 36, wy + 152);
+    ctx.font = `200 150px ${CARD_FONT}`;
+    ctx.fillText(state.wx.temp + '°', P + 190, wy + 168);
+    ctx.textAlign = 'right';
+    ctx.font = `700 46px ${CARD_FONT}`;
+    ctx.fillText(fitText(ctx, t(state.wx.text), 360, 700, 46), W - P - 40, wy + 100);
+    ctx.font = `600 36px ${CARD_FONT}`; ctx.globalAlpha = .9;
+    ctx.fillText(t('H:{hi}°  L:{lo}°', { hi: state.wx.hi, lo: state.wx.lo }), W - P - 40, wy + 160);
+    ctx.textAlign = 'left'; ctx.globalAlpha = 1;
+  } else {
+    ctx.font = `600 38px ${CARD_FONT}`;
+    ctx.fillText(t('Forecast is temporarily unavailable.'), P + 40, wy + 130);
+  }
+
+  // Representatives (federal members only, max 3)
+  const members = state.reps.filter(r => r.party).slice(0, 3);
+  let y = 690;
+  ctx.font = `800 38px ${CARD_FONT}`;
+  ctx.fillText(t('Who represents me in Congress'), P, y);
+  y += 26;
+  const photos = await Promise.all(members.map(r => r.photo ? loadImage(r.photo) : Promise.resolve(null)));
+  members.forEach((r, i) => {
+    const rh = 148, rx = P, rw = W - 2 * P;
+    glass(rx, y, rw, rh, 30);
+    const px = rx + 22, py = y + 18, pw = 92, ph = 112;
+    ctx.save(); roundRect(ctx, px, py, pw, ph, 18); ctx.clip();
+    if (photos[i]) ctx.drawImage(photos[i], px, py, pw, ph);
+    else {
+      ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.fillRect(px, py, pw, ph);
+      ctx.fillStyle = '#fff'; ctx.font = `700 40px ${CARD_FONT}`; ctx.textAlign = 'center';
+      ctx.fillText((r.name || '?').split(' ').map(w => w[0]).slice(0, 2).join(''), px + pw / 2, py + 72);
+      ctx.textAlign = 'left';
+    }
+    ctx.restore();
+    ctx.fillStyle = '#fff';
+    const tx = px + pw + 28, tw = rw - (tx - rx) - 24;
+    ctx.fillText(fitText(ctx, r.name, tw, 800, 44), tx, y + 66);
+    ctx.font = `600 30px ${CARD_FONT}`; ctx.globalAlpha = .88;
+    const role = fitText(ctx, trText(r.role || ''), tw - 220, 600, 30, 22);
+    ctx.fillText(role, tx, y + 114);
+    ctx.globalAlpha = 1;
+    // party pill
+    const party = trText(r.party);
+    ctx.font = `700 26px ${CARD_FONT}`;
+    const pwid = ctx.measureText(party).width + 32, pxp = rx + rw - 24 - pwid;
+    roundRect(ctx, pxp, y + 88, pwid, 40, 20);
+    const pc = partyClass(r.party);
+    ctx.fillStyle = pc === 'dem' ? 'rgba(59,130,246,.9)' : pc === 'gop' ? 'rgba(220,38,38,.9)' : 'rgba(100,116,139,.9)';
+    ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillText(party, pxp + 16, y + 117);
+    y += rh + 16;
+  });
+  if (!members.length) {
+    ctx.font = `600 32px ${CARD_FONT}`; ctx.globalAlpha = .9;
+    ctx.fillText(t('Find your elected officials on USA.gov'), P, y + 50);
+    ctx.globalAlpha = 1;
+  }
+
+  // Footer
+  ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(0, H - 130, W, 130);
+  ctx.fillStyle = '#fff';
+  ctx.font = `600 28px ${CARD_FONT}`; ctx.globalAlpha = .85;
+  ctx.fillText(t('Find yours — free & nonpartisan'), P, H - 78);
+  ctx.globalAlpha = 1;
+  ctx.font = `800 34px ${CARD_FONT}`;
+  ctx.fillText('vikesh2608.github.io/EagleReach-v2', P, H - 34);
+
+  return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+}
+
+async function openCommunityCard() {
+  if (!state.zip) return;
+  const btn = $('cardBtn');
+  const label = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ ' + t('Making your card…');
+  try {
+    cardBlob = await drawCommunityCard();
+    const img = $('cardImg');
+    if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
+    img.dataset.url = URL.createObjectURL(cardBlob);
+    img.src = img.dataset.url;
+    $('cardModal').hidden = false;
+    document.body.classList.add('modal-open');
+    $('cardShare').focus();
+  } catch (e) {
+    status(t('Sorry, the card could not be created on this device.'));
+  } finally {
+    btn.disabled = false; btn.textContent = label;
+  }
+}
+
+function closeCommunityCard() {
+  $('cardModal').hidden = true;
+  document.body.classList.remove('modal-open');
+  $('cardBtn').focus();
+}
+
+function cardFileName() {
+  return 'EagleReach-' + (state.city || state.zip).replace(/[^A-Za-z0-9]+/g, '-') + '.png';
+}
+
+async function shareCommunityCard() {
+  if (!cardBlob) return;
+  const file = new File([cardBlob], cardFileName(), { type: 'image/png' });
+  const text = t('Representatives, weather alerts and local news for {place} on EagleReach',
+    { place: state.city ? `${state.city}, ${state.stateAbbr}` : 'ZIP ' + state.zip }) + ' ' + shareUrl(state.zip);
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: 'EagleReach', text }); return; }
+    catch (e) { if (e.name === 'AbortError') return; }
+  }
+  downloadCommunityCard(); // sharing images isn't supported here (most desktop browsers)
+}
+
+function downloadCommunityCard() {
+  if (!cardBlob) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(cardBlob);
+  a.download = cardFileName();
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+function setupCommunityCard() {
+  if (!$('cardBtn')) return;
+  $('cardBtn').addEventListener('click', openCommunityCard);
+  $('cardClose').addEventListener('click', closeCommunityCard);
+  $('cardShare').addEventListener('click', shareCommunityCard);
+  $('cardDownload').addEventListener('click', downloadCommunityCard);
+  $('cardModal').addEventListener('click', e => { if (e.target === $('cardModal')) closeCommunityCard(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('cardModal').hidden) closeCommunityCard(); });
+}
+
+// ---------------------------------------------------------------------------
 // Mobile "start" bar: appears once the visitor scrolls past the search box
 // without having searched yet, so they always know how to begin.
 // ---------------------------------------------------------------------------
@@ -662,4 +953,5 @@ document.querySelectorAll('[data-news]').forEach(b => b.addEventListener('click'
 
 updateCareMaps();
 setupStartBar();
+setupCommunityCard();
 searchFromUrl();
