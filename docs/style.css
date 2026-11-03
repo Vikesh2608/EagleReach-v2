@@ -32,3 +32,44 @@ nav a[aria-current="page"]{color:#0758db;font-weight:700}
 .party{display:inline-block;margin-top:4px;padding:1px 8px;border-radius:999px;font-size:.75rem;font-weight:700;background:#eef2f7;color:#475569}
 .party.dem{background:#e6efff;color:#1d4ed8}.party.gop{background:#fdecec;color:#b91c1c}
 .rep-links{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;font-size:.9rem}
+
+/* Weather alerts (National Weather Service) */
+#alerts{display:grid;gap:10px;margin-bottom:12px}
+.alert-card{border-radius:12px;padding:12px 14px;border:1px solid;border-left-width:5px}
+.alert-card strong{display:block}
+.alert-card p{margin:4px 0 6px;font-size:14px}
+.alert-card small{font-size:12px;color:#475569}
+.alert-card a{font-weight:700}
+.alert-card.severe{background:#fff1f2;border-color:#fecdd3;border-left-color:#dc2626;color:#7f1d1d}
+.alert-card.moderate{background:#fff7ed;border-color:#fed7aa;border-left-color:#ea580c;color:#7c2d12}
+.alert-card.minor{background:#fefce8;border-color:#fde68a;border-left-color:#ca8a04;color:#713f12}
+.alert-none{margin:0;font-size:13px;color:#166534;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:8px 12px}
+
+/* Live clock */
+.weather-chip .clock{display:block;margin-top:6px;font-variant-numeric:tabular-nums;color:#33476a}
+.live-line{margin:10px 0 0;font-variant-numeric:tabular-nums}
+
+/* Share results */
+.share-wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.share-button{background:#fff;border:1px solid #c9d7f0;color:#0758db;font-weight:700;border-radius:10px;padding:9px 14px;font-size:14px}
+.share-button:hover{border-color:#0758db;background:#f3f7ff}
+#shareMsg{font-size:13px;color:#166534;font-weight:600;word-break:break-all}
+.page ul{padding-left:22px;margin:0 0 14px}.page li{margin:4px 0}
+
+/* Share results */
+.share-wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.share-button{background:#fff;border:1px solid #c9d7f0;color:#0758db;font-weight:700;border-radius:10px;padding:9px 14px;font-size:14px}
+.share-button:hover{border-color:#0758db;background:#f3f7ff}
+#shareMsg{font-size:13px;color:#166534;font-weight:600;word-break:break-all}
+.page ul{padding-left:22px;margin:0 0 14px}.page li{margin:4px 0}
+
+/* Language switch: 🌐 English | Español */
+.lang-switch{display:inline-flex;align-items:center;gap:2px;background:#eef3fc;border:1px solid #d6e2f5;border-radius:999px;padding:3px}
+.lang-switch .globe{font-size:15px;padding:0 4px 0 7px}
+.lang-switch button{border:0;background:transparent;color:#41557a;font-weight:700;font-size:13px;border-radius:999px;padding:7px 13px;transition:background .15s,color .15s}
+.lang-switch button:hover:not(.active){background:#dde8fa;color:#0758db}
+.lang-switch button.active{background:#fff;color:#0758db;box-shadow:0 1px 4px #0b234126;cursor:default}
+.lang-switch button:focus-visible{outline:2px solid #0758db;outline-offset:2px}
+.lang-switch .short{display:none}
+@media(max-width:430px){.lang-switch .long{display:none}.lang-switch .short{display:inline}.lang-switch button{padding:7px 11px}}
+.lang-note{background:#fff7ed;border:1px solid #fed7aa;color:#7c2d12;border-radius:10px;padding:8px 12px;font-size:14px}
