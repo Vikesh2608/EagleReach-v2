@@ -61,8 +61,11 @@ async function api(path, onWaiting) {
   }
 }
 
-const wakingMessage = () =>
-  status(t('Waking up the EagleReach server — the first search can take up to a minute…'));
+const wakingMessage = () => {
+  const msg = t('Waking up the EagleReach server — the first search can take up to a minute…');
+  status(msg);
+  if ($('leaders').textContent === t('Loading representatives…')) $('leaders').textContent = msg;
+};
 
 // ---------------------------------------------------------------------------
 // Nearby care (map search links)
@@ -243,6 +246,9 @@ async function searchZip(zip, coords = null) {
   $('alerts').innerHTML = '';
   $('leaders').textContent = t('Loading representatives…');
   $('results').hidden = false;
+  document.body.classList.add('searched');
+  if ($('startBar')) $('startBar').hidden = true;
+  $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
   $('resultTitle').textContent = t('Community resources for {zip}', { zip });
   status(t('Loading location, weather and civic information…'));
 
@@ -292,6 +298,7 @@ function useLocation() {
     return;
   }
   status(t('Requesting location permission…'));
+  locateBusy(true);
   navigator.geolocation.getCurrentPosition(async p => {
     try {
       const d = await json(
@@ -301,11 +308,33 @@ function useLocation() {
       const zip = d.postcode;
       if (!/^\d{5}$/.test(zip || '')) throw Error(t('No U.S. ZIP code found'));
       $('zip').value = zip;
+      locateBusy(false);
       searchZip(zip, { lat: p.coords.latitude, lon: p.coords.longitude });
     } catch (e) {
-      status(t('Unable to determine ZIP: {msg}', { msg: e.message }));
+      locateFailed(t('Unable to determine ZIP: {msg}', { msg: e.message }));
     }
-  }, e => status(t('Location unavailable: {msg}', { msg: e.message })), { timeout: 12000, enableHighAccuracy: false });
+  }, e => locateFailed(e.code === 1
+    ? t('Location permission was turned off. Type your ZIP code instead, or allow location in your browser settings.')
+    : t('Location unavailable: {msg}', { msg: e.message })), { timeout: 12000, enableHighAccuracy: false });
+}
+
+// Show progress on the location buttons themselves (the status line may be off-screen).
+function locateBusy(on) {
+  ['locateHero', 'locateBar'].forEach(id => {
+    const b = $(id);
+    if (!b) return;
+    if (!b.dataset.label) b.dataset.label = b.textContent;
+    b.disabled = on;
+    b.textContent = on ? '⏳ ' + t('Finding you…') : b.dataset.label;
+  });
+}
+
+function locateFailed(msg) {
+  locateBusy(false);
+  status(msg);
+  if ($('startBar')) $('startBar').hidden = true;
+  document.getElementById('home').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $('zip').focus({ preventScroll: true });
 }
 
 // ---------------------------------------------------------------------------
@@ -442,8 +471,28 @@ function searchFromUrl() {
   const zip = new URLSearchParams(location.search).get('zip');
   if (zip && /^\d{5}$/.test(zip)) {
     $('zip').value = zip;
-    searchZip(zip).then(() => $('results').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    searchZip(zip);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile "start" bar: appears once the visitor scrolls past the search box
+// without having searched yet, so they always know how to begin.
+// ---------------------------------------------------------------------------
+
+function setupStartBar() {
+  const bar = $('startBar');
+  const hero = document.querySelector('.hero');
+  if (!bar || !hero || !('IntersectionObserver' in window)) return;
+  new IntersectionObserver(([entry]) => {
+    bar.hidden = entry.isIntersecting || document.body.classList.contains('searched');
+  }).observe(hero);
+  $('locateBar').addEventListener('click', useLocation);
+  bar.querySelector('.start-bar-zip').addEventListener('click', e => {
+    e.preventDefault();
+    document.getElementById('home').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => $('zip').focus({ preventScroll: true }), 400);
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -468,4 +517,5 @@ document.querySelectorAll('[data-news]').forEach(b => b.addEventListener('click'
 }));
 
 updateCareMaps();
+setupStartBar();
 searchFromUrl();

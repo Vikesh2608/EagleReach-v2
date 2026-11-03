@@ -52,6 +52,17 @@ const ES = {
   'Weather near you': 'El tiempo cerca de usted',
   'Search a ZIP to see the forecast': 'Busque un código postal para ver el pronóstico',
 
+  '👋 Start here: type your ZIP code, or let your phone find it for you.': '👋 Empiece aquí: escriba su código postal o deje que su teléfono lo encuentre.',
+  'or': 'o',
+  '📍 Use my location': '📍 Usar mi ubicación',
+  'Your phone will ask permission first. EagleReach never saves your location.':
+    'Su teléfono le pedirá permiso primero. EagleReach nunca guarda su ubicación.',
+  'Find your representatives, weather & local news': 'Encuentre a sus representantes, el clima y noticias locales',
+  'or type a ZIP': 'o escriba un código postal',
+  'Finding you…': 'Buscando su ubicación…',
+  'Location permission was turned off. Type your ZIP code instead, or allow location in your browser settings.':
+    'El permiso de ubicación está desactivado. Escriba su código postal o permita la ubicación en la configuración del navegador.',
+
   // --- Home: services
   'Explore Community Services': 'Explore los servicios comunitarios',
   'Information and resources based on your location.': 'Información y recursos según su ubicación.',
